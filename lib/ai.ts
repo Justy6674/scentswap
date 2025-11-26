@@ -12,53 +12,73 @@ export type SearchFilters = {
   state?: string;
 };
 
-/**
- * Mocks the AI parsing of a natural language query into structured filters.
- * In a real implementation, this would call an LLM endpoint.
- */
+import { SearchFilters } from '@/components/search/FilterDrawer';
+
+const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+
 export async function parseSearchPreferences(query: string): Promise<SearchFilters> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  if (!query.trim()) return {};
 
-  const filters: SearchFilters = {};
-  const lowerQuery = query.toLowerCase();
-
-  // Mock parsing logic based on keywords
-  if (lowerQuery.includes('men') || lowerQuery.includes('male') || lowerQuery.includes('masculine')) {
-    filters.gender_marketing = 'mens';
-  } else if (lowerQuery.includes('women') || lowerQuery.includes('female') || lowerQuery.includes('feminine')) {
-    filters.gender_marketing = 'womens';
-  } else if (lowerQuery.includes('unisex')) {
-    filters.gender_marketing = 'unisex';
+  // If no API key is set, fallback to basic keyword search or mock behavior
+  // But since user explicitly asked for OpenAI, we'll try to use it if available.
+  // If not available, we might want to warn or just return basic text query.
+  if (!OPENAI_API_KEY) {
+    console.warn('OpenAI API Key not found. Falling back to simple text search.');
+    return {};
   }
 
-  // Families
-  const families = ['woody', 'floral', 'fresh', 'amber', 'fruity', 'gourmand', 'spicy', 'citrus', 'aquatic', 'green', 'oriental'];
-  for (const family of families) {
-    if (lowerQuery.includes(family)) {
-      filters.family = family;
-      break; // Assume one primary family for now
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo', // or gpt-4 if preferred
+        messages: [
+          {
+            role: 'system',
+            content: `You are a fragrance expert assistant. Your goal is to parse natural language search queries into structured search filters for a fragrance marketplace.
+            
+            The available filters and their possible values are:
+            - segment_type: 'designer', 'niche', 'indie', 'clone', 'oil', 'decant'
+            - gender_marketing: 'mens', 'womens', 'unisex'
+            - family: 'floral', 'oriental', 'woody', 'fresh', 'citrus', 'fruity', 'gourmand', 'leather', 'chypre', 'fougere'
+            - performance_level: 'soft', 'moderate', 'loud', 'beast_mode'
+            - accords: array of strings (e.g. ['rose', 'oud', 'vanilla'])
+            - notes: array of strings (e.g. ['bergamot', 'patchouli'])
+            - season_tags: array of ['spring', 'summer', 'fall', 'winter']
+            - occasion_tags: array of ['daily', 'date', 'office', 'party', 'gym', 'formal']
+            
+            Return ONLY a JSON object matching this structure. Do not include markdown formatting or explanations.
+            Example input: "loud woody cologne for clubbing"
+            Example output: { "performance_level": "loud", "family": "woody", "occasion_tags": ["party"] }`
+          },
+          {
+            role: 'user',
+            content: query
+          }
+        ],
+        temperature: 0.1, // Low temperature for consistent parsing
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('OpenAI API Error:', data);
+      throw new Error(data.error?.message || 'Failed to parse query');
     }
-  }
 
-  // Performance
-  if (lowerQuery.includes('loud') || lowerQuery.includes('beast') || lowerQuery.includes('strong')) {
-    filters.performance_level = 'beast_mode';
-  } else if (lowerQuery.includes('soft') || lowerQuery.includes('intimate')) {
-    filters.performance_level = 'soft';
-  }
+    const content = data.choices[0].message.content;
+    const parsedFilters = JSON.parse(content);
 
-  // Occasions
-  const occasions = ['office', 'date', 'club', 'gym', 'casual'];
-  const detectedOccasions = [];
-  if (lowerQuery.includes('office') || lowerQuery.includes('work')) detectedOccasions.push('office');
-  if (lowerQuery.includes('date') || lowerQuery.includes('romantic')) detectedOccasions.push('date_night');
-  if (lowerQuery.includes('club') || lowerQuery.includes('party')) detectedOccasions.push('clubbing');
-  if (lowerQuery.includes('gym') || lowerQuery.includes('sport')) detectedOccasions.push('gym');
-  
-  if (detectedOccasions.length > 0) {
-    filters.occasion_tags = detectedOccasions;
-  }
+    return parsedFilters;
 
-  return filters;
+  } catch (error) {
+    console.error('Error parsing search preferences:', error);
+    // Fallback: return empty filters so at least the text query works in the main search flow
+    return {};
+  }
 }
