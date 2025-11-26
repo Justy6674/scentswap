@@ -1,80 +1,259 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { ListingCard } from '@/components/ListingCard';
+import { Listing } from '@/types';
+import { db } from '@/lib/database';
 
-import { HelloWave } from "@/components/HelloWave";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+const CONCENTRATIONS = ['All', 'EDP', 'EDT', 'Parfum', 'EDC', 'Cologne'];
 
-export default function HomeScreen() {
+export default function BrowseScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const colors = Colors[colorScheme];
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedConcentration, setSelectedConcentration] = useState('All');
+
+  useEffect(() => {
+    loadListings();
+  }, []);
+
+  async function loadListings() {
+    setLoading(true);
+    const filters: any = {};
+    if (search) filters.search = search;
+    if (selectedConcentration !== 'All') filters.concentration = selectedConcentration;
+    const data = await db.getListings(filters);
+    setListings(data);
+    setLoading(false);
+  }
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await loadListings();
+    setRefreshing(false);
+  }
+
+  function handleSearch() {
+    loadListings();
+  }
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    header: {
+      paddingHorizontal: 20,
+      paddingTop: 16,
+      paddingBottom: 8,
+    },
+    title: {
+      fontSize: 32,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      paddingHorizontal: 20,
+      marginTop: 16,
+      gap: 12,
+    },
+    searchInputContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.backgroundSecondary,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+    },
+    searchInput: {
+      flex: 1,
+      paddingVertical: 12,
+      fontSize: 16,
+      color: colors.text,
+      marginLeft: 8,
+    },
+    filterButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      width: 48,
+      height: 48,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    filtersContainer: {
+      paddingVertical: 12,
+    },
+    filtersContent: {
+      paddingHorizontal: 20,
+      gap: 8,
+    },
+    filterChip: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.backgroundSecondary,
+      marginRight: 8,
+    },
+    filterChipActive: {
+      backgroundColor: colors.primary,
+    },
+    filterChipText: {
+      fontSize: 14,
+      color: colors.text,
+    },
+    filterChipTextActive: {
+      color: '#FFFFFF',
+    },
+    listContent: {
+      padding: 20,
+      paddingTop: 8,
+    },
+    listingContainer: {
+      marginBottom: 16,
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingTop: 60,
+    },
+    emptyText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: colors.text,
+      marginTop: 16,
+    },
+    emptySubtext: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 8,
+      textAlign: 'center',
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });
+
+  const renderItem = ({ item }: { item: Listing }) => (
+    <View style={styles.listingContainer}>
+      <ListingCard
+        listing={item}
+        onPress={() => router.push(`/listing/${item.id}`)}
+      />
+    </View>
+  );
+
+  const renderEmpty = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="flask-outline" size={64} color={colors.textSecondary} />
+      <Text style={styles.emptyText}>No fragrances found</Text>
+      <Text style={styles.emptySubtext}>
+        Be the first to list a fragrance{'\n'}or try adjusting your filters
+      </Text>
+    </View>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Text style={styles.title}>ScentSwap</Text>
+        <Text style={styles.subtitle}>Trade scents, not cash</Text>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search fragrances..."
+            placeholderTextColor={colors.textSecondary}
+            value={search}
+            onChangeText={setSearch}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
+        </View>
+        <TouchableOpacity style={styles.filterButton} onPress={handleSearch}>
+          <Ionicons name="options-outline" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.filtersContainer}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={CONCENTRATIONS}
+          contentContainerStyle={styles.filtersContent}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                selectedConcentration === item && styles.filterChipActive,
+              ]}
+              onPress={() => {
+                setSelectedConcentration(item);
+                setTimeout(loadListings, 0);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedConcentration === item && styles.filterChipTextActive,
+                ]}
+              >
+                {item}
+              </Text>
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item}
         />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Replit + Expo</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">
-            npm run reset-project
-          </ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={listings}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+            />
+          }
+          ListEmptyComponent={renderEmpty}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
-  },
-});

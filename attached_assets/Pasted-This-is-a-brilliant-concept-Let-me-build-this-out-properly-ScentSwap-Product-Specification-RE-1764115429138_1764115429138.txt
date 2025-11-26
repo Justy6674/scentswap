@@ -1,0 +1,256 @@
+This is a brilliant concept. Let me build this out properly.
+
+ScentSwap — Product Specification & README
+The Vision
+ScentSwap is Australia's first AI-powered fragrance bartering marketplace. No buying, no selling — just swapping. Trade that impulse buy sitting on your shelf for something you'll actually wear.
+The fragrance community has a problem: people accumulate bottles they don't love, decants they've finished exploring, and blind buys that didn't work out. Selling is awkward, prices are disputed, and scammers lurk everywhere.
+ScentSwap removes money from the equation entirely. Pure trade. AI-assisted matching. Verified users only. Fair swaps guaranteed.
+
+Core Philosophy
+1. No Money, No Drama — Swapping eliminates price haggling and payment scams
+2. AI as the Neutral Party — The AI mediates fairness, suggests matches, verifies authenticity
+3. Trust is Everything — Verification, ratings, and swap history build community trust
+4. Australian First — Starting local means accountable users and reasonable shipping
+
+How It Works — User Journey
+1. Join & Verify
+* Sign up with email
+* Verify Australian identity (drivers licence or Medicare card via ID verification API)
+* Confirm Australian address (for shipping)
+* Optional: link social profiles for additional trust signals
+* Receive "Verified Swapper" badge
+2. Build Your Swap Cabinet
+* Add fragrances you want to swap
+* For each bottle:
+    * Snap photos (AI analyses for authenticity markers)
+    * Select fragrance from database (auto-linked to Fragrantica)
+    * Specify: size, fill level (%), batch code, condition
+    * Add personal notes ("This one's a beast mode performer")
+* AI auto-generates scent description, notes pyramid, and comparable fragrances
+3. Set Your Swap Preferences
+* For each listing, specify what you'd accept:
+    * Specific fragrances you're hunting
+    * Or broader preferences: designer/niche, gender, scent family, season
+    * Swap ratio flexibility: 1:1, 1:2, 1:3 (based on relative value)
+    * Willing to add decants to balance a trade?
+4. Discover & Match
+* Browse the marketplace
+* AI suggests matches based on:
+    * Your wishlist vs. their cabinet
+    * Scent profile compatibility
+    * Fair value matching
+    * Geographic proximity (faster shipping)
+* "Swap Match" notifications when mutual interest detected
+5. Propose a Swap
+* Select your bottle(s) → Select their bottle(s)
+* AI Fairness Check runs automatically
+    * Compares market values, fill levels, rarity
+    * Suggests adjustments if unbalanced
+    * Shows confidence score: "This swap is 94% fair"
+* Add a message, submit proposal
+6. Negotiate (AI-Mediated)
+* Chat with the other swapper
+* AI Mediator available:
+    * "Is this a fair trade?" → AI gives neutral assessment
+    * "What could I add to make this work?" → AI suggests from your cabinet
+    * Dispute? AI reviews and suggests resolution
+* Both parties must confirm final swap terms
+7. Lock & Ship
+* Both confirm → Swap is LOCKED
+* Shipping labels generated (or manual shipping with tracking required)
+* Packing guidelines displayed:
+    * Wrap bottle in bubble wrap
+    * Seal cap with tape
+    * Photo of packed item required before shipping
+    * Upload tracking number
+* Status updates: Packed → Shipped → In Transit → Delivered
+8. Confirm & Rate
+* Both parties confirm receipt
+* Rate the experience (1-5 stars):
+    * Accuracy (was it as described?)
+    * Packaging (was it safe?)
+    * Communication (were they responsive?)
+    * Overall swap experience
+* Written review optional
+* Swap added to both users' history
+
+AI Integration Points
+Feature	AI Role
+Authenticity Scanning	Analyses bottle photos for known fake markers, batch code verification, packaging inconsistencies
+Scent Profiling	Auto-generates descriptions from Fragrantica data, suggests "if you like this, you'd like..."
+Fair Value Engine	Calculates swap fairness using market prices, rarity, fill level, condition
+Match Suggestions	"You have X, they want X, they have Y, you want Y" — surfaces mutual matches
+Swap Mediator	Neutral third party in negotiations, suggests balanced trades, resolves disputes
+Listing Assistant	Helps users write better descriptions, suggests accurate fill level from photos
+Fraud Detection	Flags suspicious behaviour: new accounts wanting high-value swaps, repeated disputes, etc.
+Trust & Safety System
+User Verification Tiers:
+Tier	Requirements	Badge	Privileges
+Unverified	Email only	None	Can browse, cannot swap
+Verified	ID + Address confirmed	✓ Verified	Can swap up to $200 value
+Trusted	5+ successful swaps, 4.5+ rating	⭐ Trusted	Unlimited swap value
+Elite	20+ swaps, 4.8+ rating, 6+ months	💎 Elite	Priority matching, featured listings
+Anti-Scam Measures:
+* Photo verification required for all listings
+* AI authenticity check on submission
+* Batch code database cross-reference
+* Shipping tracking mandatory
+* Both parties must confirm receipt before swap closes
+* Dispute resolution process with AI + human review
+* Banned user database
+* Suspicious activity auto-flagging
+Fake Prevention:
+* Known fake fragrance database
+* Batch code verification against manufacturer records
+* Photo analysis for:
+    * Font inconsistencies
+    * Cap/bottle shape anomalies
+    * Label alignment issues
+    * Box printing quality
+* Community reporting with AI-assisted review
+* Repeat offenders permanently banned
+
+The Swap Fairness Algorithm
+Not all bottles are equal. A 10ml decant isn't worth a 100ml full presentation. The AI calculates:
+Factors:
+* Current market value (scraped from Fragrantica, Facebook groups, auction sites)
+* Bottle size
+* Fill level percentage
+* Condition (new/like new/good/fair)
+* Rarity/discontinuation status
+* Batch desirability (some batches more sought after)
+* Age (vintage value vs. degradation)
+Output:
+* Swap Value Score for each item
+* Comparison showing if trade is balanced
+* Suggestions to balance if not: "Add a 10ml decant of X to make this fair"
+User Override:
+* Users can accept "unfair" swaps knowingly
+* System flags but doesn't block
+* "I know this isn't equal value but I really want this bottle" — fine, proceed
+
+Shipping & Handling
+Mandatory Packing Protocol:
+1. Secure the spray nozzle (tape or remove)
+2. Wrap bottle in bubble wrap (minimum 2 layers)
+3. Place in rigid box with padding (no movement when shaken)
+4. Seal outer box securely
+5. Photograph packed item before sealing
+6. Upload photo to swap record
+Shipping Requirements:
+* Tracking number mandatory
+* Signature on delivery recommended for high-value
+* Insurance recommended (user's responsibility)
+* Australia Post, Sendle, or CouriersPlease accepted
+* Interstate shipping: 3-7 business days expected
+* Upload tracking within 48 hours of swap lock or auto-cancel
+Shipping Issues:
+* Delayed? System auto-extends confirmation window
+* Lost? Dispute process triggered, both users' ratings protected
+* Damaged? Photo evidence required, AI assesses fault, resolution process
+
+Rating System
+Like Uber, but for swappers.
+After each swap, both parties rate:
+Category	Question
+Accuracy	Was the fragrance as described? Fill level accurate?
+Packaging	Was it packed safely and securely?
+Communication	Were they responsive and clear?
+Timeliness	Did they ship promptly?
+Overall	Would you swap with them again?
+Score Display:
+* Overall rating (1.0 - 5.0 stars)
+* Total swaps completed
+* "98% positive" style summary
+* Recent reviews visible on profile
+Rating Protection:
+* Can't rate until both confirm receipt
+* Revenge rating prevention (AI detects patterns)
+* Can dispute unfair ratings with evidence
+
+Fragrantica Integration
+Each fragrance listing links to Fragrantica for:
+* Official note breakdown (top, mid, base)
+* Community ratings
+* Longevity and sillage data
+* Seasonal and occasion votes
+* "This reminds me of" similar fragrances
+* Price comparison data
+Auto-population:
+* User types "Bleu de Chanel" → system finds exact match
+* Auto-fills: house, concentration, notes, accords
+* User just adds: size, fill level, photos, condition
+
+Feature Roadmap
+MVP (Launch):
+* User registration + ID verification
+* Add/manage fragrance listings
+* Browse marketplace with filters
+* Propose swaps
+* Basic chat
+* AI fairness check
+* Rating system
+* Shipping tracking
+V2:
+* AI swap suggestions ("You might like this trade")
+* Wishlist matching notifications
+* Advanced authenticity scanning
+* Decant-specific listings
+* Multi-bottle swap bundles
+V3:
+* Fragrance discovery feed (TikTok-style browsing)
+* Community reviews on specific bottles
+* Swap parties (group swaps, 3-way trades)
+* Integration with Australian fragrance retailers for verification
+* Premium features (featured listings, advanced analytics)
+Future:
+* Expansion to NZ
+* Expansion to UK/EU (separate markets due to shipping)
+* Watch swapping? (ScentSwap → SwapVault?)
+
+Technical Architecture
+Layer	Technology
+Mobile App	Flutter (iOS + Android from single codebase)
+Backend	Supabase (Postgres + Auth + Storage + Realtime)
+AI Services	Claude API for mediation, matching, descriptions
+Image Analysis	Google Vision or custom model for authenticity
+ID Verification	GreenID or similar Australian KYC provider
+Hosting	Vercel (web) + App Store + Google Play
+Notifications	OneSignal or Firebase
+Analytics	Mixpanel or Amplitude
+Business Model
+Free Tier:
+* Unlimited swaps
+* Basic AI features
+* Standard support
+Premium ($9.99/month):
+* Featured listings (appear first in search)
+* Advanced AI suggestions
+* Detailed swap analytics
+* Priority dispute resolution
+* No ads (if ads added to free tier)
+Revenue Streams:
+* Premium subscriptions
+* Featured listing boosts (one-time)
+* Partner fragrance house promotions
+* Affiliate links to retailers (for new purchases)
+
+Why This Works
+1. Fragrance community is passionate — They LOVE talking about, sharing, and trading
+2. Current alternatives suck — Facebook groups are sketchy, eBay has fees and scammers
+3. Swapping removes friction — No "is $80 fair?" debates, just trade
+4. AI solves the trust problem — Neutral, instant, consistent fairness checks
+5. Australian focus — Manageable market, accountable users, reasonable shipping
+
+Name & Branding
+ScentSwap
+* Domain: scentswap.com.au ✓ (you own this)
+* Tagline ideas:
+    * "Trade scents, not cash"
+    * "Your shelf's loss is someone's signature"
+    * "The fair fragrance exchange"
+    * "Swap. Sniff. Repeat."
+
+Gemini
+This is the Master Blueprint. It combines a rigorous Investor-Grade Business Case with a Technical Product Requirements Document (PRD) designed specifically for an AI Agent (Cursor/Claude) to ingest and build from.
+You can feed this entire document to Cursor as your "Context File" (scentswap_master_plan.md).
