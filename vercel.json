@@ -1,0 +1,12 @@
+{
+    "framework": "other",
+    "buildCommand": "npm run build:web",
+    "outputDirectory": "dist",
+    "devCommand": "npm run dev",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
