@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.API_PORT || 3000;
 
 app.use(cors());
 app.use(express.json());

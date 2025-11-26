@@ -1,6 +1,14 @@
 import { User, Listing, Swap, Message, Rating, Fragrance, Wishlist, SwapPreferences } from '@/types';
+import { Platform } from 'react-native';
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || '';
+const getApiBase = () => {
+  if (Platform.OS === 'web') {
+    return process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+  }
+  return process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+};
+
+const API_BASE = getApiBase();
 
 class DatabaseClient {
   private currentUser: User | null = null;

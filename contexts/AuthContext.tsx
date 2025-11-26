@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '@/types';
 import { db } from '@/lib/database';
@@ -16,6 +17,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USER_STORAGE_KEY = 'scentswap_user';
 
+async function getStorageItem(key: string): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+  return SecureStore.getItemAsync(key);
+}
+
+async function setStorageItem(key: string, value: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+    }
+    return;
+  }
+  return SecureStore.setItemAsync(key, value);
+}
+
+async function deleteStorageItem(key: string): Promise<void> {
+  if (Platform.OS === 'web') {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+    }
+    return;
+  }
+  return SecureStore.deleteItemAsync(key);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loadStoredUser() {
     try {
-      const storedUser = await SecureStore.getItemAsync(USER_STORAGE_KEY);
+      const storedUser = await getStorageItem(USER_STORAGE_KEY);
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
@@ -46,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (signedInUser) {
       setUser(signedInUser);
-      await SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(signedInUser));
+      await setStorageItem(USER_STORAGE_KEY, JSON.stringify(signedInUser));
     }
     return { error: null };
   }
@@ -58,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (newUser) {
       setUser(newUser);
-      await SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(newUser));
+      await setStorageItem(USER_STORAGE_KEY, JSON.stringify(newUser));
     }
     return { error: null };
   }
@@ -66,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut(): Promise<void> {
     await db.signOut();
     setUser(null);
-    await SecureStore.deleteItemAsync(USER_STORAGE_KEY);
+    await deleteStorageItem(USER_STORAGE_KEY);
   }
 
   async function updateUser(updates: Partial<User>): Promise<{ error: string | null }> {
@@ -76,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: 'Failed to update user' };
     }
     setUser(updatedUser);
-    await SecureStore.setItemAsync(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+    await setStorageItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
     return { error: null };
   }
 
