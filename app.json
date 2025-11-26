@@ -4,7 +4,7 @@
     "slug": "scentswap",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "scentswap",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,8 +14,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#6B4EFF"
+        "foregroundImage": "./assets/images/favicon-nobg.png",
+        "backgroundColor": "#6AABA3"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.scentswap.app"
@@ -43,10 +43,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo-nobg.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#6B4EFF"
+          "backgroundColor": "#6AABA3"
         }
       ]
     ],

@@ -1,15 +1,12 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies
 node_modules/
 
 # Expo
 .expo/
 dist/
 web-build/
-expo-env.d.ts
 
-# Native
+# Native builds
 .kotlin/
 *.orig.*
 *.jks
@@ -17,23 +14,59 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+ios/
+android/
 
 # Metro
 .metro-health-check*
 
-# debug
+# Debug logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
-*.pem
 
-# local env files
+# Environment files
+.env
+.env.local
 .env*.local
 
-# typescript
+# TypeScript
 *.tsbuildinfo
+expo-env.d.ts
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Secrets
+*.pem
+secrets/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary
+tmp/
+temp/
+.cache/
+
+# Replit specific (remove these files before pushing to GitHub)
+.replit
+replit.nix
+.upm/
+.config/
+replit.md
+
+# Old example
 app-example
+
+# Server (using Supabase instead)
+server/

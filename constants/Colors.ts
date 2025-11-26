@@ -1,48 +1,56 @@
-const primaryColor = '#6B4EFF';
-const primaryLight = '#8B6FFF';
-const primaryDark = '#4A2EDF';
-const accentGold = '#D4AF37';
+const primaryTeal = '#6AABA3';
+const primaryTealLight = '#8DCDC6';
+const primaryTealDark = '#4A8A83';
+const accentCoral = '#E8A898';
+const accentCoralLight = '#F5C5B8';
+const accentCoralDark = '#D08878';
 const successGreen = '#22C55E';
 const warningOrange = '#F59E0B';
 const errorRed = '#EF4444';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    textSecondary: '#687076',
+    text: '#1A1A1A',
+    textSecondary: '#6B7280',
     background: '#FFFFFF',
-    backgroundSecondary: '#F8F9FA',
-    tint: primaryColor,
-    primary: primaryColor,
-    primaryLight: primaryLight,
-    primaryDark: primaryDark,
-    accent: accentGold,
+    backgroundSecondary: '#F9FAFB',
+    tint: primaryTeal,
+    primary: primaryTeal,
+    primaryLight: primaryTealLight,
+    primaryDark: primaryTealDark,
+    accent: accentCoral,
+    accentLight: accentCoralLight,
+    accentDark: accentCoralDark,
     success: successGreen,
     warning: warningOrange,
     error: errorRed,
-    icon: '#687076',
+    icon: '#6B7280',
     border: '#E5E7EB',
     card: '#FFFFFF',
-    tabIconDefault: '#687076',
-    tabIconSelected: primaryColor,
+    cardSecondary: '#F4F4F5',
+    tabIconDefault: '#9CA3AF',
+    tabIconSelected: primaryTeal,
   },
   dark: {
-    text: '#ECEDEE',
-    textSecondary: '#9BA1A6',
-    background: '#0D0D0F',
-    backgroundSecondary: '#1A1A1E',
-    tint: primaryLight,
-    primary: primaryColor,
-    primaryLight: primaryLight,
-    primaryDark: primaryDark,
-    accent: accentGold,
+    text: '#F9FAFB',
+    textSecondary: '#9CA3AF',
+    background: '#0A0A0B',
+    backgroundSecondary: '#18181B',
+    tint: primaryTealLight,
+    primary: primaryTeal,
+    primaryLight: primaryTealLight,
+    primaryDark: primaryTealDark,
+    accent: accentCoral,
+    accentLight: accentCoralLight,
+    accentDark: accentCoralDark,
     success: successGreen,
     warning: warningOrange,
     error: errorRed,
-    icon: '#9BA1A6',
-    border: '#2D2D32',
-    card: '#1A1A1E',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: primaryLight,
+    icon: '#9CA3AF',
+    border: '#27272A',
+    card: '#18181B',
+    cardSecondary: '#27272A',
+    tabIconDefault: '#6B7280',
+    tabIconSelected: primaryTealLight,
   },
 };

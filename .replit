@@ -13,15 +13,11 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 8081
-externalPort = 80
-
-[[ports]]
 localPort = 8082
 externalPort = 3000
 
 [[ports]]
-localPort = 36327
+localPort = 46119
 externalPort = 3002
 
 [workflows]
@@ -80,13 +76,13 @@ args = "ScentSwap App"
 name = "ScentSwap App"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [agent]
 expertMode = true
