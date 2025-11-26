@@ -17,6 +17,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
+import { FilterDrawer } from '@/components/search/FilterDrawer';
+import { SearchFilters } from '@/lib/ai';
 
 
 export default function BrowseScreen() {
@@ -27,6 +29,8 @@ export default function BrowseScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedConcentration, setSelectedConcentration] = useState('all');
+  const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>({});
 
 
   useEffect(() => {
@@ -197,7 +201,7 @@ export default function BrowseScreen() {
             returnKeyType="search"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/search')}>
+        <TouchableOpacity style={styles.filterButton} onPress={() => setFilterDrawerVisible(true)}>
           <Ionicons name="options-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
@@ -263,6 +267,20 @@ export default function BrowseScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      <FilterDrawer
+        visible={filterDrawerVisible}
+        onClose={() => setFilterDrawerVisible(false)}
+        filters={filters}
+        onApplyFilters={(newFilters) => {
+          setFilters(newFilters);
+          loadListings();
+        }}
+        onResetFilters={() => {
+          setFilters({});
+          loadListings();
+        }}
+      />
     </SafeAreaView>
   );
 }
