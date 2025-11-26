@@ -18,7 +18,6 @@ import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
 
-const CONCENTRATIONS = ['All', 'EDP', 'EDT', 'Parfum', 'EDC', 'Cologne'];
 
 export default function BrowseScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -27,7 +26,8 @@ export default function BrowseScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedConcentration, setSelectedConcentration] = useState('All');
+  const [selectedConcentration, setSelectedConcentration] = useState('all');
+
 
   useEffect(() => {
     loadListings();
@@ -37,7 +37,7 @@ export default function BrowseScreen() {
     setLoading(true);
     const filters: any = {};
     if (search) filters.search = search;
-    if (selectedConcentration !== 'All') filters.concentration = selectedConcentration;
+    if (selectedConcentration !== 'all') filters.concentration = selectedConcentration;
     const data = await db.getListings(filters);
     setListings(data);
     setLoading(false);
@@ -202,34 +202,43 @@ export default function BrowseScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Quick Filters - Horizontal Scroll */}
       <View style={styles.filtersContainer}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={CONCENTRATIONS}
+          data={[
+            { label: 'All', value: 'all', type: 'concentration' },
+            { label: 'Extrait', value: 'extrait', type: 'concentration' },
+            { label: 'Parfum', value: 'parfum', type: 'concentration' },
+            { label: 'EDP', value: 'edp', type: 'concentration' },
+            { label: 'EDT', value: 'edt', type: 'concentration' },
+            { label: 'EDC', value: 'edc', type: 'concentration' },
+            { label: 'Cologne', value: 'cologne', type: 'concentration' },
+          ]}
           contentContainerStyle={styles.filtersContent}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
                 styles.filterChip,
-                selectedConcentration === item && styles.filterChipActive,
+                selectedConcentration === item.value && styles.filterChipActive,
               ]}
               onPress={() => {
-                setSelectedConcentration(item);
+                setSelectedConcentration(item.value);
                 setTimeout(loadListings, 0);
               }}
             >
               <Text
                 style={[
                   styles.filterChipText,
-                  selectedConcentration === item && styles.filterChipTextActive,
+                  selectedConcentration === item.value && styles.filterChipTextActive,
                 ]}
               >
-                {item}
+                {item.label}
               </Text>
             </TouchableOpacity>
           )}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.value}
         />
       </View>
 
