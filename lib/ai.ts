@@ -1,18 +1,19 @@
 export type SearchFilters = {
+  brand_name?: string[];
   segment_type?: string;
   gender_marketing?: string;
   family?: string;
   accords?: string[];
   notes?: string[];
+  main_notes?: string[];
   performance_level?: string;
   season_tags?: string[];
   occasion_tags?: string[];
   min_value?: number;
   max_value?: number;
   state?: string;
+  condition?: string[];
 };
-
-import { SearchFilters } from '@/components/search/FilterDrawer';
 
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 

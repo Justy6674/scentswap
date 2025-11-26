@@ -1,61 +1,42 @@
-const primaryTeal = '#6AABA3';
-const primaryTealLight = '#8DCDC6';
-const primaryTealDark = '#4A8A83';
-const mintLight = '#E0F2F1'; // Very light mint for backgrounds
-const mintMedium = '#B2DFDB'; // Medium mint for accents
-const mintDark = '#004D40'; // Dark mint for text/contrast
-const accentCoral = '#E8A898';
-const accentCoralLight = '#F5C5B8';
-const accentCoralDark = '#D08878';
-const successGreen = '#22C55E';
-const warningOrange = '#F59E0B';
-const errorRed = '#EF4444';
+/**
+ * ScentSwap Luxury Palette
+ * Aesthetic: "Tom Ford Packaging" - Deep Black, Crisp White, Metallic Gold Accents.
+ */
+
+const gold = '#D4AF37'; // Metallic Gold
+const deepBlack = '#050505'; // Almost pure black
+const offBlack = '#121212'; // Material Dark
+const pureWhite = '#FFFFFF';
+const softGray = '#A0A0A0';
+const errorRed = '#CF6679';
 
 export const Colors = {
   light: {
-    text: '#1A1A1A',
-    textSecondary: '#6B7280',
-    background: '#FFFFFF',
-    backgroundSecondary: mintLight, // Use mint for secondary background
-    tint: primaryTeal,
-    primary: primaryTeal,
-    primaryLight: primaryTealLight,
-    primaryDark: primaryTealDark,
-    secondary: mintMedium,
-    accent: accentCoral,
-    accentLight: accentCoralLight,
-    accentDark: accentCoralDark,
-    success: successGreen,
-    warning: warningOrange,
+    text: deepBlack,
+    textSecondary: '#4A4A4A',
+    background: '#F5F5F5', // Light gray for contrast in light mode
+    backgroundSecondary: pureWhite,
+    tint: gold,
+    icon: '#2C2C2C',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: gold,
+    border: '#E0E0E0',
+    primary: gold,
+    card: pureWhite,
     error: errorRed,
-    icon: '#6B7280',
-    border: '#E5E7EB',
-    card: '#FFFFFF',
-    cardSecondary: '#F4F4F5',
-    tabIconDefault: '#9CA3AF',
-    tabIconSelected: primaryTeal,
   },
   dark: {
-    text: '#F9FAFB',
-    textSecondary: '#9CA3AF',
-    background: '#0A0A0B',
-    backgroundSecondary: '#18181B', // Keep dark for dark mode, maybe slight teal tint?
-    tint: primaryTealLight,
-    primary: primaryTeal,
-    primaryLight: primaryTealLight,
-    primaryDark: primaryTealDark,
-    secondary: primaryTealDark,
-    accent: accentCoral,
-    accentLight: accentCoralLight,
-    accentDark: accentCoralDark,
-    success: successGreen,
-    warning: warningOrange,
+    text: pureWhite,
+    textSecondary: softGray,
+    background: deepBlack,
+    backgroundSecondary: offBlack,
+    tint: gold,
+    icon: pureWhite,
+    tabIconDefault: '#666666',
+    tabIconSelected: gold,
+    border: '#333333',
+    primary: gold,
+    card: offBlack,
     error: errorRed,
-    icon: '#9CA3AF',
-    border: '#27272A',
-    card: '#18181B',
-    cardSecondary: '#27272A',
-    tabIconDefault: '#6B7280',
-    tabIconSelected: primaryTealLight,
   },
 };
