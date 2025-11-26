@@ -197,7 +197,7 @@ export default function BrowseScreen() {
             returnKeyType="search"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton} onPress={handleSearch}>
+        <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/search')}>
           <Ionicons name="options-outline" size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>

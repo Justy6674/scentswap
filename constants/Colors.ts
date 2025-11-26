@@ -1,6 +1,9 @@
 const primaryTeal = '#6AABA3';
 const primaryTealLight = '#8DCDC6';
 const primaryTealDark = '#4A8A83';
+const mintLight = '#E0F2F1'; // Very light mint for backgrounds
+const mintMedium = '#B2DFDB'; // Medium mint for accents
+const mintDark = '#004D40'; // Dark mint for text/contrast
 const accentCoral = '#E8A898';
 const accentCoralLight = '#F5C5B8';
 const accentCoralDark = '#D08878';
@@ -13,11 +16,12 @@ export const Colors = {
     text: '#1A1A1A',
     textSecondary: '#6B7280',
     background: '#FFFFFF',
-    backgroundSecondary: '#F9FAFB',
+    backgroundSecondary: mintLight, // Use mint for secondary background
     tint: primaryTeal,
     primary: primaryTeal,
     primaryLight: primaryTealLight,
     primaryDark: primaryTealDark,
+    secondary: mintMedium,
     accent: accentCoral,
     accentLight: accentCoralLight,
     accentDark: accentCoralDark,
@@ -35,11 +39,12 @@ export const Colors = {
     text: '#F9FAFB',
     textSecondary: '#9CA3AF',
     background: '#0A0A0B',
-    backgroundSecondary: '#18181B',
+    backgroundSecondary: '#18181B', // Keep dark for dark mode, maybe slight teal tint?
     tint: primaryTealLight,
     primary: primaryTeal,
     primaryLight: primaryTealLight,
     primaryDark: primaryTealDark,
+    secondary: primaryTealDark,
     accent: accentCoral,
     accentLight: accentCoralLight,
     accentDark: accentCoralDark,
