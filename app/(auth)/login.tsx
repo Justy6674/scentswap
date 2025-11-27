@@ -45,10 +45,9 @@ export default function LoginScreen() {
   /**
    * Open Outseta login popup - like TeleCheck does
    * 
-   * Uses data attributes that Outseta's script picks up:
-   * - data-o-auth="1" - triggers Outseta auth widget
-   * - data-widget-mode="login" - opens in login mode
-   * - data-mode="popup" - opens as popup, user stays on page
+   * Uses JS API to avoid hydration issues:
+   * - widgetMode: 'login'
+   * - mode: 'popup'
    * 
    * When popup closes after successful login:
    * 1. Token stored in localStorage (tokenStorage: "local")
@@ -58,16 +57,17 @@ export default function LoginScreen() {
    */
   const handleLogin = () => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Create a temporary link element with Outseta data attributes
-      const link = document.createElement('a');
-      link.setAttribute('data-o-auth', '1');
-      link.setAttribute('data-widget-mode', 'login');
-      link.setAttribute('data-mode', 'popup');
-      link.href = '#';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const Outseta = (window as any).Outseta;
+      
+      if (Outseta && Outseta.auth && Outseta.auth.open) {
+        Outseta.auth.open({
+          widgetMode: 'login',
+          mode: 'popup',
+        });
+      } else {
+        // Fallback
+        Linking.openURL(OUTSETA_LOGIN_URL);
+      }
     } else {
       // Mobile fallback - open in browser
       Linking.openURL(OUTSETA_LOGIN_URL);
