@@ -21,8 +21,6 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-
-// For web, we need to use native HTML elements with Outseta data attributes
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -302,66 +300,29 @@ function PlanCard({
           ))}
         </View>
 
-        {/* Button - Use native anchor with Outseta data attributes for web */}
-        {Platform.OS === 'web' ? (
-          <a
-            href="#"
-            data-o-auth="1"
-            data-widget-mode="register"
-            data-plan-uid={plan.uid}
-            data-skip-plan-options="true"
-            data-mode="popup"
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              paddingTop: 16,
-              paddingBottom: 16,
-              borderRadius: 14,
-              textDecoration: 'none',
-              backgroundColor: plan.buttonFilled ? plan.color : 'transparent',
-              border: plan.buttonFilled ? 'none' : `2px solid ${plan.color}`,
-            }}
-          >
-            <span style={{
-              fontSize: 16,
-              fontWeight: 700,
-              color: plan.buttonFilled ? '#FFF' : plan.color,
-            }}>
-              {plan.buttonText}
-            </span>
-            <Ionicons 
-              name="arrow-forward" 
-              size={18} 
-              color={plan.buttonFilled ? '#FFF' : plan.color} 
-            />
-          </a>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.button,
-              plan.buttonFilled 
-                ? { backgroundColor: plan.color }
-                : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
-            ]}
-            onPress={onSignUp}
-            activeOpacity={0.8}
-          >
-            <Text style={[
-              styles.buttonText,
-              { color: plan.buttonFilled ? '#FFF' : plan.color }
-            ]}>
-              {plan.buttonText}
-            </Text>
-            <Ionicons 
-              name="arrow-forward" 
-              size={18} 
-              color={plan.buttonFilled ? '#FFF' : plan.color} 
-            />
-          </TouchableOpacity>
-        )}
+        {/* Button */}
+        <TouchableOpacity
+          style={[
+            styles.button,
+            plan.buttonFilled 
+              ? { backgroundColor: plan.color }
+              : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
+          ]}
+          onPress={onSignUp}
+          activeOpacity={0.8}
+        >
+          <Text style={[
+            styles.buttonText,
+            { color: plan.buttonFilled ? '#FFF' : plan.color }
+          ]}>
+            {plan.buttonText}
+          </Text>
+          <Ionicons 
+            name="arrow-forward" 
+            size={18} 
+            color={plan.buttonFilled ? '#FFF' : plan.color} 
+          />
+        </TouchableOpacity>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -378,36 +339,29 @@ export default function RegisterScreen() {
   }, [isAuthenticated]);
 
   /**
-   * Handle sign up - uses Outseta's popup widget like TeleCheck
+   * Handle sign up - uses Outseta's auth.open() JavaScript API
    * 
-   * The key is using data attributes that Outseta's script picks up:
-   * - data-o-auth="1" - triggers Outseta auth widget
-   * - data-widget-mode="register" - opens in register mode
-   * - data-plan-uid="xxx" - pre-selects the plan
-   * - data-mode="popup" - opens as popup, user stays on page
-   * 
-   * When popup closes, Outseta:
-   * 1. Stores token in localStorage (tokenStorage: "local")
-   * 2. Fires 'accessToken.set' event
-   * 3. SubscriptionContext picks it up and sets user as logged in
+   * This was the method that triggered the CORRECT "Confirm your account" email.
+   * The data-attributes approach triggered the wrong "Login" email.
    */
   const handleSignUp = (planId: string) => {
     const plan = PLANS.find(p => p.id === planId) || PLANS[0];
     
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Create a temporary link element with Outseta data attributes
-      // This triggers Outseta's no-code widget in popup mode
-      const link = document.createElement('a');
-      link.setAttribute('data-o-auth', '1');
-      link.setAttribute('data-widget-mode', 'register');
-      link.setAttribute('data-plan-uid', plan.uid);
-      link.setAttribute('data-skip-plan-options', 'true');
-      link.setAttribute('data-mode', 'popup');
-      link.href = '#';
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const Outseta = (window as any).Outseta;
+      
+      if (Outseta && Outseta.auth && Outseta.auth.open) {
+        // Use Outseta's JavaScript API - this sends the correct email
+        Outseta.auth.open({
+          widgetMode: 'register',
+          planUid: plan.uid,
+        });
+      } else {
+        // Fallback if Outseta not loaded yet
+        console.warn('Outseta not ready, using URL redirect');
+        const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
+        window.location.href = signUpUrl;
+      }
     } else {
       // Mobile fallback - open in browser
       const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
