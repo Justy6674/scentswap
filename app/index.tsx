@@ -77,27 +77,39 @@ export default function LandingPage() {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
+      {/* Fixed Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLogo}>
+            <Image 
+              source={require('@/assets/images/favicon-nobg.png')} 
+              style={styles.headerLogoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerBrand}>ScentSwap</Text>
+          </View>
+          <View style={styles.headerNav}>
+            <TouchableOpacity onPress={handleSignIn} style={styles.headerNavLink}>
+              <Text style={styles.headerNavText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleGetStarted} style={styles.headerCta}>
+              <Text style={styles.headerCtaText}>Get Started</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <View style={styles.heroBackground}>
           {/* Gradient overlay */}
           <View style={styles.heroGradient} />
           
-          {/* Decorative elements */}
+          {/* Decorative gradient circles */}
           <View style={styles.heroPattern}>
-            {[...Array(20)].map((_, i) => (
-              <View 
-                key={i} 
-                style={[
-                  styles.patternDot,
-                  { 
-                    left: `${(i % 5) * 25}%`, 
-                    top: `${Math.floor(i / 5) * 25}%`,
-                    opacity: 0.03 + (i * 0.005),
-                  }
-                ]} 
-              />
-            ))}
+            <View style={[styles.gradientCircle, styles.circleTopLeft]} />
+            <View style={[styles.gradientCircle, styles.circleBottomRight]} />
+            <View style={[styles.gradientCircle, styles.circleCenter]} />
           </View>
         </View>
 
@@ -115,6 +127,9 @@ export default function LandingPage() {
               resizeMode="contain"
             />
           </View>
+          
+          {/* Brand Name */}
+          <Text style={styles.brandName}>ScentSwap</Text>
 
           {/* Tagline */}
           <Text style={styles.tagline}>TRADE SCENTS, NOT CASH</Text>
@@ -365,6 +380,69 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
+  // Header
+  header: {
+    position: isWeb ? 'fixed' : 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    backgroundColor: 'rgba(5, 5, 5, 0.9)',
+    backdropFilter: 'blur(10px)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(212, 175, 55, 0.1)',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    maxWidth: 1400,
+    width: '100%',
+    marginHorizontal: 'auto',
+  },
+  headerLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerLogoImage: {
+    width: 32,
+    height: 32,
+  },
+  headerBrand: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.white,
+    letterSpacing: 1,
+  },
+  headerNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  headerNavLink: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  headerNavText: {
+    fontSize: 14,
+    color: COLORS.grayLight,
+    fontWeight: '500',
+  },
+  headerCta: {
+    backgroundColor: COLORS.gold,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+  },
+  headerCtaText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.black,
+  },
+
   // Hero Section
   heroSection: {
     minHeight: height,
@@ -373,8 +451,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: 100,
+    paddingBottom: 60,
   },
   heroBackground: {
     ...StyleSheet.absoluteFillObject,
@@ -386,13 +464,33 @@ const styles = StyleSheet.create({
   },
   heroPattern: {
     ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
   },
-  patternDot: {
+  gradientCircle: {
     position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    borderRadius: 999,
     backgroundColor: COLORS.gold,
+  },
+  circleTopLeft: {
+    width: 600,
+    height: 600,
+    top: -300,
+    left: -300,
+    opacity: 0.03,
+  },
+  circleBottomRight: {
+    width: 500,
+    height: 500,
+    bottom: -200,
+    right: -200,
+    opacity: 0.04,
+  },
+  circleCenter: {
+    width: 300,
+    height: 300,
+    top: '40%',
+    right: '10%',
+    opacity: 0.02,
   },
   heroContent: {
     alignItems: 'center',
@@ -401,11 +499,28 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   logoContainer: {
-    marginBottom: 24,
+    marginBottom: 16,
+    width: 80,
+    height: 80,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 60,
+    height: 60,
+  },
+  brandName: {
+    fontSize: 32,
+    fontWeight: '300',
+    letterSpacing: 6,
+    color: COLORS.white,
+    marginBottom: 8,
   },
   tagline: {
     fontSize: 12,
