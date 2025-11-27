@@ -196,6 +196,7 @@ export default function LandingPage() {
         <View style={styles.heroBackground}>
           <View style={styles.heroGradientCircle1} />
           <View style={styles.heroGradientCircle2} />
+          <View style={styles.heroCoralAccent} />
         </View>
         
         {/* Spray Effect */}
@@ -256,7 +257,7 @@ export default function LandingPage() {
 
         {/* Scroll indicator */}
         <View style={styles.scrollIndicator}>
-          <Ionicons name="chevron-down" size={24} color={COLORS.teal} />
+          <Ionicons name="chevron-down" size={24} color={COLORS.coral} />
         </View>
       </View>
 
@@ -271,29 +272,33 @@ export default function LandingPage() {
               icon: 'camera-outline',
               title: 'List Your Bottles',
               description: 'Snap photos, add details. Our AI verifies authenticity markers.',
+              accent: false,
             },
             {
               icon: 'search-outline',
               title: 'Discover & Match',
               description: 'Browse listings or let AI find your perfect swap partners.',
+              accent: true,
             },
             {
               icon: 'swap-horizontal-outline',
               title: 'Propose a Swap',
               description: 'AI fairness engine ensures balanced trades. No haggling.',
+              accent: false,
             },
             {
               icon: 'cube-outline',
               title: 'Ship & Enjoy',
               description: 'Pack securely, add tracking, receive your new scent.',
+              accent: true,
             },
           ].map((step, index) => (
             <View key={index} style={styles.stepCard}>
-              <View style={styles.stepNumber}>
+              <View style={[styles.stepNumber, step.accent && styles.stepNumberCoral]}>
                 <Text style={styles.stepNumberText}>{index + 1}</Text>
               </View>
-              <View style={styles.stepIconContainer}>
-                <Ionicons name={step.icon as any} size={32} color={COLORS.teal} />
+              <View style={[styles.stepIconContainer, step.accent && styles.stepIconContainerCoral]}>
+                <Ionicons name={step.icon as any} size={32} color={step.accent ? COLORS.coral : COLORS.teal} />
               </View>
               <Text style={styles.stepTitle}>{step.title}</Text>
               <Text style={styles.stepDescription}>{step.description}</Text>
@@ -315,36 +320,42 @@ export default function LandingPage() {
               icon: 'shield-checkmark',
               title: 'AI Authenticity',
               description: 'Photo analysis flags fake markers before you trade.',
+              accent: false,
             },
             {
               icon: 'scale',
               title: 'Fairness Engine',
               description: 'Real-time value scoring ensures balanced swaps.',
+              accent: true,
             },
             {
               icon: 'chatbubbles',
               title: 'AI Mediator',
               description: '@ScentBot helps negotiate and answers questions.',
+              accent: false,
             },
             {
               icon: 'star',
               title: 'Trust Tiers',
               description: 'Verified → Trusted → Elite. Build your reputation.',
+              accent: true,
             },
             {
               icon: 'location',
               title: 'Australia First',
               description: 'Local community, accountable users, fast shipping.',
+              accent: false,
             },
             {
               icon: 'cash-outline',
               title: 'Zero Money',
               description: 'Pure barter. No fees, no payment scams, no haggling.',
+              accent: true,
             },
           ].map((feature, index) => (
             <View key={index} style={styles.featureCard}>
-              <View style={styles.featureIconBg}>
-                <Ionicons name={feature.icon as any} size={24} color={COLORS.teal} />
+              <View style={[styles.featureIconBg, feature.accent && styles.featureIconBgCoral]}>
+                <Ionicons name={feature.icon as any} size={24} color={feature.accent ? COLORS.coral : COLORS.teal} />
               </View>
               <Text style={styles.featureTitle}>{feature.title}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
@@ -357,12 +368,12 @@ export default function LandingPage() {
       <View style={styles.section}>
         <View style={styles.statsContainer}>
           {[
-            { value: '$850M+', label: 'AU Fragrance Market' },
-            { value: '100%', label: 'Cashless Trading' },
-            { value: 'AI', label: 'Powered Matching' },
+            { value: '$850M+', label: 'AU Fragrance Market', accent: false },
+            { value: '100%', label: 'Cashless Trading', accent: true },
+            { value: 'AI', label: 'Powered Matching', accent: false },
           ].map((stat, index) => (
             <View key={index} style={styles.statItem}>
-              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={[styles.statValue, stat.accent && styles.statValueCoral]}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
           ))}
@@ -392,7 +403,7 @@ export default function LandingPage() {
         
         <TouchableOpacity style={styles.finalCtaButton} onPress={handleGetStarted}>
           <Text style={styles.finalCtaButtonText}>CREATE FREE ACCOUNT</Text>
-          <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+          <Ionicons name="arrow-forward" size={20} color={COLORS.coral} />
         </TouchableOpacity>
 
         <Text style={styles.finalCtaNote}>
@@ -429,13 +440,13 @@ export default function LandingPage() {
 
           <View style={styles.footerSocial}>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-instagram" size={20} color={COLORS.warmGray} />
+              <Ionicons name="logo-instagram" size={20} color={COLORS.coral} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-facebook" size={20} color={COLORS.warmGray} />
+              <Ionicons name="logo-facebook" size={20} color={COLORS.teal} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-tiktok" size={20} color={COLORS.warmGray} />
+              <Ionicons name="logo-tiktok" size={20} color={COLORS.coral} />
             </TouchableOpacity>
           </View>
         </View>
@@ -592,6 +603,16 @@ const styles = StyleSheet.create({
     left: -100,
     opacity: 0.4,
   },
+  heroCoralAccent: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: COLORS.coral,
+    bottom: '20%',
+    right: '5%',
+    opacity: 0.08,
+  },
   heroContent: {
     alignItems: 'center',
     maxWidth: 800,
@@ -686,7 +707,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: COLORS.teal,
+    borderColor: COLORS.coral,
     backgroundColor: 'transparent',
     width: isWeb ? 'auto' : '100%',
     minWidth: 200,
@@ -696,7 +717,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 1,
-    color: COLORS.teal,
+    color: COLORS.coral,
   },
   signInLink: {
     paddingVertical: 12,
@@ -774,6 +795,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  stepNumberCoral: {
+    backgroundColor: COLORS.coral,
+  },
   stepNumberText: {
     fontSize: 14,
     fontWeight: '700',
@@ -787,6 +811,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
+  },
+  stepIconContainerCoral: {
+    backgroundColor: '#FDF0EC',
   },
   stepTitle: {
     fontSize: 18,
@@ -832,6 +859,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  featureIconBgCoral: {
+    backgroundColor: '#FDF0EC',
+  },
   featureTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -858,6 +888,9 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: COLORS.teal,
     marginBottom: 8,
+  },
+  statValueCoral: {
+    color: COLORS.coral,
   },
   statLabel: {
     fontSize: 14,
