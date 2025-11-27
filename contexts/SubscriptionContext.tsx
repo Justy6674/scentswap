@@ -303,6 +303,32 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     // Check admin status based on email
     const userEmail = user.Email || jwtPayload?.email;
     setIsAdmin(checkIsAdmin(userEmail));
+
+    // Sync with Supabase
+    syncWithSupabase(user);
+  };
+
+  const syncWithSupabase = async (user: any) => {
+    try {
+      if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+      
+      const Outseta = (window as any).Outseta;
+      if (!Outseta) return;
+
+      const token = Outseta.getAccessToken();
+      if (!token) return;
+
+      await fetch('/api/auth/sync-user', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ user })
+      });
+    } catch (e) {
+      console.error('Sync error:', e);
+    }
   };
 
   const handleLogout = () => {
