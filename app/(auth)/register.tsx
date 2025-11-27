@@ -1,10 +1,7 @@
 /**
  * Register Screen - Premium Pricing Page
  * 
- * Dark theme with unique color glows for each tier:
- * - Free: Teal (#5BBFBA)
- * - Premium: Coral (#E8927C) - MOST POPULAR, filled button
- * - Elite: Purple (#9B7DFF)
+ * Matches landing page aesthetic with warm cream background and spray effects
  * 
  * Outseta Plan UIDs:
  * - Free: z9MP7yQ4
@@ -27,25 +24,112 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-// Colors
+// Colors matching landing page
 const COLORS = {
-  background: '#0F0F0F',
-  cardBg: '#1A1A1A',
-  cardBgHover: '#222222',
-  text: '#FFFFFF',
-  textSecondary: '#9CA3AF',
-  textMuted: '#6B7280',
-  // Tier colors
+  // Primary brand colors
   teal: '#5BBFBA',
-  tealGlow: 'rgba(91, 191, 186, 0.35)',
+  tealDark: '#4A9E9A',
+  tealLight: '#7DD3CE',
   coral: '#E8927C',
-  coralGlow: 'rgba(232, 146, 124, 0.4)',
+  coralDark: '#D4836D',
+  coralLight: '#F0A894',
   purple: '#9B7DFF',
-  purpleGlow: 'rgba(155, 125, 255, 0.35)',
+  purpleLight: '#B8A4FF',
+  
+  // Backgrounds - slightly darker than landing page
+  background: '#F0EDE9',       // Slightly darker warm cream
+  cardBg: '#FFFFFF',
+  heroGradientStart: '#E0F0EF', // Soft teal tint
+  heroGradientEnd: '#F5F0EC',   // Warm cream
+  
+  // Text
+  charcoal: '#2D3436',
+  warmGray: '#636E72',
+  lightGray: '#B2BEC3',
+  
+  // Utility
+  border: '#E0DCD8',
+};
+
+// Spray particle component (matching landing page)
+const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    const animate = () => {
+      animValue.setValue(0);
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 4000,
+        delay: delay,
+        useNativeDriver: true,
+      }).start(() => animate());
+    };
+    animate();
+  }, []);
+
+  // Calculate trajectory - fan out from top-left
+  const angle = -20 + (index * 12);
+  const distance = 100 + Math.random() * 150;
+  const radians = (angle * Math.PI) / 180;
+  
+  const translateX = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.cos(radians) * distance],
+  });
+  
+  const translateY = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.sin(radians) * distance],
+  });
+  
+  const opacity = animValue.interpolate({
+    inputRange: [0, 0.2, 0.7, 1],
+    outputRange: [0, 0.5, 0.2, 0],
+  });
+  
+  const scale = animValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 0.8, 0.2],
+  });
+
+  const isTeal = index % 3 !== 0;
+  const size = 4 + Math.random() * 6;
+
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: isTeal ? COLORS.teal : COLORS.coral,
+        opacity,
+        transform: [{ translateX }, { translateY }, { scale }],
+      }}
+    />
+  );
+};
+
+// Spray effect container
+const SprayEffect = () => {
+  const particles = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    delay: i * 200,
+  }));
+
+  return (
+    <View style={styles.sprayContainer}>
+      {particles.map((particle) => (
+        <SprayParticle key={particle.id} delay={particle.delay} index={particle.id} />
+      ))}
+    </View>
+  );
 };
 
 // Outseta Plan UIDs
@@ -64,7 +148,7 @@ const PLANS = [
     price: 0,
     description: 'Perfect for getting started',
     color: COLORS.teal,
-    glow: COLORS.tealGlow,
+    colorLight: COLORS.tealLight,
     icon: 'leaf-outline',
     features: [
       '5 active listings',
@@ -82,7 +166,7 @@ const PLANS = [
     price: 9.99,
     description: 'For serious collectors',
     color: COLORS.coral,
-    glow: COLORS.coralGlow,
+    colorLight: COLORS.coralLight,
     icon: 'flame-outline',
     popular: true,
     features: [
@@ -102,7 +186,7 @@ const PLANS = [
     price: 19.99,
     description: 'Ultimate collector experience',
     color: COLORS.purple,
-    glow: COLORS.purpleGlow,
+    colorLight: COLORS.purpleLight,
     icon: 'diamond-outline',
     features: [
       'Unlimited listings',
@@ -129,27 +213,6 @@ function PlanCard({
   onSignUp: () => void;
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0.5)).current;
-
-  useEffect(() => {
-    // Pulse animation for popular card
-    if (plan.popular) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(glowAnim, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: false,
-          }),
-          Animated.timing(glowAnim, {
-            toValue: 0.5,
-            duration: 1500,
-            useNativeDriver: false,
-          }),
-        ])
-      ).start();
-    }
-  }, [plan.popular]);
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -165,13 +228,6 @@ function PlanCard({
     }).start();
   };
 
-  const glowIntensity = plan.popular 
-    ? glowAnim.interpolate({
-        inputRange: [0.5, 1],
-        outputRange: [plan.glow, plan.glow.replace('0.4', '0.6')],
-      })
-    : plan.glow;
-
   return (
     <Animated.View
       style={[
@@ -180,24 +236,25 @@ function PlanCard({
       ]}
     >
       <TouchableOpacity
-        activeOpacity={0.9}
+        activeOpacity={0.95}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onSelect}
         style={[
           styles.card,
           {
-            borderColor: isSelected ? plan.color : 'rgba(255,255,255,0.1)',
+            borderColor: isSelected ? plan.color : COLORS.border,
+            borderWidth: isSelected ? 2 : 1,
             ...(Platform.OS === 'web' ? {
               boxShadow: isSelected 
-                ? `0 0 30px ${plan.glow}, 0 0 60px ${plan.glow.replace('0.35', '0.15')}`
-                : `0 4px 20px rgba(0,0,0,0.3)`,
+                ? `0 8px 32px ${plan.color}30, 0 4px 16px rgba(0,0,0,0.08)`
+                : `0 4px 16px rgba(0,0,0,0.06)`,
             } : {
-              shadowColor: plan.color,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: isSelected ? 0.5 : 0.1,
-              shadowRadius: isSelected ? 20 : 10,
-              elevation: isSelected ? 10 : 5,
+              shadowColor: isSelected ? plan.color : '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: isSelected ? 0.25 : 0.08,
+              shadowRadius: isSelected ? 16 : 8,
+              elevation: isSelected ? 8 : 4,
             }),
           },
         ]}
@@ -212,7 +269,7 @@ function PlanCard({
 
         {/* Header */}
         <View style={styles.cardHeader}>
-          <View style={[styles.iconContainer, { backgroundColor: plan.color + '20' }]}>
+          <View style={[styles.iconContainer, { backgroundColor: plan.color + '15' }]}>
             <Ionicons name={plan.icon as any} size={24} color={plan.color} />
           </View>
           <View style={styles.cardTitleContainer}>
@@ -235,7 +292,7 @@ function PlanCard({
         <View style={styles.featuresContainer}>
           {plan.features.map((feature, index) => (
             <View key={index} style={styles.featureRow}>
-              <View style={[styles.checkIcon, { backgroundColor: plan.color + '20' }]}>
+              <View style={[styles.checkIcon, { backgroundColor: plan.color + '15' }]}>
                 <Ionicons name="checkmark" size={14} color={plan.color} />
               </View>
               <Text style={styles.featureText}>{feature}</Text>
@@ -273,9 +330,8 @@ function PlanCard({
 
 export default function RegisterScreen() {
   const { isAuthenticated } = useSubscription();
-  const [selectedPlan, setSelectedPlan] = useState('premium'); // Default to premium
+  const [selectedPlan, setSelectedPlan] = useState('premium');
 
-  // If already authenticated, redirect to tabs
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/(tabs)');
@@ -295,10 +351,26 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Background Gradient */}
+      <LinearGradient
+        colors={[COLORS.heroGradientStart, COLORS.heroGradientEnd, COLORS.background]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+      
+      {/* Spray Effects */}
+      <View style={styles.sprayTopLeft}>
+        <SprayEffect />
+      </View>
+      <View style={styles.sprayBottomRight}>
+        <SprayEffect />
+      </View>
+
       <SafeAreaView style={styles.safeArea}>
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={COLORS.charcoal} />
         </TouchableOpacity>
 
         <ScrollView 
@@ -357,6 +429,24 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  sprayContainer: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+  },
+  sprayTopLeft: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    zIndex: 0,
+  },
+  sprayBottomRight: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    zIndex: 0,
+    transform: [{ rotate: '180deg' }],
+  },
   backButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 60 : 20,
@@ -364,10 +454,19 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    }),
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -381,13 +480,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: COLORS.text,
+    color: COLORS.charcoal,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: COLORS.textSecondary,
+    color: COLORS.warmGray,
     textAlign: 'center',
     maxWidth: 300,
     lineHeight: 24,
@@ -403,7 +502,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.cardBg,
     borderRadius: 20,
     padding: 24,
-    borderWidth: 2,
     position: 'relative',
     overflow: 'visible',
   },
@@ -443,12 +541,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.charcoal,
     marginBottom: 2,
   },
   cardDescription: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.warmGray,
   },
   priceContainer: {
     flexDirection: 'row',
@@ -461,7 +559,7 @@ const styles = StyleSheet.create({
   },
   priceLabel: {
     fontSize: 14,
-    color: COLORS.textMuted,
+    color: COLORS.lightGray,
     marginLeft: 4,
   },
   featuresContainer: {
@@ -482,7 +580,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 15,
-    color: COLORS.text,
+    color: COLORS.charcoal,
     flex: 1,
   },
   button: {
@@ -503,7 +601,7 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: COLORS.lightGray,
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -517,7 +615,7 @@ const styles = StyleSheet.create({
   },
   signInText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.warmGray,
   },
   signInLink: {
     fontSize: 14,
