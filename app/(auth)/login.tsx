@@ -43,13 +43,33 @@ export default function LoginScreen() {
   }, [isAuthenticated]);
 
   /**
-   * Redirect to Outseta's hosted login page
-   * This is the NO-CODE approach - Outseta handles everything
+   * Open Outseta login popup - like TeleCheck does
+   * 
+   * Uses data attributes that Outseta's script picks up:
+   * - data-o-auth="1" - triggers Outseta auth widget
+   * - data-widget-mode="login" - opens in login mode
+   * - data-mode="popup" - opens as popup, user stays on page
+   * 
+   * When popup closes after successful login:
+   * 1. Token stored in localStorage (tokenStorage: "local")
+   * 2. 'accessToken.set' event fires
+   * 3. SubscriptionContext picks it up and sets user as logged in
+   * 4. useEffect above redirects to /(tabs)
    */
   const handleLogin = () => {
-    if (Platform.OS === 'web') {
-      window.location.href = OUTSETA_LOGIN_URL;
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Create a temporary link element with Outseta data attributes
+      const link = document.createElement('a');
+      link.setAttribute('data-o-auth', '1');
+      link.setAttribute('data-widget-mode', 'login');
+      link.setAttribute('data-mode', 'popup');
+      link.href = '#';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
+      // Mobile fallback - open in browser
       Linking.openURL(OUTSETA_LOGIN_URL);
     }
   };

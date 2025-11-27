@@ -1,13 +1,13 @@
 /**
  * Auth Callback Page
  * 
- * Handles the redirect after Outseta login.
+ * Handles the redirect after Outseta login/signup.
  * Outseta appends ?access_token=<JWT> to this URL.
  * 
  * Flow:
- * 1. User logs in via Outseta
+ * 1. User logs in/signs up via Outseta
  * 2. Outseta redirects to this page with access_token
- * 3. We extract the token, store it, sync with Supabase
+ * 3. We extract the token, let Outseta handle it
  * 4. Redirect to the main app
  * 
  * @see docs/OUTSETA_INTEGRATION.md
@@ -24,24 +24,35 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { OUTSETA_CONFIG, getTierFromPlanUid } from '@/contexts/SubscriptionContext';
-import { db } from '@/lib/database';
+
+// Simple colors for callback page
+const COLORS = {
+  background: '#FBF9F7',
+  primary: '#5BBFBA',
+  text: '#2D3436',
+  textSecondary: '#636E72',
+};
 
 export default function AuthCallbackScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Completing sign in...');
+  const [mounted, setMounted] = useState(false);
+
+  // Only run on client side after mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'web') {
+    if (!mounted) return;
+    
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
       handleCallback();
     } else {
       // Mobile shouldn't reach this page directly
       router.replace('/(tabs)');
     }
-  }, []);
+  }, [mounted]);
 
   async function handleCallback() {
     try {
@@ -49,10 +60,31 @@ export default function AuthCallbackScreen() {
       const urlParams = new URLSearchParams(window.location.search);
       const accessToken = urlParams.get('access_token');
 
+      console.log('Callback: access_token present:', !!accessToken);
+
       if (!accessToken) {
+        // No token - might already be logged in, check Outseta
+        setMessage('Checking session...');
+        await waitForOutseta();
+        
+        if ((window as any).Outseta) {
+          try {
+            const user = await (window as any).Outseta.getUser();
+            if (user) {
+              console.log('Callback: User already logged in:', user.Email);
+              setStatus('success');
+              setMessage('Welcome back!');
+              setTimeout(() => router.replace('/(tabs)'), 1000);
+              return;
+            }
+          } catch (e) {
+            console.log('Callback: No existing session');
+          }
+        }
+        
         setStatus('error');
-        setMessage('No access token found. Please try logging in again.');
-        setTimeout(() => router.replace('/(auth)/login'), 3000);
+        setMessage('No session found. Please try logging in again.');
+        setTimeout(() => router.replace('/(auth)/login'), 2000);
         return;
       }
 
@@ -61,34 +93,17 @@ export default function AuthCallbackScreen() {
       // Wait for Outseta to be ready
       await waitForOutseta();
 
-      // Set the token in Outseta
-      if (window.Outseta) {
-        window.Outseta.setAccessToken(accessToken);
+      // Set the token in Outseta - it will handle storage
+      if ((window as any).Outseta) {
+        console.log('Callback: Setting access token');
+        (window as any).Outseta.setAccessToken(accessToken);
       }
 
-      // Get user info from Outseta
-      setMessage('Loading your profile...');
-      
-      let outsetaUser = null;
-      let jwtPayload = null;
-      
-      if (window.Outseta) {
-        try {
-          outsetaUser = await window.Outseta.getUser();
-          jwtPayload = await window.Outseta.getJwtPayload();
-        } catch (e) {
-          console.error('Error getting Outseta user:', e);
-        }
-      }
+      // Give Outseta a moment to process the token
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (outsetaUser && jwtPayload) {
-        // Sync user to Supabase
-        setMessage('Syncing your account...');
-        await syncUserToSupabase(outsetaUser, jwtPayload);
-      }
-
-      // Clean up URL
-      window.history.replaceState({}, document.title, '/auth/callback');
+      // Clean up URL (remove token from address bar)
+      window.history.replaceState({}, document.title, '/');
 
       setStatus('success');
       setMessage('Welcome to ScentSwap!');
@@ -96,7 +111,7 @@ export default function AuthCallbackScreen() {
       // Redirect to main app
       setTimeout(() => {
         router.replace('/(tabs)');
-      }, 1500);
+      }, 1000);
 
     } catch (error) {
       console.error('Auth callback error:', error);
@@ -106,59 +121,14 @@ export default function AuthCallbackScreen() {
     }
   }
 
-  async function waitForOutseta(maxAttempts = 20): Promise<void> {
+  async function waitForOutseta(maxAttempts = 30): Promise<void> {
     for (let i = 0; i < maxAttempts; i++) {
-      if (typeof window !== 'undefined' && window.Outseta) {
+      if (typeof window !== 'undefined' && (window as any).Outseta) {
         return;
       }
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
-    throw new Error('Outseta failed to load');
-  }
-
-  async function syncUserToSupabase(outsetaUser: any, jwtPayload: any) {
-    try {
-      const personUid = outsetaUser.Uid || jwtPayload?.sub;
-      const accountUid = jwtPayload?.['outseta:accountUid'];
-      const planUid = jwtPayload?.['outseta:planUid'] || OUTSETA_CONFIG.planUids.FREE;
-      const email = outsetaUser.Email || jwtPayload?.email;
-      const firstName = outsetaUser.FirstName || '';
-      const lastName = outsetaUser.LastName || '';
-      const fullName = `${firstName} ${lastName}`.trim() || email.split('@')[0];
-
-      // Check if user exists in Supabase
-      const existingUser = await db.getUserByOutsetaId(personUid);
-
-      if (existingUser) {
-        // Update existing user
-        await db.updateUserFromOutseta(existingUser.id, {
-          outseta_person_uid: personUid,
-          outseta_account_uid: accountUid,
-          subscription_plan: getTierFromPlanUid(planUid),
-          subscription_status: 'active',
-        });
-        
-        // Store in local storage for AuthContext
-        localStorage.setItem('scentswap_user', JSON.stringify(existingUser));
-      } else {
-        // Create new user in Supabase
-        const newUser = await db.createUserFromOutseta({
-          email,
-          full_name: fullName,
-          outseta_person_uid: personUid,
-          outseta_account_uid: accountUid,
-          subscription_plan: getTierFromPlanUid(planUid),
-          subscription_status: 'active',
-        });
-        
-        if (newUser) {
-          localStorage.setItem('scentswap_user', JSON.stringify(newUser));
-        }
-      }
-    } catch (error) {
-      console.error('Error syncing user to Supabase:', error);
-      // Don't throw - user can still use the app
-    }
+    console.warn('Outseta did not load in time');
   }
 
   const styles = StyleSheet.create({

@@ -338,23 +338,39 @@ export default function RegisterScreen() {
     }
   }, [isAuthenticated]);
 
+  /**
+   * Handle sign up - uses Outseta's popup widget like TeleCheck
+   * 
+   * The key is using data attributes that Outseta's script picks up:
+   * - data-o-auth="1" - triggers Outseta auth widget
+   * - data-widget-mode="register" - opens in register mode
+   * - data-plan-uid="xxx" - pre-selects the plan
+   * - data-mode="popup" - opens as popup, user stays on page
+   * 
+   * When popup closes, Outseta:
+   * 1. Stores token in localStorage (tokenStorage: "local")
+   * 2. Fires 'accessToken.set' event
+   * 3. SubscriptionContext picks it up and sets user as logged in
+   */
   const handleSignUp = (planId: string) => {
     const plan = PLANS.find(p => p.id === planId) || PLANS[0];
     
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Try using Outseta's embed API first (like TeleCheck does)
-      if ((window as any).Outseta && (window as any).Outseta.auth) {
-        (window as any).Outseta.auth.open({
-          widgetMode: 'register',
-          planUid: plan.uid,
-        });
-        return;
-      }
-      
-      // Fallback to URL redirect
-      const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
-      window.location.href = signUpUrl;
+      // Create a temporary link element with Outseta data attributes
+      // This triggers Outseta's no-code widget in popup mode
+      const link = document.createElement('a');
+      link.setAttribute('data-o-auth', '1');
+      link.setAttribute('data-widget-mode', 'register');
+      link.setAttribute('data-plan-uid', plan.uid);
+      link.setAttribute('data-skip-plan-options', 'true');
+      link.setAttribute('data-mode', 'popup');
+      link.href = '#';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } else {
+      // Mobile fallback - open in browser
       const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
       Linking.openURL(signUpUrl);
     }
