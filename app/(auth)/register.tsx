@@ -210,7 +210,7 @@ function PlanCard({
   plan: typeof PLANS[0]; 
   isSelected: boolean; 
   onSelect: () => void;
-  onSignUp: () => void;
+  onSignUp?: () => void; // Optional - only used for mobile
 }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -300,29 +300,67 @@ function PlanCard({
           ))}
         </View>
 
-        {/* Button */}
-        <TouchableOpacity
-          style={[
-            styles.button,
-            plan.buttonFilled 
-              ? { backgroundColor: plan.color }
-              : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
-          ]}
-          onPress={onSignUp}
-          activeOpacity={0.8}
-        >
-          <Text style={[
-            styles.buttonText,
-            { color: plan.buttonFilled ? '#FFF' : plan.color }
-          ]}>
-            {plan.buttonText}
-          </Text>
-          <Ionicons 
-            name="arrow-forward" 
-            size={18} 
-            color={plan.buttonFilled ? '#FFF' : plan.color} 
-          />
-        </TouchableOpacity>
+        {/* Button - EXACT TELECHECK APPROACH: Use HTML anchor with data attributes */}
+        {Platform.OS === 'web' ? (
+          <a
+            href="#"
+            data-o-auth="1"
+            data-mode="popup"
+            data-widget-mode="register"
+            data-plan-uid={plan.uid}
+            data-skip-plan-options="true"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              paddingTop: 16,
+              paddingBottom: 16,
+              borderRadius: 14,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              backgroundColor: plan.buttonFilled ? plan.color : 'transparent',
+              border: plan.buttonFilled ? 'none' : `2px solid ${plan.color}`,
+            }}
+          >
+            <span style={{
+              fontSize: 16,
+              fontWeight: '700',
+              color: plan.buttonFilled ? '#FFF' : plan.color,
+            }}>
+              {plan.buttonText}
+            </span>
+            <Ionicons 
+              name="arrow-forward" 
+              size={18} 
+              color={plan.buttonFilled ? '#FFF' : plan.color} 
+            />
+          </a>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              plan.buttonFilled 
+                ? { backgroundColor: plan.color }
+                : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
+            ]}
+            onPress={() => onSignUp?.()} // Mobile only
+            activeOpacity={0.8}
+          >
+            <Text style={[
+              styles.buttonText,
+              { color: plan.buttonFilled ? '#FFF' : plan.color }
+            ]}>
+              {plan.buttonText}
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={18} 
+              color={plan.buttonFilled ? '#FFF' : plan.color} 
+            />
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -339,34 +377,13 @@ export default function RegisterScreen() {
   }, [isAuthenticated]);
 
   /**
-   * Handle sign up - uses Outseta's auth.open() JavaScript API
-   * 
-   * This was the method that triggered the CORRECT "Confirm your account" email.
-   * The data-attributes approach triggered the wrong "Login" email.
+   * Handle sign up for mobile only - web uses HTML data attributes
+   * Mobile opens the Outseta hosted page in the browser
    */
   const handleSignUp = (planId: string) => {
     const plan = PLANS.find(p => p.id === planId) || PLANS[0];
-    
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const Outseta = (window as any).Outseta;
-      
-      if (Outseta && Outseta.auth && Outseta.auth.open) {
-        // Use Outseta's JavaScript API - this sends the correct email
-        Outseta.auth.open({
-          widgetMode: 'register',
-          planUid: plan.uid,
-        });
-      } else {
-        // Fallback if Outseta not loaded yet
-        console.warn('Outseta not ready, using URL redirect');
-        const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
-        window.location.href = signUpUrl;
-      }
-    } else {
-      // Mobile fallback - open in browser
-      const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
-      Linking.openURL(signUpUrl);
-    }
+    const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
+    Linking.openURL(signUpUrl);
   };
 
   return (

@@ -47,13 +47,15 @@ export function OutsetaScript() {
       return;
     }
 
-    // Set Outseta options per documentation
-    // @see .cursor/rules/outseta.mdc Step 1
+    // Set Outseta options - EXACT CONFIG FROM TELECHECK
+    // tokenStorage: "local" is CRITICAL - without it, user completes payment but isn't logged in
+    // monitorDom: "true" - scans for data-attributes on buttons (required for popup mode)
+    // load: "nocode,auth,profile" - minimal set needed for subscription flow
     window.o_options = {
       domain: OUTSETA_CONFIG.domain,
-      load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
-      tokenStorage: 'local', // Persist across tabs/refreshes per docs
-      monitorDom: true, // For SPA navigation per docs
+      monitorDom: "true", // STRING not boolean - exactly as TeleCheck does it
+      load: "nocode,auth,profile", // Minimal load - exactly as TeleCheck does it
+      tokenStorage: "local", // CRITICAL: Stores JWT in localStorage after signup
     };
 
     // Create and inject script per documentation
