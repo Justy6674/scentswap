@@ -18,7 +18,6 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
-import { ThemeSelector } from '@/components/ThemeSelector';
 
 export default function RegisterScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -175,8 +174,6 @@ export default function RegisterScreen() {
           </View>
 
           <View style={styles.form}>
-            <ThemeSelector />
-
             <Input
               label="Full Name"
               placeholder="Enter your full name"

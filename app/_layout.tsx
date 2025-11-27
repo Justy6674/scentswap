@@ -45,11 +45,15 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider value={colorScheme === 'dark' ? ScentSwapDarkTheme : ScentSwapLightTheme}>
         <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="listing/[id]" options={{ headerShown: true, title: 'Listing Details' }} />
+          <Stack.Screen name="listing/new" options={{ headerShown: true, title: 'Add Fragrance' }} />
           <Stack.Screen name="swap/[id]" options={{ headerShown: true, title: 'Swap Details' }} />
+          <Stack.Screen name="swap/new" options={{ headerShown: true, title: 'Propose Swap' }} />
           <Stack.Screen name="profile/[id]" options={{ headerShown: true, title: 'Profile' }} />
+          <Stack.Screen name="search" options={{ headerShown: true, title: 'Search' }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
