@@ -22,6 +22,27 @@
 
 ---
 
+## ScentSwap Outseta Configuration
+
+### Plan UIDs (LIVE)
+
+| Plan | Outseta UID | Price |
+|------|-------------|-------|
+| **Free** | `z9MP7yQ4` | $0/month |
+| **Premium** | `vW5RoJm4` | $9.99/month AUD |
+| **Elite** | `aWxr2rQV` | $19.99/month AUD |
+
+### URLs
+
+| Action | URL |
+|--------|-----|
+| Sign Up | `https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous` |
+| Log In | `https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous` |
+| Profile | `https://scentswap.outseta.com/profile#o-authenticated` |
+| JWKS | `https://scentswap.outseta.com/.well-known/jwks` |
+
+---
+
 ## Step 1: Embed Outseta's Sign-Up, Login, and Subscription Components
 
 ### Include Outseta Script
@@ -30,9 +51,14 @@ Add to `<head>` in `_document.js` or via Next's Head component:
 
 ```html
 <script>
-  var o_options = { domain: "[your-subdomain].outseta.com" };
+var o_options = {
+    domain: 'scentswap.outseta.com',
+    load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+};
 </script>
-<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+<script src="https://cdn.outseta.com/outseta.min.js"
+        data-options="o_options">
+</script>
 ```
 
 ### Configure in Outseta Admin
@@ -50,14 +76,19 @@ Add to `<head>` in `_document.js` or via Next's Head component:
 ### Trigger Auth Modals
 
 ```javascript
-// Sign up
-Outseta.openSignUp();
+// Sign up - redirect to Outseta hosted page
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous';
 
-// Login
-Outseta.openLogin();
+// Login - redirect to Outseta hosted page
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
 
-// Profile/Billing management
-Outseta.openProfile();
+// Profile/Billing management - redirect to Outseta hosted page
+window.location.href = 'https://scentswap.outseta.com/profile#o-authenticated';
+
+// OR use embedded widgets if script is loaded:
+Outseta.auth.open({ mode: 'register' });
+Outseta.auth.open({ mode: 'login' });
+Outseta.profile.open();
 ```
 
 ---
@@ -78,7 +109,8 @@ Configure in `o_options`:
 
 ```javascript
 var o_options = {
-  domain: "[your-subdomain].outseta.com",
+  domain: "scentswap.outseta.com",
+  load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
   tokenStorage: "local"  // Options: "session" (default), "local", "cookie"
 };
 ```
@@ -96,9 +128,18 @@ const user = await Outseta.getUser();
 // Get JWT payload (quick access to claims)
 const payload = await Outseta.getJwtPayload();
 
-// Check plan
-if (payload && payload["outseta:planUid"] === "<PREMIUM_PLAN_UID>") {
+// Check plan - use actual ScentSwap plan UIDs
+const PLAN_UIDS = {
+  FREE: 'z9MP7yQ4',
+  PREMIUM: 'vW5RoJm4',
+  ELITE: 'aWxr2rQV'
+};
+
+if (payload && payload["outseta:planUid"] === PLAN_UIDS.PREMIUM) {
   // Enable premium features
+}
+if (payload && payload["outseta:planUid"] === PLAN_UIDS.ELITE) {
+  // Enable elite features
 }
 ```
 
@@ -124,7 +165,7 @@ Using `jose` library:
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 const JWKS = createRemoteJWKSet(
-  new URL("https://<your-subdomain>.outseta.com/.well-known/jwks")
+  new URL("https://scentswap.outseta.com/.well-known/jwks")
 );
 
 async function verifyOutsetaToken(accessToken) {
@@ -145,7 +186,7 @@ export async function POST(req) {
   
   // 1. Verify Outseta token
   const JWKS = createRemoteJWKSet(
-    new URL("https://<subdomain>.outseta.com/.well-known/jwks")
+    new URL("https://scentswap.outseta.com/.well-known/jwks")
   );
   const { payload } = await jwtVerify(outsetaToken, JWKS);
   
@@ -327,33 +368,33 @@ Outseta.logout();
 
 ```env
 # Supabase
-SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
 SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Server-side only
-SUPABASE_JWT_SECRET=your-jwt-secret  # For signing exchanged tokens
+SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Server-side only - get from Supabase dashboard
+SUPABASE_JWT_SECRET=your-jwt-secret  # For signing exchanged tokens - get from Supabase dashboard
 
 # Outseta
-OUTSETA_SUBDOMAIN=your-subdomain
-OUTSETA_WEBHOOK_SECRET=your-32-byte-hex-key
+OUTSETA_SUBDOMAIN=scentswap
+OUTSETA_WEBHOOK_SECRET=your-32-byte-hex-key  # Set this in Outseta Settings > Notifications
 
 # Public (exposed to client)
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_OUTSETA_DOMAIN=your-subdomain.outseta.com
+NEXT_PUBLIC_OUTSETA_DOMAIN=scentswap.outseta.com
 ```
 
 ---
 
-## ScentSwap Subscription Plans
+## ScentSwap Subscription Plans (LIVE)
 
 ### Free Plan
-- **Plan ID**: `free`
+- **Outseta Plan UID**: `z9MP7yQ4`
 - **Price**: $0/month
 - **Max Listings**: 5
 - **Features**: Basic swapping
 
 ### Premium Plan
-- **Plan ID**: `premium`
+- **Outseta Plan UID**: `vW5RoJm4`
 - **Price**: $9.99/month AUD
 - **Max Listings**: 25
 - **Features**:
@@ -364,7 +405,7 @@ NEXT_PUBLIC_OUTSETA_DOMAIN=your-subdomain.outseta.com
   - premium_badge
 
 ### Elite Plan
-- **Plan ID**: `elite`
+- **Outseta Plan UID**: `aWxr2rQV`
 - **Price**: $19.99/month AUD
 - **Max Listings**: Unlimited
 - **Features**:

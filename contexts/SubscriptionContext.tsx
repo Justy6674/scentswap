@@ -2,15 +2,47 @@
  * SubscriptionContext
  * 
  * Manages premium subscription state and feature gating.
- * Designed to be easily integrated with Outseta.
+ * Integrated with Outseta for authentication and billing.
+ * 
+ * @see docs/OUTSETA_INTEGRATION.md for full integration guide
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from './AuthContext';
+import { Platform } from 'react-native';
+
+// =============================================================================
+// OUTSETA CONFIGURATION - LIVE VALUES
+// =============================================================================
+
+export const OUTSETA_CONFIG = {
+  domain: 'scentswap.outseta.com',
+  jwksUrl: 'https://scentswap.outseta.com/.well-known/jwks',
+  
+  // Plan UIDs from Outseta
+  planUids: {
+    FREE: 'z9MP7yQ4',
+    PREMIUM: 'vW5RoJm4',
+    ELITE: 'aWxr2rQV',
+  },
+  
+  // Auth URLs
+  urls: {
+    signUp: 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous',
+    login: 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous',
+    profile: 'https://scentswap.outseta.com/profile#o-authenticated',
+  },
+  
+  // Post-login redirect (set this in Outseta admin)
+  postLoginUrl: 'https://www.scentswap.com.au/auth/callback',
+} as const;
+
+// =============================================================================
+// TYPE DEFINITIONS
+// =============================================================================
 
 // Premium feature flags
 export type PremiumFeature = 
-  | 'unlimited_listings'      // Free: 5, Premium: Unlimited
+  | 'unlimited_listings'      // Free: 5, Premium: 25, Elite: Unlimited
   | 'priority_matching'       // AI prioritizes premium users in suggestions
   | 'advanced_analytics'      // Detailed swap history, value tracking
   | 'instant_messaging'       // Real-time chat (vs delayed for free)
@@ -26,6 +58,7 @@ export type SubscriptionTier = 'free' | 'premium' | 'elite';
 
 interface SubscriptionPlan {
   tier: SubscriptionTier;
+  outsetaPlanUid: string;
   name: string;
   price: number; // AUD per month
   features: PremiumFeature[];
@@ -33,10 +66,14 @@ interface SubscriptionPlan {
   description: string;
 }
 
-// Plan definitions
+// =============================================================================
+// PLAN DEFINITIONS
+// =============================================================================
+
 export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
   free: {
     tier: 'free',
+    outsetaPlanUid: OUTSETA_CONFIG.planUids.FREE,
     name: 'Free',
     price: 0,
     maxListings: 5,
@@ -45,6 +82,7 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
   },
   premium: {
     tier: 'premium',
+    outsetaPlanUid: OUTSETA_CONFIG.planUids.PREMIUM,
     name: 'Premium',
     price: 9.99,
     maxListings: 25,
@@ -59,6 +97,7 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
   },
   elite: {
     tier: 'elite',
+    outsetaPlanUid: OUTSETA_CONFIG.planUids.ELITE,
     name: 'Elite',
     price: 19.99,
     maxListings: -1, // Unlimited
@@ -78,72 +117,168 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionTier, SubscriptionPlan> = {
   },
 };
 
+// Helper to get tier from Outseta plan UID
+export function getTierFromPlanUid(planUid: string): SubscriptionTier {
+  switch (planUid) {
+    case OUTSETA_CONFIG.planUids.ELITE:
+      return 'elite';
+    case OUTSETA_CONFIG.planUids.PREMIUM:
+      return 'premium';
+    case OUTSETA_CONFIG.planUids.FREE:
+    default:
+      return 'free';
+  }
+}
+
+// =============================================================================
+// OUTSETA STATE INTERFACE
+// =============================================================================
+
+interface OutsetaUser {
+  personUid: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  accountUid: string;
+  planUid: string;
+  clientIdentifier?: string; // Our Supabase user ID
+}
+
 interface SubscriptionState {
   tier: SubscriptionTier;
   isActive: boolean;
   expiresAt: Date | null;
-  // Outseta integration fields (to be populated later)
-  outsetaSubscriptionId?: string;
-  outsetaPlanId?: string;
+  // Outseta integration fields
+  outsetaPersonUid?: string;
+  outsetaAccountUid?: string;
+  outsetaPlanUid?: string;
 }
 
 interface SubscriptionContextType {
   subscription: SubscriptionState;
+  outsetaUser: OutsetaUser | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   hasFeature: (feature: PremiumFeature) => boolean;
   canAddListing: (currentCount: number) => boolean;
   getMaxListings: () => number;
   getPlan: () => SubscriptionPlan;
-  // Placeholder methods for Outseta integration
-  upgradeToPremium: () => Promise<void>;
-  upgradeToElite: () => Promise<void>;
-  cancelSubscription: () => Promise<void>;
+  // Outseta auth methods
+  openSignUp: () => void;
+  openLogin: () => void;
+  openProfile: () => void;
+  logout: () => void;
+  // Subscription methods
+  upgradeToPremium: () => void;
+  upgradeToElite: () => void;
   refreshSubscription: () => Promise<void>;
 }
+
+// =============================================================================
+// CONTEXT
+// =============================================================================
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionState>({
     tier: 'free',
     isActive: true,
     expiresAt: null,
   });
+  const [outsetaUser, setOutsetaUser] = useState<OutsetaUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Initialize Outseta on mount (web only)
   useEffect(() => {
-    if (user) {
-      loadSubscription();
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      initializeOutseta();
     } else {
-      setSubscription({ tier: 'free', isActive: true, expiresAt: null });
+      // For mobile, we'll use a different auth flow
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  const loadSubscription = async () => {
+  const initializeOutseta = async () => {
     setIsLoading(true);
+    
     try {
-      // TODO: Replace with Outseta API call
-      // For now, check if user has premium_tier field in database
-      // This will be replaced with Outseta subscription check
-      
-      // Mock implementation - defaults to free
-      // In production, this would call Outseta API:
-      // const outsetaSubscription = await outseta.getSubscription(user.email);
-      
-      setSubscription({
-        tier: 'free',
-        isActive: true,
-        expiresAt: null,
-      });
+      // Check if Outseta script is loaded
+      if (typeof (window as any).Outseta !== 'undefined') {
+        const Outseta = (window as any).Outseta;
+        
+        // Try to get current user
+        try {
+          const user = await Outseta.getUser();
+          if (user) {
+            const jwtPayload = await Outseta.getJwtPayload();
+            handleOutsetaUser(user, jwtPayload);
+          }
+        } catch (e) {
+          // No user logged in
+          console.log('No Outseta user session');
+        }
+        
+        // Listen for auth changes
+        Outseta.on('accessToken.set', async () => {
+          const user = await Outseta.getUser();
+          const jwtPayload = await Outseta.getJwtPayload();
+          handleOutsetaUser(user, jwtPayload);
+        });
+        
+        Outseta.on('accessToken.clear', () => {
+          handleLogout();
+        });
+      } else {
+        console.log('Outseta script not loaded yet');
+      }
     } catch (error) {
-      console.error('Error loading subscription:', error);
-      setSubscription({ tier: 'free', isActive: true, expiresAt: null });
+      console.error('Error initializing Outseta:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleOutsetaUser = (user: any, jwtPayload: any) => {
+    const planUid = jwtPayload?.['outseta:planUid'] || OUTSETA_CONFIG.planUids.FREE;
+    const tier = getTierFromPlanUid(planUid);
+    
+    setOutsetaUser({
+      personUid: user.Uid || jwtPayload?.sub,
+      email: user.Email || jwtPayload?.email,
+      firstName: user.FirstName,
+      lastName: user.LastName,
+      accountUid: jwtPayload?.['outseta:accountUid'],
+      planUid: planUid,
+      clientIdentifier: jwtPayload?.['outseta:accountClientIdentifier'],
+    });
+    
+    setSubscription({
+      tier,
+      isActive: true,
+      expiresAt: null,
+      outsetaPersonUid: user.Uid || jwtPayload?.sub,
+      outsetaAccountUid: jwtPayload?.['outseta:accountUid'],
+      outsetaPlanUid: planUid,
+    });
+    
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setOutsetaUser(null);
+    setSubscription({
+      tier: 'free',
+      isActive: true,
+      expiresAt: null,
+    });
+    setIsAuthenticated(false);
+  };
+
+  // =============================================================================
+  // FEATURE CHECKING
+  // =============================================================================
 
   const hasFeature = (feature: PremiumFeature): boolean => {
     const plan = SUBSCRIPTION_PLANS[subscription.tier];
@@ -164,39 +299,96 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     return SUBSCRIPTION_PLANS[subscription.tier];
   };
 
-  // Placeholder methods for Outseta integration
-  const upgradeToPremium = async () => {
-    // TODO: Implement Outseta checkout
-    // window.location.href = 'https://your-outseta-domain.outseta.com/checkout/premium';
-    console.log('Upgrade to Premium - Outseta integration pending');
+  // =============================================================================
+  // AUTH METHODS
+  // =============================================================================
+
+  const openSignUp = () => {
+    if (Platform.OS === 'web') {
+      window.location.href = OUTSETA_CONFIG.urls.signUp;
+    } else {
+      // For mobile, open in browser or webview
+      console.log('Mobile sign up - implement with Linking or WebView');
+    }
   };
 
-  const upgradeToElite = async () => {
-    // TODO: Implement Outseta checkout
-    console.log('Upgrade to Elite - Outseta integration pending');
+  const openLogin = () => {
+    if (Platform.OS === 'web') {
+      window.location.href = OUTSETA_CONFIG.urls.login;
+    } else {
+      console.log('Mobile login - implement with Linking or WebView');
+    }
   };
 
-  const cancelSubscription = async () => {
-    // TODO: Implement Outseta cancellation
-    console.log('Cancel subscription - Outseta integration pending');
+  const openProfile = () => {
+    if (Platform.OS === 'web') {
+      window.location.href = OUTSETA_CONFIG.urls.profile;
+    } else {
+      console.log('Mobile profile - implement with Linking or WebView');
+    }
+  };
+
+  const logout = () => {
+    if (Platform.OS === 'web' && typeof (window as any).Outseta !== 'undefined') {
+      (window as any).Outseta.auth.logout();
+    }
+    handleLogout();
+  };
+
+  // =============================================================================
+  // SUBSCRIPTION METHODS
+  // =============================================================================
+
+  const upgradeToPremium = () => {
+    // Redirect to Outseta checkout with Premium plan
+    if (Platform.OS === 'web') {
+      // Outseta will handle the upgrade flow
+      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.PREMIUM}#o-anonymous`;
+    }
+  };
+
+  const upgradeToElite = () => {
+    if (Platform.OS === 'web') {
+      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.ELITE}#o-anonymous`;
+    }
   };
 
   const refreshSubscription = async () => {
-    await loadSubscription();
+    if (Platform.OS === 'web' && typeof (window as any).Outseta !== 'undefined') {
+      const Outseta = (window as any).Outseta;
+      try {
+        const user = await Outseta.getUser();
+        const jwtPayload = await Outseta.getJwtPayload();
+        if (user) {
+          handleOutsetaUser(user, jwtPayload);
+        }
+      } catch (error) {
+        console.error('Error refreshing subscription:', error);
+      }
+    }
   };
+
+  // =============================================================================
+  // RENDER
+  // =============================================================================
 
   return (
     <SubscriptionContext.Provider
       value={{
         subscription,
+        outsetaUser,
         isLoading,
+        isAuthenticated,
         hasFeature,
         canAddListing,
         getMaxListings,
         getPlan,
+        openSignUp,
+        openLogin,
+        openProfile,
+        logout,
         upgradeToPremium,
         upgradeToElite,
-        cancelSubscription,
         refreshSubscription,
       }}
     >
@@ -212,4 +404,3 @@ export function useSubscription() {
   }
   return context;
 }
-
