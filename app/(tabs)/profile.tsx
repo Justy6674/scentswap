@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 import { Rating } from '@/types';
 import { db } from '@/lib/database';
@@ -21,6 +23,7 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const { user, signOut } = useAuth();
+  const { subscription, openProfile, logout, getPlan } = useSubscription();
   const [ratings, setRatings] = useState<Rating[]>([]);
 
   useEffect(() => {
@@ -45,12 +48,23 @@ export default function ProfileScreen() {
           text: 'Sign Out', 
           style: 'destructive',
           onPress: async () => {
+            // Use Outseta logout which clears the session
+            logout();
             await signOut();
             router.replace('/(auth)/login');
           }
         },
       ]
     );
+  }
+
+  /**
+   * Open Outseta Profile for subscription/billing management
+   * Per Outseta docs: "The Profile embed serves as the user account portal"
+   * @see docs/OUTSETA_INTEGRATION.md
+   */
+  function handleManageSubscription() {
+    openProfile();
   }
 
   const getVerificationBadge = (tier: string) => {
@@ -210,6 +224,68 @@ export default function ProfileScreen() {
     signOutButton: {
       marginTop: 24,
     },
+    subscriptionCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    subscriptionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 12,
+    },
+    planName: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    planPrice: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    planBadge: {
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    planBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    planDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    planListings: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '500',
+      marginBottom: 16,
+    },
+    manageButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      backgroundColor: colors.primary + '10',
+    },
+    manageButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+      flex: 1,
+    },
     ratingCard: {
       backgroundColor: colors.card,
       borderRadius: 12,
@@ -312,6 +388,39 @@ export default function ProfileScreen() {
               {user.positive_percentage > 0 ? `${user.positive_percentage.toFixed(0)}%` : '-'}
             </Text>
             <Text style={styles.statLabel}>Positive</Text>
+          </View>
+        </View>
+
+        {/* Subscription Section - Outseta Profile Embed */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Subscription</Text>
+          
+          <View style={styles.subscriptionCard}>
+            <View style={styles.subscriptionHeader}>
+              <View>
+                <Text style={styles.planName}>{getPlan().name} Plan</Text>
+                <Text style={styles.planPrice}>
+                  {getPlan().price === 0 ? 'Free' : `$${getPlan().price}/month AUD`}
+                </Text>
+              </View>
+              <View style={[styles.planBadge, { backgroundColor: subscription.tier === 'free' ? colors.textSecondary : colors.primary }]}>
+                <Text style={styles.planBadgeText}>{subscription.tier.toUpperCase()}</Text>
+              </View>
+            </View>
+            <Text style={styles.planDescription}>{getPlan().description}</Text>
+            <Text style={styles.planListings}>
+              {getPlan().maxListings === -1 ? 'Unlimited' : getPlan().maxListings} listings included
+            </Text>
+            
+            {/* Outseta Profile Button - Opens Outseta hosted profile for billing management */}
+            <TouchableOpacity 
+              style={styles.manageButton} 
+              onPress={handleManageSubscription}
+            >
+              <Ionicons name="card-outline" size={18} color={colors.primary} />
+              <Text style={styles.manageButtonText}>Manage Subscription & Billing</Text>
+              <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+            </TouchableOpacity>
           </View>
         </View>
 
