@@ -1,10 +1,16 @@
 /**
  * Register Screen
  * 
- * Redirects to Outseta hosted registration page with plan selection.
- * Uses only Outseta-approved methods per documentation.
+ * Shows plan options and redirects to Outseta's hosted registration page.
+ * Outseta handles everything - we just redirect with the selected plan.
  * 
- * @see docs/OUTSETA_INTEGRATION.md
+ * Outseta Sign Up URL: https://scentswap.outseta.com/auth?widgetMode=register&planUid=[PLAN_UID]#o-anonymous
+ * 
+ * Plan UIDs:
+ * - Free: z9MP7yQ4
+ * - Premium: vW5RoJm4  
+ * - Elite: aWxr2rQV
+ * 
  * @see .cursor/rules/outseta.mdc
  */
 
@@ -16,7 +22,6 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  ActivityIndicator,
   ScrollView,
   Linking,
 } from 'react-native';
@@ -25,43 +30,72 @@ import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { 
-  useSubscription, 
-  OUTSETA_CONFIG, 
-  SUBSCRIPTION_PLANS,
-  SubscriptionTier 
-} from '@/contexts/SubscriptionContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
+
+// Outseta Plan UIDs
+const PLAN_UIDS = {
+  FREE: 'z9MP7yQ4',
+  PREMIUM: 'vW5RoJm4',
+  ELITE: 'aWxr2rQV',
+};
+
+// Plan definitions for display
+const PLANS = [
+  {
+    id: 'free',
+    uid: PLAN_UIDS.FREE,
+    name: 'Free',
+    price: 0,
+    description: 'Get started with basic swapping',
+    maxListings: 5,
+    features: ['5 listings', 'Basic matching', 'Community access'],
+  },
+  {
+    id: 'premium',
+    uid: PLAN_UIDS.PREMIUM,
+    name: 'Premium',
+    price: 9.99,
+    description: 'Enhanced swapping experience',
+    maxListings: 25,
+    features: ['25 listings', 'Priority matching', 'Photo verification', 'No ads', 'Premium badge'],
+    popular: true,
+  },
+  {
+    id: 'elite',
+    uid: PLAN_UIDS.ELITE,
+    name: 'Elite',
+    price: 19.99,
+    description: 'The ultimate collector experience',
+    maxListings: -1,
+    features: ['Unlimited listings', 'All Premium features', 'Advanced analytics', 'Early access', 'Bulk upload'],
+  },
+];
 
 export default function RegisterScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, isLoading } = useSubscription();
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier>('free');
+  const { isAuthenticated } = useSubscription();
+  const [selectedPlan, setSelectedPlan] = useState('free');
 
   // If already authenticated, redirect to tabs
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated]);
 
   /**
-   * Handle sign up - redirect to Outseta hosted registration page
-   * This is the Outseta-approved method per their documentation
-   * 
-   * URL format: https://[subdomain].outseta.com/auth?widgetMode=register&planUid=[planUid]#o-anonymous
+   * Redirect to Outseta's hosted registration page with selected plan
+   * This is the NO-CODE approach - Outseta handles everything
    */
-  const handleSignUp = (planTier: SubscriptionTier = selectedPlan) => {
-    const plan = SUBSCRIPTION_PLANS[planTier];
-    
-    // Build Outseta registration URL with selected plan
-    const signUpUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${plan.outsetaPlanUid}#o-anonymous`;
+  const handleSignUp = (planId: string) => {
+    const plan = PLANS.find(p => p.id === planId) || PLANS[0];
+    const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
     
     if (Platform.OS === 'web') {
       window.location.href = signUpUrl;
     } else {
-      // Mobile - open in system browser
       Linking.openURL(signUpUrl);
     }
   };
@@ -117,7 +151,7 @@ export default function RegisterScreen() {
     planCardSelected: {
       borderColor: colors.primary,
     },
-    planCardPremium: {
+    planCardPopular: {
       borderColor: '#E8927C',
     },
     planHeader: {
@@ -215,22 +249,6 @@ export default function RegisterScreen() {
     },
   });
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const plans: { tier: SubscriptionTier; popular?: boolean }[] = [
-    { tier: 'free' },
-    { tier: 'premium', popular: true },
-    { tier: 'elite' },
-  ];
-
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -253,22 +271,21 @@ export default function RegisterScreen() {
         </View>
 
         <View style={styles.plansContainer}>
-          {plans.map(({ tier, popular }) => {
-            const plan = SUBSCRIPTION_PLANS[tier];
-            const isSelected = selectedPlan === tier;
+          {PLANS.map((plan) => {
+            const isSelected = selectedPlan === plan.id;
             
             return (
               <TouchableOpacity
-                key={tier}
+                key={plan.id}
                 style={[
                   styles.planCard,
                   isSelected && styles.planCardSelected,
-                  popular && styles.planCardPremium,
+                  plan.popular && styles.planCardPopular,
                 ]}
-                onPress={() => setSelectedPlan(tier)}
+                onPress={() => setSelectedPlan(plan.id)}
                 activeOpacity={0.7}
               >
-                {popular && (
+                {plan.popular && (
                   <View style={styles.popularBadge}>
                     <Text style={styles.popularBadgeText}>MOST POPULAR</Text>
                   </View>
@@ -289,60 +306,18 @@ export default function RegisterScreen() {
                 <Text style={styles.planDescription}>{plan.description}</Text>
 
                 <View style={styles.planFeatures}>
-                  <View style={styles.planFeature}>
-                    <Ionicons 
-                      name="checkmark-circle" 
-                      size={18} 
-                      color={colors.primary} 
-                    />
-                    <Text style={styles.planFeatureText}>
-                      {plan.maxListings === -1 ? 'Unlimited' : plan.maxListings} listings
-                    </Text>
-                  </View>
-                  
-                  {tier === 'premium' && (
-                    <>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>Priority matching</Text>
-                      </View>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>Photo verification</Text>
-                      </View>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>No ads</Text>
-                      </View>
-                    </>
-                  )}
-                  
-                  {tier === 'elite' && (
-                    <>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>All Premium features</Text>
-                      </View>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>Advanced analytics</Text>
-                      </View>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>Early access to features</Text>
-                      </View>
-                      <View style={styles.planFeature}>
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                        <Text style={styles.planFeatureText}>Bulk upload</Text>
-                      </View>
-                    </>
-                  )}
+                  {plan.features.map((feature, index) => (
+                    <View key={index} style={styles.planFeature}>
+                      <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                      <Text style={styles.planFeatureText}>{feature}</Text>
+                    </View>
+                  ))}
                 </View>
 
                 <View style={styles.selectButton}>
                   <Button
-                    title={isSelected ? 'Selected - Continue' : `Select ${plan.name}`}
-                    onPress={() => handleSignUp(tier)}
+                    title={isSelected ? 'Continue with ' + plan.name : `Select ${plan.name}`}
+                    onPress={() => handleSignUp(plan.id)}
                     variant={isSelected ? 'primary' : 'outline'}
                   />
                 </View>

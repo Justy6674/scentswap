@@ -1,10 +1,11 @@
 /**
  * Login Screen
  * 
- * Redirects to Outseta hosted login page.
- * Uses only Outseta-approved methods per documentation.
+ * Simple redirect to Outseta's hosted login page.
+ * Outseta handles everything - we just redirect there.
  * 
- * @see docs/OUTSETA_INTEGRATION.md
+ * Outseta Login URL: https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous
+ * 
  * @see .cursor/rules/outseta.mdc
  */
 
@@ -16,7 +17,6 @@ import {
   TouchableOpacity,
   Image,
   Platform,
-  ActivityIndicator,
   Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,35 +24,33 @@ import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useSubscription, OUTSETA_CONFIG } from '@/contexts/SubscriptionContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
+
+// Outseta hosted login URL - NO CODE approach
+const OUTSETA_LOGIN_URL = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, isLoading } = useSubscription();
+  const { isAuthenticated } = useSubscription();
 
   // If already authenticated, redirect to tabs
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated]);
 
   /**
-   * Handle login - redirect to Outseta hosted login page
-   * This is the Outseta-approved method per their documentation
+   * Redirect to Outseta's hosted login page
+   * This is the NO-CODE approach - Outseta handles everything
    */
   const handleLogin = () => {
-    // Direct redirect to Outseta hosted login page
-    // Outseta will handle the auth flow and redirect back with access_token
-    const loginUrl = OUTSETA_CONFIG.urls.login;
-    
     if (Platform.OS === 'web') {
-      window.location.href = loginUrl;
+      window.location.href = OUTSETA_LOGIN_URL;
     } else {
-      // Mobile - open in system browser
-      Linking.openURL(loginUrl);
+      Linking.openURL(OUTSETA_LOGIN_URL);
     }
   };
 
@@ -162,16 +160,6 @@ export default function LoginScreen() {
       color: colors.textSecondary,
     },
   });
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>

@@ -193,6 +193,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Initialize Outseta on mount (web only)
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Don't block UI - set loading false immediately, then check for user in background
+      setIsLoading(false);
       initializeOutseta();
     } else {
       // For mobile, we'll use a different auth flow
@@ -209,17 +211,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
    * @see .cursor/rules/outseta.mdc
    */
   const initializeOutseta = async () => {
-    setIsLoading(true);
-    
     try {
-      // Wait for Outseta script to load
+      // Wait for Outseta script to load (non-blocking for UI)
       await waitForOutseta();
       
       const Outseta = (window as any).Outseta;
       
       if (!Outseta) {
         console.log('Outseta not available');
-        setIsLoading(false);
         return;
       }
       
@@ -255,20 +254,19 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error initializing Outseta:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
   /**
    * Wait for Outseta script to be available
+   * Reduced wait time to not block for too long
    */
-  const waitForOutseta = async (maxAttempts = 20): Promise<void> => {
+  const waitForOutseta = async (maxAttempts = 10): Promise<void> => {
     for (let i = 0; i < maxAttempts; i++) {
       if (typeof window !== 'undefined' && (window as any).Outseta) {
         return;
       }
-      await new Promise(resolve => setTimeout(resolve, 250));
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     // Don't throw - just continue without Outseta
     console.log('Outseta script did not load in time');
