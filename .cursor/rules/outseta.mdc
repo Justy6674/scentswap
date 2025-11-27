@@ -1,240 +1,32 @@
-Outseta deep dive by open ai
-Integration Plan: Outseta Authentication & Subscriptions with Supabase on Vercel
-
-This step-by-step guide explains how to integrate Outseta’s built-in authentication and subscription system into a SaaS web app (Next.js on Vercel) with a Supabase backend. We will use Outseta’s official methods for user auth, subscription management, and secure linking to Supabase data. Each step references Outseta’s documentation for accuracy and best practices.
-
-Step 1: Embed Outseta’s Sign-Up, Login, and Subscription Components
-
-Begin by adding Outseta’s embed script to your web application and configuring Outseta’s auth settings:
-	•	Include Outseta’s embed script: In the <head> of your Next.js app (e.g. in _document.js or via Next’s Head component), include Outseta’s script with your Outseta subdomain. For example:
-
-<script>
-  var o_options = { domain: "[your-subdomain].outseta.com" };
-</script>
-<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
-
-This script is the entry point for Outseta’s sign-up, login, and profile widgets  . It should be loaded on any page that needs Outseta functionality (registration, login, profile, or content gating). In a Next.js app on Vercel, you can add it globally for convenience or load it on specific pages as needed. Ensure the domain is set to your Outseta account’s domain.
-
-	•	Configure Outseta sign-up & login settings: In your Outseta admin under Auth > Sign Up & Login, set up at least one subscription Plan (under Billing > Plans) and configure the sign-up form fields as desired . Enable “Send sign up confirmation email” so that new users verify their email and set a password via Outseta’s email flow . Also specify a Post Login URL, which is the page in your app to redirect users after a successful login (commonly a dashboard) .
-	•	Obtain and embed the Outseta widgets: From Auth > Embeds in Outseta, copy the embed code snippets for the Sign-Up form and Login form  . You can trigger these as pop-ups or embed them inline. For example, you might add a “Sign Up” button in your React app that calls Outseta.openSignUp() or use Outseta’s embed API to show the form (Outseta provides an embed API for programmatic control ). The sign-up embed lets users register for a plan and creates their Account in Outseta . The login embed allows users (after confirming email and setting a password) to authenticate via Outseta . Outseta’s built-in flow will handle user registration (including payment if the plan requires it) and then authentication.
-	•	Include the Profile/Billing widget: Outseta’s Profile embed serves as the user account portal – it allows users to view/update their profile, manage their subscription (upgrade/downgrade or cancel), update payment info, and invite team members . From Auth > Embeds > Profile, configure and copy the profile embed code . Embed this on a protected page like /account or as a pop-up. This ensures you are using Outseta’s built-in subscription management UI, fulfilling the “subscription system” requirement with no need for custom billing code .
-
-Outcome: Your app now loads Outseta’s script and has Outseta’s sign-up, login, and profile widgets ready. Users can register and log in using Outseta’s forms (not Supabase Auth), and Outseta will handle sending confirmation emails, creating user accounts, and managing subscriptions/payments  .
-
-Step 2: Implement Outseta’s Login Flow and Session Handling
-
-Next, integrate the Outseta login workflow into your app and capture the user’s authenticated session using Outseta’s JWT token:
-	•	Post-Login Redirect and JWT Token: When a user logs in via Outseta’s login form, Outseta will redirect them to the Post Login URL you configured. Along with the redirect, Outseta appends an access_token (JWT) in the URL query string . This JWT is the key to the user’s session – it contains the user’s identity and subscription info and proves they are authenticated . For example, after login, the browser might be redirected to:
-
-https://yourapp.com/dashboard?access_token=<JWT_TOKEN>
-
-On the redirect page (e.g., your dashboard or a dedicated callback page), use client-side code to extract this access_token. In Next.js, you might read window.location.search or use router query params to get the token.
-
-	•	Store the token and consider persistence: Using Outseta’s JavaScript API, store the token so that the user’s session is remembered in the app. If you included the Outseta script with the default or “no-code” configuration, it can handle storing the token for you. By default, Outseta stores the token in session storage (lasting only for the open tab). To improve UX, you can configure persistent storage: set o_options.tokenStorage = "local" to use localStorage (persist across browser tabs and refreshes) or "cookie" to use a cookie (which also allows sharing login state across subdomains)  . For single-domain apps, local storage is typically sufficient; for multiple subdomains (e.g. app.mydomain.com and www.mydomain.com), using a cookie ensures the user doesn’t need to log in again on each domain  .
-	•	Initialize Outseta’s session: The Outseta script can automatically detect the access_token in the URL and initialize the user’s session. Outseta’s “nocode” module will grab the token from the URL and store it (triggering an accessToken.set event) . Ensure that the Outseta script is present on your Post Login page so this process runs. Outseta uses a small hidden “callback” page technique in their docs: for example, you can have a blank /auth/callback page that simply loads the Outseta script – it will store the token and then you can redirect the user onward in your app . In practice, you can combine this with your dashboard page by running a script on load to handle the token.
-	•	Verify login on the client (optional): Outseta provides JS methods to access the logged-in user’s info. For example, Outseta.getUser() returns a Promise with the user’s full profile (including their PersonUid, email, Account object, subscription status, etc.)  . You can also use Outseta.getJwtPayload() to get the decoded JWT payload (which contains key claims like sub – the user’s UID, email, outseta:accountUid, plan IDs, etc.) . These methods let you confirm on the frontend that a user is logged in and retrieve their plan to conditionally render UI. For example, after the user logs in, you might call Outseta.getJwtPayload() and see the user’s plan or add-on IDs to decide which features to enable in the UI . (However, for security, always enforce access control on the backend as well – see Step 5).
-	•	Set Outseta profile token: If you are using the Outseta profile embed, pass the JWT to it so it can display the user’s info. Outseta’s profile widget has a method Outseta.setAccessToken(token). Outseta notes that you should provide the access_token to the profile embed (via setAccessToken) if the profile embed is on a different page from the login . This ensures the profile portal knows the current user session. (If the profile embed is loaded after login on the same page and the script already stored the token, it may pick it up automatically.)
-
-By the end of this step, after a user logs in via Outseta, they will be redirected to your app with a valid JWT token, and your front-end (with Outseta’s script) will store and recognize the user as authenticated . The user’s identity and subscription level are now accessible in the browser via the Outseta token payload.
-
-Step 3: Secure Server-Side Communication (Outseta Auth ↔ Supabase)
-
-With Outseta managing user login, you need to securely link this authentication to your Supabase backend. This involves verifying Outseta’s JWT and establishing the user’s identity in server-side operations:
-	•	Validate Outseta JWTs on the backend: Whenever your Next.js API routes or serverless functions (or Supabase edge functions) receive a request from the client, verify the Outseta access_token before trusting any user info. Outseta issues JWT access tokens that can be cryptographically verified. Outseta provides a public key (JWKS) for your site at https://<your-subdomain>.outseta.com/.well-known/jwks  . Use a JWT library on the server (for Node, libraries like jose or jsonwebtoken) to fetch this JWKS and verify the token’s signature is from Outseta  . Once verified, you can safely use the token’s payload (claims). The payload includes the user’s unique Outseta Person UID (sub), email, Account UID, and even their subscription plan/add-on IDs  . Outseta’s documentation emphasizes always verifying the token before trusting it .
-Example: Using the jose library, you can do:
-
-const JWKS = createRemoteJWKSet(new URL("https://<your-subdomain>.outseta.com/.well-known/jwks"));
-const { payload } = await jwtVerify(accessToken, JWKS);
-
-If this succeeds, the payload contains the user’s info (e.g., payload.sub is the Person UID, payload.email is their email)  . If verification fails, reject the request as unauthorized.
-
-	•	Link Outseta identity to Supabase records: Use the verified token data to identify the user in your database. For example, you might use the Outseta Person UID (sub claim) as a foreign key in your Supabase tables to label who created a record or who should have access. If you followed Step 4 (user sync callback), you will have the Outseta Person UID stored in your users table. You can then look up the Supabase user record via this UID. This links the Outseta account to your internal data. (We will cover populating this link in Step 4.)
-	•	Option – Exchange Outseta JWT for a Supabase JWT (for RLS): If you want to use Supabase’s Row Level Security directly on client queries (i.e., allow the frontend to call Supabase REST or Supabase JS client with a user token), implement a server-side JWT exchange. Outseta’s team provides a guide for this: verify the Outseta token, then generate a new JWT signed with your Supabase JWT secret that includes the same user claims  . This Supabase-signed token essentially logs the user into Supabase. Key points from Outseta’s guide: set the Supabase token’s role claim to "authenticated" (required by Supabase), copy over relevant claims from the Outseta token (such as sub and any custom claims like outseta:accountUid), and sign it with your Supabase project’s JWT secret  . The new token can then be returned to the client to use with the Supabase API. Subsequent requests to Supabase should include Authorization: Bearer <Supabase_JWT> so that Supabase will authenticate the user and apply RLS policies .
-This approach allows you to leverage Supabase’s RLS using Outseta auth. For example, you can write RLS policies that compare the Outseta Person UID in the JWT (auth.jwt() ->> 'sub') to a user_uid column on rows  – thereby restricting rows to the logged-in Outseta user. (If you prefer, you can also keep all database access behind Next.js API routes and not expose Supabase directly; in that case, you might skip generating a Supabase token and simply use the verified Outseta token in your server logic to authorize requests.)
-	•	Protect Supabase service calls: Regardless of direct or indirect access, ensure that any call to Supabase (or any sensitive backend action) is made only after validating the Outseta token. In a Next.js API route on Vercel, you might implement middleware that expects an Authorization: Bearer <Outseta_JWT> header, verifies it as described, then attaches the user info (UID, etc.) to the request context for use in route handlers. This way, all backend interactions are gated by Outseta’s auth.
-
-Outcome: Your backend (Supabase or Vercel functions) now trusts Outseta’s authentication. By verifying the Outseta JWT, you link the user’s Outseta session to their Supabase identity. Optionally, by exchanging tokens, you enable direct Supabase access with full Row-Level Security support  . This ensures secure communication – only users authenticated via Outseta can access protected API/database routes, and their Outseta identity is consistently used for authorization checks.
-
-Step 4: Sync Outseta Users & Subscriptions to Supabase Database
-
-To maintain a record of users and their subscription status in your Supabase database, leverage Outseta’s official backend integration callbacks and webhooks. This will synchronize user metadata (IDs, plans, etc.) from Outseta into your own tables:
-	•	Use Outseta’s Sign-Up Callback for new users: Outseta provides a Sign Up Callback URL setting (under Auth > Sign Up & Login > Show Advanced Options) where you can specify an endpoint on your application to be notified whenever a new user registers . Configure this in Outseta with an endpoint on your Vercel app (for example, a Next.js API route /api/outseta/signup-callback). When a user completes Outseta’s sign-up form (and an Account is created), Outseta will send a POST request to this URL containing the new Person, Account, and Subscription data .
-On your server (the API route), parse the JSON payload and insert the user into your Supabase database. Typically, you’d create a new entry in a users table with fields like: Outseta Person UID, email, name, Outseta Account UID, and perhaps their chosen plan or subscription tier. The payload provided by Outseta includes all this information (e.g., person’s name/email, account name, subscription plan UID)  . By capturing it at sign-up, your DB immediately knows about the new user and their plan.
-	•	Return a Client Identifier (to link records): Outseta allows a two-way link: after you successfully handle the sign-up callback, you can respond to Outseta with the same data plus an extra field ClientIdentifier . Typically, you generate a unique ID in your own system for the user (for instance, the primary key of the new user row in Supabase). Include that in your JSON response to Outseta. Outseta will record this ClientIdentifier on the Account record . Going forward, Outseta’s JWT for the user will include outseta:accountClientIdentifier in its claims containing that value  . This is extremely useful: if you need to identify the user on the backend, the Outseta token itself carries your internal user ID. It provides a direct mapping between Outseta and your database. (For example, if you set ClientIdentifier to the Supabase user row’s UUID or numeric ID, you can fetch that from the token claims when the user logs in later.)
-	•	Secure the callback endpoint: Because this sign-up webhook is public-facing, protect it from unauthorized calls. Outseta supports signing webhook requests with an HMAC SHA256 signature. In Outseta Settings > Notifications, add a Webhook Signature Key (a 32-byte hex string)  . When configured, Outseta will include an x-hub-signature-256 header on all webhook requests, which you can verify in your endpoint before trusting the data  . Use the shared key to compute an HMAC of the raw request body and compare it to the signature header  . Only proceed to create a user in the database if the signatures match (proving the call came from Outseta)  .
-	•	Synchronize subscription updates and other events: Outseta can send additional webhooks (Activity Notifications) for events like Person Created, Subscription Updated, Subscription Canceled, etc. In Outseta Settings > Notifications, register callbacks for events relevant to your app’s data needs. For example, to keep subscription status in sync, you might set a callback for “Subscription Updated” that hits a /api/outseta/subscription-updated endpoint. In that handler, update the user’s plan/tier in your Supabase DB. Outseta recommends using these webhooks to avoid constantly polling their API . With notifications in place, any important change in Outseta (new user, plan change, cancellation, profile update, etc.) can promptly trigger an update in your database. Remember to verify all such webhook calls with the signature as described above for security.
-	•	Store essential metadata in Supabase: In your Supabase schema, have fields for Outseta’s identifiers and plan info. For example, your users table might have outseta_person_uid and outseta_account_uid (both strings), subscription_plan (perhaps store a plan name or an ID), plan_status (active, canceled, etc.), and any other profile info you need. Initially populate these on sign-up callback. On subscription change callbacks, update the subscription_plan or status accordingly. This local caching of key metadata can simplify your queries (so you don’t have to call Outseta API for every check) and can be used in join conditions or RLS policies.
-
-By the end of this step, Supabase has a synchronized record of your Outseta users and their subscriptions. New Outseta sign-ups automatically create DB entries (with Outseta IDs and plan tiers), and ongoing changes in Outseta (upgrades, cancellations, additional users on an account, etc.) can be reflected via webhooks . This ensures consistency between Outseta (the source of truth for auth & billing) and your application’s database for authorization or personalization needs.
-
-Step 5: Implement Frontend Gated Content and Authorization Logic
-
-Now configure your frontend and Outseta to restrict content based on user login status and subscription level:
-	•	Use Outseta’s Protected Content rules: Outseta has a built-in Protected Content feature that can automatically gate pages. In the Outseta admin under Auth > Protected Content, you can set up Content Groups for pages or sections of your site that require certain plans or login status . For each protected content group:
-	•	Define the URL pattern (or folder) to protect (e.g. /dashboard or /premium/*). You can choose “Starts with” to protect all pages under a path, or “Equals” for a specific page  . Note: When specifying the path, do not include the full domain – just the path segment. Outseta automatically knows your site’s root domain from your account settings, so you might enter simply dashboard rather than https://yourapp.com/dashboard .
-	•	Assign which Plans or add-ons have access. For example, you might restrict a /premium/ content group only to users on the “Premium” plan . Users on other plans (or not logged in) will be denied.
-	•	Set an Access Denied URL – the page to redirect unauthorized visitors. Typically, this could be your pricing or signup page, or a special “Upgrade required” page. If a user without access tries to visit the protected URL, Outseta’s script will automatically send them to this Access Denied URL  .
-Once content groups are set up, Outseta’s front-end script enforces them. The Outseta “no-code” module (enabled by including the script with load: 'nocode') will monitor page loads and if a protected route is hit by an unauthorized user, it will redirect them accordingly  . This is a no-code way to handle route protection.
-	•	Show/hide content or UI elements by login/plan: In addition to full-page protection, Outseta can conditionally display individual elements. Using Outseta’s data attributes, you can mark HTML elements to show only to logged-in users or only to users on specific plans . For example, an element with data-outseta-show="members" could be shown only to logged-in members, and data-outseta-hide="premium" could hide an element from Premium plan users (or vice versa). This approach is optional – it’s more often used in no-code site builders like Webflow, but you can use it in any web app to fine-tune visibility of buttons, messages, etc., based on Outseta auth state.
-	•	Client-side checks (if needed): If your app needs dynamic runtime checks (for example, enabling a menu item only for certain plans), use Outseta’s JS API. As mentioned in Step 2, you can call Outseta.getUser() to get the current user’s profile which includes their subscriptions and plan info . The JWT payload (Outseta.getJwtPayload()) provides quick access to plan UIDs as well . For instance, after login you could run:
-
-const payload = await Outseta.getJwtPayload();
-if(payload && payload["outseta:planUid"] === "<YOUR_PREMIUM_PLAN_UID>") {
-    // enable premium feature
-}
-
-However, in many cases you won’t need to do this manually if you leverage Outseta’s content groups as above for page-level gating.
-
-	•	Logout flow: Outseta’s embed API also provides a logout method (Outseta.logout() or similar) to end the user’s session. Implement a logout button that calls the Outseta API to clear the session token (if using localStorage or cookie, ensure it’s removed). According to Outseta’s docs, logging out will remove the token and the user will need to log in again to get a new one.
-
-With these measures, your frontend is now protected based on Outseta’s session. If a user isn’t logged in or lacks the required subscription, they will be prevented from accessing restricted pages (or see upgrade prompts) automatically  . This covers the content gating requirement using Outseta’s supported standards. Always remember: while the front-end gating improves UX, the backend should also enforce authorization (e.g., by checking the Outseta token’s plan or using RLS) to truly secure the data.
-
-Step 6: Vercel Deployment Considerations and Best Practices
-
-Finally, ensure your integration is production-ready and Vercel-compatible by following best practices:
-	•	Environment Variables: On Vercel, store sensitive keys as environment vars. You will need: the Supabase URL and Service Role or anon keys (for DB access), the Supabase JWT secret (for token signing if using the exchange), and the Outseta Webhook Signature Key (if you enabled signed webhooks). Never expose the service role or JWT secret to the client. Instead, use them server-side (in Next.js API routes). Vercel provides a secure way to add these variables in project settings, and you can access them via process.env.
-	•	API Routes for webhooks and token exchange: Deploy your Outseta callback endpoints as Next.js API routes (or use Vercel Serverless Functions). These will run in a Node environment on Vercel and can use the crypto module (for HMAC verification) and JWT libraries as needed. Vercel’s serverless functions are ephemeral but that’s fine for stateless webhook processing. Make sure your routes respond quickly (Outseta may expect a timely 200 response for webhooks). Test the sign-up webhook using a tool like RequestBin to ensure Vercel’s URL is reachable and responding .
-	•	CORS and domains: If you allow your frontend to call your Next.js APIs or Supabase directly, configure CORS as needed. Vercel’s Next.js APIs by default will accept same-origin requests. If your frontend is served from the same domain (e.g., your Vercel app domain or a custom domain), you’re all set. Supabase, if accessed directly from the frontend, will need the anon public key and will accept requests from any origin by default (you can restrict that in Supabase settings if desired). When exchanging tokens and using the Supabase JS client on the frontend, provide the new JWT via the Authorization header as shown in Step 3 .
-	•	Next.js and Outseta script loading: Ensure that Outseta’s script is only executed in the browser. In a Next.js app, anything added in the <head> (via _document or next/head) will be output in the HTML and loaded by the browser, which is correct. Avoid trying to call window.Outseta or any Outseta methods during Server-Side Rendering, as window is not defined on the server. If you use Next’s dynamic loading for the script (to maybe delay it), ensure it runs on componentDidMount or use the next/script component with strategy "afterInteractive" so it doesn’t block the initial paint. Outseta’s React integration guide suggests using monitorDom: true for single-page applications  – for Next.js, which can behave like an SPA on client side navigation, this is a good idea to ensure Outseta attaches to any newly loaded content or triggers after navigation.
-	•	Multiple environments (Dev/Staging/Prod): If you have separate Vercel deployments for staging or local development, you might either use a separate Outseta sandbox site or configure Outseta to work with multiple domains. Outseta tokens by default won’t persist across completely different domains. It’s fine for testing to use one Outseta account on a dev domain, but consider using Outseta’s tokenStorage: "cookie" option (with a shared parent domain) if you want to allow login state to carry between, say, staging.yourapp.com and yourapp.com during testing  . Also, Protected Content rules apply across domains in one Outseta site – be mindful that a rule for “/dashboard” will affect both your staging and prod if they share an Outseta config . Plan your URL structure accordingly if using one Outseta site for multiple deploys.
-	•	Testing and debugging: Before going live, test the full flow on Vercel’s deployed URL (since Outseta’s callbacks need a public URL). Check that: a new user signup triggers your webhook and creates a DB entry; logging in sets the JWT and allows access to protected pages; an unauthorized user gets redirected by Outseta’s script appropriately. Use console logs and Outseta’s debug suggestions (they recommend tools like RequestBin to inspect webhook payloads ). If something isn’t working, Outseta’s network requests (JWT retrieval, profile calls, etc.) can be observed in the browser dev tools.
-
-By following these steps, you leverage Outseta’s officially supported authentication & subscription system while maintaining a secure and seamless integration with your Supabase backend. The end result is a SaaS app where Outseta handles the heavy lifting of user accounts, login, and billing, and Supabase provides your application data storage with its own security – all tied together via Outseta’s tokens and callbacks. This approach is fully compatible with Vercel’s platform and ensures that both your web app and future iOS/Android apps can rely on the same Outseta-centric user identity system (mobile apps can use Outseta’s REST API or web views for login, then follow a similar token exchange flow for Supabase).
-
-Sources:
-	1.	Outseta Knowledge Base – Integrate Outseta with your backend database  
-	2.	Outseta Knowledge Base – How Outseta integrates with your SaaS product  
-	3.	Outseta Knowledge Base – How Outseta integrates with your SaaS product (JWT token auth workflow)  
-	4.	Outseta Knowledge Base – Access user info client-side with JavaScript  
-	5.	Outseta Knowledge Base – The JWT access token (payload contents)  
-	6.	Outseta Knowledge Base – Decode and verify Outseta JWT Access Tokens server-side  
-	7.	Outseta Knowledge Base – Integrate Supabase with Outseta Auth (RLS)  
-	8.	Outseta Knowledge Base – Set up protected content  
-	9.	Outseta Knowledge Base – Set up protected content (no-code script for content protection)  
-	10.	Outseta Knowledge Base – Secure and verify webhooks with a SHA256 Signature  
-
-Outseta is a very solid fit if you want “all-in-one” SaaS billing + auth sitting in front of Supabase, with Vercel hosting and Cursor building your app.[1][2] It’s especially good for what you’re doing: a subscription layer for ScentSwap, while Supabase handles the swapping data and RLS.
-
-## Is Outseta + Supabase + Vercel A Good Stack?
-
-- Outseta gives you:
-  - Auth (email/password, Google, protected content) and member management.[3]
-  - Subscription plans, billing, dunning, taxes, Stripe integration handled for you.[4][2]
-- Supabase gives you:
-  - Postgres + storage + RLS, ideal for your swap data, messages, ratings, etc.[5]
-- Vercel:
-  - Hosts your Next.js frontend and API routes that sit between Outseta and Supabase.
-
-Outseta’s own docs now have a dedicated guide for “Integrate Supabase with Outseta Auth for Row Level Security (RLS)” using a JWT exchange, so the combo you’re proposing is explicitly supported and current.[6][7]
-
-So yes: “Cursor builds app → deploy on Vercel → use Supabase for data → Outseta for auth + payments” is a correct and sensible architecture.
-
-## How Outseta Should Be Used In Your Setup
-
-For your Repliot/Cursor brief, make these points explicit:
-
-- Outseta is the single source of truth for:
-  - Who is a user.
-  - What plan they’re on (Free vs Premium tiers for ScentSwap).
-  - Whether billing is current.
-- Supabase knows:
-  - Outseta Person UID and Account UID for each row (user → cabinet → swaps).
-  - Plan/tier and status, synced from Outseta via webhooks.
-
-Core integration pieces you already outlined are the right ones, just clarify:
-
-- Use Outseta sign-up/login/profile widgets for all membership and billing flows, not Supabase Auth.[8][3]
-- On login, grab the Outseta JWT, verify it server-side, then optionally exchange it for a Supabase-signed JWT so you can use RLS safely from the frontend.[6][9]
-- Use Outseta’s signup/subscription webhooks to create/update rows in Supabase with Outseta IDs and plan info.[1][7]
-
-That’s exactly the pattern Outseta recommends for Supabase users.[6][1]
-
-## Deep Dive: Auth & RLS Pattern (What To Tell Cursor/Repliot)
-
-Have the agent implement the official Outseta → Supabase token exchange:
-
-- When the frontend receives an Outseta `access_token`:
-  - Send it to a Vercel API route or Supabase Edge Function.
-- That function:
-  - Verifies the Outseta JWT using the Outseta JWKS at `https://<your-subdomain>.outseta.com/.well-known/jwks`.[10][6]
-  - Reads key claims: `sub` (Person UID), `outseta:accountUid`, plan IDs, etc.
-  - Creates a new JWT signed with your Supabase JWT secret:
-    - `role: "authenticated"` (required by Supabase).[6][5]
-    - Copies `sub` and the Outseta claims into the payload (so RLS can see them).[6][7]
-  - Returns that Supabase JWT to the frontend.
-- Frontend:
-  - Sets Supabase client with `global.headers.Authorization = Bearer <supabaseJwt>` so all queries are under that user identity.[6][7]
-
-Then write RLS policies like:
-
-- `auth.jwt() ->> 'sub' = users.outseta_person_uid` to restrict rows to the logged-in Outseta user.[6][5]
-
-This lets you keep Supabase “dumb” about payments but very strict about who can see or update which inventory, swaps, messages etc.
-
-## Payments & Plans For ScentSwap
-
-Outseta sits in front of Stripe, so you get all the payment methods Stripe offers in AU (cards, Apple Pay, Google Pay, some bank methods) automatically, via Outseta’s checkout forms.[4][11]
-
-For ScentSwap, you can model:
-
-- Free plan:
-  - Basic access, maybe limited active listings or swap slots.
-- Premium plan(s):
-  - “ScentSwap NOIR” at $9.99/month with:
-    - More active listings/swaps.
-    - Priority placements.
-    - Advanced AI analytics, batch alerts, etc.
-
-Implementation details:
-
-- Define plans in Outseta (Billing > Plans).[2]
-- Use Outseta’s signup or upgrade form embeds wherever you want:
-  - Pricing page.
-  - “Upgrade” modal inside the app.
-- Use Outseta Protected Content rules and/or plan checks in JWT:
-  - Gate premium features like advanced AI, extra listings, or “Batch Hunter”.[3][2]
-
-## Where To Be Careful
-
-For Cursor/Repliot, call these out so you don’t get painted into a corner:
-
-- Don’t enable Supabase Auth at all; rely on Outseta for identity to avoid conflicts.[8][12]
-- Always verify Outseta JWT on the server before:
-  - Creating Supabase JWT.
-  - Doing any sensitive DB work.[10][5]
-- Store Outseta IDs in Supabase (person UID, account UID, client identifier) so:
-  - Webhooks can update the right user row.
-  - RLS can tie a Supabase row to an Outseta person cleanly.[6][1]
-- Keep all secrets (Supabase service key, Supabase JWT secret, Outseta webhook signing key) in Vercel env vars only.[6][5]
-
-If you want, next step can be: a very short, copy-paste “Integration spec for Repliot” that just states: “Use Outseta for auth + billing, Supabase for data, here’s exactly how to wire JWT exchange and webhooks,” in 10–15 bullet points.
-
-Sources
-[1] Integrations | Outseta Knowledge Base https://go.outseta.com/support/kb/categories/qNmd5Q0x/integrations
-[2] SaaS & Membership Billing and Payments https://www.outseta.com/payments
-[3] Authentication & Protected Content - Outseta https://www.outseta.com/authentication
-[4] Accept popular payment methods via Stripe https://www.outseta.com/features/payments-captured-by-stripe
-[5] Row Level Security | Supabase Docs https://supabase.com/docs/guides/database/postgres/row-level-security
-[6] Integrate Supabase with Outseta Auth for Row Level ... https://go.outseta.com/support/kb/articles/MQv4aaWY/integrate-supabase-with-outseta-auth-for-row-level-security-rls
-[7] Feedback Fort: Outseta with React & Supabase https://go.outseta.com/support/kb/articles/VmAOa49a/feedback-fort-outseta-with-react-supabase
-[8] How to use Outseta with your own authentication solution https://go.outseta.com/support/kb/articles/4XQY00mP/how-to-use-outseta-with-your-own-authentication-solution
-[9] How to use JWT from any auth provider with Supabase RLS https://queen.raae.codes/2025-05-01-supabase-exchange/
-[10] Decode and verify Outseta JWT Access Tokens server-side https://go.outseta.com/support/kb/articles/wQX70amK/decode-and-verify-outseta-jwt-access-tokens-server-side
-[11] Enable additional payment methods https://go.outseta.com/support/kb/articles/j9bp3wmn/enable-additional-payment-methods
-[12] Auth | Supabase Docs https://supabase.com/docs/guides/auth
-[13] Using Outseta for auth (token-based auth plugin) and ... https://community.weweb.io/t/using-outseta-for-auth-token-based-auth-plugin-and-exchanging-an-outseta-signed-jwt-for-a-supabased-signed-jwt-in-weweb/3611
-[14] r/framer on Reddit: How do you handle user authentication + online ... https://www.reddit.com/r/framer/comments/1mkybe9/how_do_you_handle_user_authentication_online/
-[15] Inject meta data to JWT for RLS. OK, Bad, Very Bad https://www.reddit.com/r/Supabase/comments/1m8iih0/inject_meta_data_to_jwt_for_rls_ok_bad_very_bad/
-[16] Connect to Stripe | Outseta Knowledge Base https://go.outseta.com/support/kb/articles/3wQX7lmK/connect-to-stripe
-[17] How to use WeWeb's Token Auth Plugin with Outseta https://www.outseta.com/guides/how-to-use-wewebs-token-auth-plugin-with-outseta
-[18] Connect Supabase with any Auth Provider https://www.authgear.com/post/supabase-any-auth-provider
-[19] Outseta | Payment Gateways Tool https://findsaastools.com/tool/payment-gateways/outseta
-[20] Add payments and authentication to Webflow (using Outseta's ... https://www.youtube.com/watch?v=-R-JMPcKBY0
+---
+alwaysApply: true
 ---
 
-## ScentSwap-Specific Configuration
+# Outseta Integration Rules for ScentSwap
 
-### Outseta Plan UIDs
+## ⚠️ CRITICAL: URL Configuration in Outseta Admin
+
+### What Goes Where (Auth > Sign Up & Login)
+
+| Setting | Value | Notes |
+|---------|-------|-------|
+| **Post Login URL** | `https://www.scentswap.com.au/` | Where users go AFTER login |
+| **Post Sign Up URL** | **LEAVE EMPTY** | Outseta handles confirmation |
+| **Sign Up Callback URL** | `https://www.scentswap.com.au/api/outseta/signup-callback` | Webhook for DB sync (Advanced Options) |
+
+### Why No Custom Callback Page Needed
+
+Outseta's **no-code approach** handles authentication automatically:
+1. User logs in on Outseta's hosted page
+2. Outseta redirects to Post Login URL (your app)
+3. Outseta's embed script detects the session automatically
+4. `SubscriptionContext` picks up via `Outseta.getUser()` and `Outseta.getJwtPayload()`
+
+**DO NOT create a custom `/auth/callback` page to extract tokens. The Outseta script handles this.**
+
+---
+
+## Plan UIDs
 
 | Plan | UID | Price |
 |------|-----|-------|
@@ -242,38 +34,65 @@ Sources
 | Premium | `vW5RoJm4` | $9.99/month AUD |
 | Elite | `aWxr2rQV` | $19.99/month AUD |
 
-### Auth URLs
+---
 
-```
-Login:   https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous
-Sign Up: https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous
-Profile: https://scentswap.outseta.com/profile#o-authenticated
+## Auth URLs (Direct Redirect)
+
+```javascript
+// Login
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
+
+// Sign up (general)
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous';
+
+// Sign up with plan pre-selected
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register&planUid=vW5RoJm4#o-anonymous';
+
+// Profile/Billing
+window.location.href = 'https://scentswap.outseta.com/profile#o-authenticated';
 ```
 
-### Embed Script
+---
 
-```html
-<script>
-  var o_options = {
-    domain: 'scentswap.outseta.com',
-    load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
-  };
-</script>
-<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+## Embed Script Configuration
+
+```javascript
+var o_options = {
+  domain: 'scentswap.outseta.com',
+  load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
+  tokenStorage: 'local',  // IMPORTANT: Persist across tabs/refreshes
+  monitorDom: true        // For SPA navigation
+};
 ```
+
+---
+
+## Approved Outseta Methods
+
+Only use these client-side methods:
+
+```javascript
+// Get user info
+const user = await Outseta.getUser();
+
+// Get JWT payload
+const payload = await Outseta.getJwtPayload();
+
+// Set/clear token
+Outseta.setAccessToken(token);
+Outseta.setAccessToken(null); // Logout
+```
+
+**DO NOT USE:**
+- `Outseta.auth.open()` - Use direct URL redirects instead
+- `Outseta.profile.open()` - Use direct URL redirects instead
+- Any undocumented methods
 
 ---
 
 ## Admin Authentication
 
-ScentSwap uses a **hardcoded email whitelist** for admin access. This approach:
-- Works across both Supabase and Outseta authentication
-- Requires code deployment to add new admins (secure)
-- Uses email as the common identifier between systems
-
-### Admin Whitelist Location
-
-`lib/admin.ts`:
+Uses hardcoded email whitelist in `lib/admin.ts`:
 
 ```typescript
 const ADMIN_EMAILS = ['downscale@icloud.com'];
@@ -284,42 +103,30 @@ export function isAdmin(email?: string | null): boolean {
 }
 ```
 
-### How Admin Check Works
-
-1. User logs in via Outseta (or Supabase)
-2. `SubscriptionContext` calls `Outseta.getUser()` to get email
-3. `isAdmin(email)` checks against whitelist
-4. If true, Admin tab appears in navigation
-
-### Adding New Admins
-
-1. Edit `lib/admin.ts`
-2. Add email to `ADMIN_EMAILS` array
-3. Commit and deploy
-
-### Creating Founder Account with 100% Discount
-
-To get Elite subscription for free:
-
-1. **Create Coupon in Outseta**:
-   - Go to **BILLING > COUPONS**
-   - Click **+ Add Coupon**
-   - Code: `FOUNDER100`
-   - Discount: `100%`
-   - Duration: Forever
-   - Max Redemptions: `1`
-
-2. **Sign Up with Coupon**:
-   - Go to app sign-up page
-   - Select **Elite** plan
-   - Enter coupon code `FOUNDER100` at checkout
-   - Use email that's in `ADMIN_EMAILS` whitelist
-
-3. **Result**:
-   - Elite subscription at $0/month
-   - Admin tab visible after login
-   - Full admin dashboard access
+To add new admin: Edit `lib/admin.ts`, add email, deploy.
 
 ---
-alwaysApply: false
+
+## Webhooks (Optional - for Supabase sync)
+
+### Sign-Up Callback
+- **URL:** `https://www.scentswap.com.au/api/outseta/signup-callback`
+- **Purpose:** Create user in Supabase when they sign up in Outseta
+
+### Subscription Updated
+- **URL:** `https://www.scentswap.com.au/api/outseta/subscription-updated`
+- **Purpose:** Sync plan changes to Supabase
+
+### Signature Verification
+Set webhook signing key in Outseta Settings > Notifications and verify with HMAC SHA256.
+
 ---
+
+## Key Principles
+
+1. **Outseta is the ONLY auth provider** - DO NOT use Supabase Auth
+2. **Use no-code approach** - Direct URL redirects, not widget APIs
+3. **Post Login URL = App page** - NOT an API endpoint
+4. **Post Sign Up URL = EMPTY** - Let Outseta handle confirmation
+5. **tokenStorage: "local"** - Persist sessions across tabs
+6. **Store Outseta IDs in Supabase** - `outseta_person_uid`, `outseta_account_uid`

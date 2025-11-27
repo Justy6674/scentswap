@@ -18,7 +18,7 @@
 
 - **Outseta** = Single source of truth for users, plans, and billing
 - **Supabase** = Data storage only (NO Supabase Auth)
-- **Vercel** = Hosts frontend + API routes for JWT exchange and webhooks
+- **Vercel** = Hosts frontend + API routes for webhooks
 
 ---
 
@@ -37,23 +37,55 @@
 | Action | URL |
 |--------|-----|
 | Sign Up | `https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous` |
+| Sign Up with Plan | `https://scentswap.outseta.com/auth?widgetMode=register&planUid=<PLAN_UID>#o-anonymous` |
 | Log In | `https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous` |
 | Profile | `https://scentswap.outseta.com/profile#o-authenticated` |
 | JWKS | `https://scentswap.outseta.com/.well-known/jwks` |
 
 ---
 
-## Step 1: Embed Outseta's Sign-Up, Login, and Subscription Components
+## ⚠️ CRITICAL: Outseta Admin URL Configuration
 
-### Include Outseta Script
+### What Goes Where in Outseta Admin
 
-Add to `<head>` in `_document.js` or via Next's Head component:
+Go to **Auth > Sign Up & Login** in Outseta Admin:
+
+| Setting | Location | Value | Notes |
+|---------|----------|-------|-------|
+| **Post Login URL** | Login Settings | `https://www.scentswap.com.au/` | Where users go AFTER login. Set to your main app page. |
+| **Post Sign Up URL** | Sign Up Settings | **LEAVE EMPTY** | Outseta shows its own confirmation. Don't set this. |
+| **Sign Up Callback URL** | Sign Up Settings > Show Advanced Options | `https://www.scentswap.com.au/api/outseta/signup-callback` | Server-to-server webhook for database sync (optional) |
+
+### Why This Works (No Custom Callback Page Needed!)
+
+Outseta's **no-code approach** handles authentication automatically:
+
+1. User clicks "Sign In" → Redirects to Outseta hosted login page
+2. User logs in on Outseta
+3. Outseta redirects to **Post Login URL** (your app page)
+4. **Outseta's embed script automatically detects the user is logged in**
+5. `SubscriptionContext` picks up the session via `Outseta.getUser()` and `Outseta.getJwtPayload()`
+
+**You do NOT need:**
+- A special `/auth/callback` page to extract tokens from URL
+- Any manual token extraction logic
+- Complex redirect handling
+
+**The Outseta script handles all of this automatically when `tokenStorage: "local"` is set.**
+
+---
+
+## Step 1: Embed Outseta Script
+
+Add to your app's `<head>` (via `OutsetaScript` component):
 
 ```html
 <script>
 var o_options = {
     domain: 'scentswap.outseta.com',
-    load: 'auth,customForm,emailList,leadCapture,nocode,profile,support'
+    load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
+    tokenStorage: 'local',  // Persist across tabs/refreshes
+    monitorDom: true        // For SPA navigation
 };
 </script>
 <script src="https://cdn.outseta.com/outseta.min.js"
@@ -61,85 +93,57 @@ var o_options = {
 </script>
 ```
 
-### Configure in Outseta Admin
+### Token Storage Options
 
-1. **Auth > Sign Up & Login**:
-   - Set up subscription Plans (under Billing > Plans)
-   - Enable "Send sign up confirmation email"
-   - Set Post Login URL (e.g., `/dashboard`)
-
-2. **Auth > Embeds**:
-   - Copy Sign-Up form embed code
-   - Copy Login form embed code
-   - Copy Profile embed code (for account management)
-
-### Trigger Auth Modals
-
-```javascript
-// Sign up - redirect to Outseta hosted page
-window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous';
-
-// Login - redirect to Outseta hosted page
-window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
-
-// Profile/Billing management - redirect to Outseta hosted page
-window.location.href = 'https://scentswap.outseta.com/profile#o-authenticated';
-
-// OR use embedded widgets if script is loaded:
-Outseta.auth.open({ mode: 'register' });
-Outseta.auth.open({ mode: 'login' });
-Outseta.profile.open();
-```
+- `session` = Tab only (default) - user must login again in new tab
+- `local` = Persist across tabs/refreshes (RECOMMENDED)
+- `cookie` = Share across subdomains
 
 ---
 
-## Step 2: Implement Login Flow and Session Handling
+## Step 2: Login/Signup Flow (No-Code Approach)
 
-### Post-Login Redirect
+### Triggering Auth
 
-After login, Outseta redirects to Post Login URL with JWT:
-
-```
-https://yourapp.com/dashboard?access_token=<JWT_TOKEN>
-```
-
-### Token Storage Options
-
-Configure in `o_options`:
+Simply redirect users to Outseta's hosted pages:
 
 ```javascript
-var o_options = {
-  domain: "scentswap.outseta.com",
-  load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
-  tokenStorage: "local"  // Options: "session" (default), "local", "cookie"
-};
+// Login - redirect to Outseta hosted page
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
+
+// Sign up (no plan pre-selected)
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous';
+
+// Sign up with specific plan pre-selected
+window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register&planUid=vW5RoJm4#o-anonymous';
+
+// Profile/Billing management
+window.location.href = 'https://scentswap.outseta.com/profile#o-authenticated';
 ```
 
-- `session` = Tab only (default)
-- `local` = Persist across tabs/refreshes
-- `cookie` = Share across subdomains
+### After Login
 
-### Access User Info Client-Side
+Outseta redirects to your **Post Login URL**. The Outseta script:
+1. Automatically detects the session
+2. Stores the token (if `tokenStorage: "local"`)
+3. Makes `Outseta.getUser()` and `Outseta.getJwtPayload()` available
+
+Your `SubscriptionContext` then picks this up and updates the app state.
+
+---
+
+## Step 3: Access User Info Client-Side
 
 ```javascript
-// Get full user profile
-const user = await Outseta.getUser();
+// Check if Outseta is loaded and user is logged in
+if (window.Outseta) {
+  // Get full user profile
+  const user = await Outseta.getUser();
+  console.log(user.Email, user.FirstName, user.LastName);
 
-// Get JWT payload (quick access to claims)
-const payload = await Outseta.getJwtPayload();
-
-// Check plan - use actual ScentSwap plan UIDs
-const PLAN_UIDS = {
-  FREE: 'z9MP7yQ4',
-  PREMIUM: 'vW5RoJm4',
-  ELITE: 'aWxr2rQV'
-};
-
-if (payload && payload["outseta:planUid"] === PLAN_UIDS.PREMIUM) {
-  // Enable premium features
-}
-if (payload && payload["outseta:planUid"] === PLAN_UIDS.ELITE) {
-  // Enable elite features
+  // Get JWT payload (quick access to claims)
+  const payload = await Outseta.getJwtPayload();
+  console.log(payload.email, payload['outseta:planUid']);
 }
 ```
 
@@ -148,130 +152,62 @@ if (payload && payload["outseta:planUid"] === PLAN_UIDS.ELITE) {
 - `sub` = Person UID (unique user identifier)
 - `email` = User's email
 - `outseta:accountUid` = Account UID
-- `outseta:planUid` = Current plan ID
-- `outseta:accountClientIdentifier` = Your internal user ID (if set)
+- `outseta:planUid` = Current plan ID (e.g., `vW5RoJm4` for Premium)
+- `outseta:accountClientIdentifier` = Your internal user ID (if set via webhook)
 
----
-
-## Step 3: Secure Server-Side Communication
-
-### Verify Outseta JWT on Backend
-
-**ALWAYS verify the token before trusting any user info.**
-
-Using `jose` library:
+### Plan Checking
 
 ```javascript
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+const PLAN_UIDS = {
+  FREE: 'z9MP7yQ4',
+  PREMIUM: 'vW5RoJm4',
+  ELITE: 'aWxr2rQV'
+};
 
-const JWKS = createRemoteJWKSet(
-  new URL("https://scentswap.outseta.com/.well-known/jwks")
-);
-
-async function verifyOutsetaToken(accessToken) {
-  const { payload } = await jwtVerify(accessToken, JWKS);
-  return payload; // Contains sub, email, outseta:accountUid, etc.
+const payload = await Outseta.getJwtPayload();
+if (payload && payload["outseta:planUid"] === PLAN_UIDS.PREMIUM) {
+  // Enable premium features
 }
-```
-
-### Exchange Outseta JWT for Supabase JWT (for RLS)
-
-Create API route `/api/auth/exchange-token`:
-
-```javascript
-import { createRemoteJWKSet, jwtVerify, SignJWT } from 'jose';
-
-export async function POST(req) {
-  const { outsetaToken } = await req.json();
-  
-  // 1. Verify Outseta token
-  const JWKS = createRemoteJWKSet(
-    new URL("https://scentswap.outseta.com/.well-known/jwks")
-  );
-  const { payload } = await jwtVerify(outsetaToken, JWKS);
-  
-  // 2. Create Supabase-signed JWT
-  const supabaseJwt = await new SignJWT({
-    sub: payload.sub,                          // Outseta Person UID
-    email: payload.email,
-    role: "authenticated",                     // REQUIRED by Supabase
-    "outseta:accountUid": payload["outseta:accountUid"],
-    "outseta:planUid": payload["outseta:planUid"],
-  })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('1h')
-    .sign(new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET));
-  
-  return Response.json({ supabaseToken: supabaseJwt });
-}
-```
-
-### Use Supabase JWT on Frontend
-
-```javascript
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  global: {
-    headers: {
-      Authorization: `Bearer ${supabaseJwt}`
-    }
-  }
-});
-```
-
-### RLS Policy Example
-
-```sql
--- Users can only see their own data
-CREATE POLICY "Users can view own data" ON listings
-  FOR SELECT
-  USING (auth.jwt() ->> 'sub' = user_outseta_uid);
 ```
 
 ---
 
-## Step 4: Sync Outseta Users & Subscriptions to Supabase
+## Step 4: Logout
+
+```javascript
+// Clear Outseta session
+Outseta.setAccessToken(null);
+
+// Or redirect to handle logout
+window.location.href = '/';
+```
+
+---
+
+## Step 5: Webhooks (Optional - For Database Sync)
+
+If you need to sync user data to Supabase, set up webhooks:
 
 ### Sign-Up Callback Webhook
 
-Configure in Outseta: **Auth > Sign Up & Login > Show Advanced Options > Sign Up Callback URL**
+**Configure in Outseta:** Auth > Sign Up & Login > Show Advanced Options > Sign Up Callback URL
 
-Set to: `https://yourapp.com/api/outseta/signup-callback`
+**Set to:** `https://www.scentswap.com.au/api/outseta/signup-callback`
 
-```javascript
-// /api/outseta/signup-callback
-export async function POST(req) {
-  // 1. Verify webhook signature (see below)
-  
-  // 2. Parse payload
-  const data = await req.json();
-  const { Person, Account, Subscription } = data;
-  
-  // 3. Create user in Supabase
-  const { data: user, error } = await supabase
-    .from('users')
-    .insert({
-      outseta_person_uid: Person.Uid,
-      outseta_account_uid: Account.Uid,
-      email: Person.Email,
-      full_name: `${Person.FirstName} ${Person.LastName}`,
-      subscription_plan: Subscription?.Plan?.Name || 'free',
-      subscription_status: Subscription?.Status || 'active',
-    })
-    .select()
-    .single();
-  
-  // 4. Return ClientIdentifier (your internal ID)
-  return Response.json({
-    ...data,
-    ClientIdentifier: user.id  // This gets stored in Outseta
-  });
-}
-```
+This is a **server-to-server** call (not a browser redirect). Outseta POSTs user data when someone signs up.
 
-### Verify Webhook Signature
+### Subscription Update Webhook
+
+**Configure in Outseta:** Settings > Notifications > Add Callback
+
+Events to listen for:
+- Subscription Updated
+- Subscription Canceled
+- Person Updated
+
+**Set to:** `https://www.scentswap.com.au/api/outseta/subscription-updated`
+
+### Webhook Signature Verification
 
 In Outseta: **Settings > Notifications > Webhook Signature Key** (32-byte hex string)
 
@@ -287,79 +223,6 @@ function verifyWebhookSignature(payload, signature, secret) {
     Buffer.from(signature)
   );
 }
-
-// In your webhook handler:
-const signature = req.headers.get('x-hub-signature-256');
-const rawBody = await req.text();
-if (!verifyWebhookSignature(rawBody, signature, process.env.OUTSETA_WEBHOOK_SECRET)) {
-  return Response.json({ error: 'Invalid signature' }, { status: 401 });
-}
-```
-
-### Subscription Update Webhook
-
-Configure in Outseta: **Settings > Notifications > Add Callback**
-
-Events to listen for:
-- Subscription Updated
-- Subscription Canceled
-- Person Updated
-
-```javascript
-// /api/outseta/subscription-updated
-export async function POST(req) {
-  // Verify signature...
-  
-  const { Account, Subscription } = await req.json();
-  
-  await supabase
-    .from('users')
-    .update({
-      subscription_plan: Subscription?.Plan?.Name || 'free',
-      subscription_status: Subscription?.Status,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('outseta_account_uid', Account.Uid);
-  
-  return Response.json({ success: true });
-}
-```
-
----
-
-## Step 5: Frontend Protected Content
-
-### Outseta Protected Content Rules
-
-Configure in Outseta: **Auth > Protected Content**
-
-1. Define URL pattern (e.g., `/dashboard`, `/premium/*`)
-2. Assign which Plans have access
-3. Set Access Denied URL (redirect for unauthorized users)
-
-### Show/Hide Elements by Plan
-
-```html
-<!-- Show only to logged-in members -->
-<div data-outseta-show="members">
-  Welcome back!
-</div>
-
-<!-- Show only to Premium plan -->
-<div data-outseta-show="premium">
-  Premium feature here
-</div>
-
-<!-- Hide from Premium (show upgrade prompt) -->
-<div data-outseta-hide="premium">
-  Upgrade to Premium to unlock this feature
-</div>
-```
-
-### Logout
-
-```javascript
-Outseta.logout();
 ```
 
 ---
@@ -370,17 +233,14 @@ Outseta.logout();
 # Supabase
 SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
 SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Server-side only - get from Supabase dashboard
-SUPABASE_JWT_SECRET=your-jwt-secret  # For signing exchanged tokens - get from Supabase dashboard
+SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Server-side only
 
 # Outseta
-OUTSETA_SUBDOMAIN=scentswap
-OUTSETA_WEBHOOK_SECRET=your-32-byte-hex-key  # Set this in Outseta Settings > Notifications
+OUTSETA_WEBHOOK_SECRET=your-32-byte-hex-key  # From Outseta Settings > Notifications
 
 # Public (exposed to client)
-NEXT_PUBLIC_SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_OUTSETA_DOMAIN=scentswap.outseta.com
+EXPO_PUBLIC_SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
 ---
@@ -398,7 +258,6 @@ NEXT_PUBLIC_OUTSETA_DOMAIN=scentswap.outseta.com
 - **Price**: $9.99/month AUD
 - **Max Listings**: 25
 - **Features**:
-  - unlimited_listings (up to 25)
   - priority_matching
   - photo_verification
   - no_ads
@@ -431,22 +290,79 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'act
 
 ---
 
+## Admin Authentication
+
+ScentSwap uses a **hardcoded email whitelist** for admin access.
+
+### Admin Whitelist Location
+
+`lib/admin.ts`:
+
+```typescript
+const ADMIN_EMAILS = ['downscale@icloud.com'];
+
+export function isAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+```
+
+### Adding New Admins
+
+1. Edit `lib/admin.ts`
+2. Add email to `ADMIN_EMAILS` array
+3. Commit and deploy
+
+### Creating Founder Account with 100% Discount
+
+1. **Create Coupon in Outseta**:
+   - Go to **BILLING > COUPONS**
+   - Click **+ Add Coupon**
+   - Code: `FOUNDER100`
+   - Discount: `100%`
+   - Duration: Forever
+   - Max Redemptions: `1`
+
+2. **Sign Up with Coupon**:
+   - Go to app sign-up page
+   - Select **Elite** plan
+   - Enter coupon code `FOUNDER100` at checkout
+   - Use email that's in `ADMIN_EMAILS` whitelist
+
+---
+
 ## Key Principles
 
 1. **DO NOT use Supabase Auth** - Outseta is the only auth provider
-2. **ALWAYS verify Outseta JWT** on server before trusting user info
-3. **Store Outseta IDs in Supabase** for linking data to users
-4. **Use webhooks** to sync subscription changes, don't poll
-5. **Keep secrets in Vercel env vars** only, never expose to client
+2. **Use Outseta's no-code approach** - Let the script handle token storage
+3. **Post Login URL** = Your main app page (e.g., `/` or `/browse`)
+4. **Post Sign Up URL** = LEAVE EMPTY (Outseta handles confirmation)
+5. **Sign Up Callback URL** = Webhook endpoint for database sync (optional)
+6. **Store Outseta IDs in Supabase** for linking data to users
+7. **Keep secrets in Vercel env vars** only, never expose to client
+
+---
+
+## Troubleshooting
+
+### User redirected to wrong page after login
+- Check **Post Login URL** in Outseta Admin (Auth > Sign Up & Login)
+- Should be your app page, NOT an API endpoint
+
+### User session not persisting
+- Ensure `tokenStorage: "local"` is set in `o_options`
+- Check that Outseta script is loading on all pages
+
+### Webhook not receiving data
+- Verify webhook URL is publicly accessible
+- Check Vercel function logs for errors
+- Ensure webhook signature key is set in both Outseta and Vercel env vars
 
 ---
 
 ## Sources
 
 1. [Outseta Knowledge Base – Integrations](https://go.outseta.com/support/kb/categories/qNmd5Q0x/integrations)
-2. [Outseta – SaaS & Membership Billing](https://www.outseta.com/payments)
-3. [Outseta – Authentication & Protected Content](https://www.outseta.com/authentication)
+2. [Outseta – Configure Sign Up & Login Settings](https://go.outseta.com/support/kb/articles/aOW4DGWg/configure-your-sign-up-and-login-settings)
+3. [Outseta – Integrate with Backend Database](https://go.outseta.com/support/kb/articles/B9lV2dm8/integrate-outseta-with-your-backend-database)
 4. [Integrate Supabase with Outseta Auth for RLS](https://go.outseta.com/support/kb/articles/MQv4aaWY/integrate-supabase-with-outseta-auth-for-row-level-security-rls)
-5. [Decode and verify Outseta JWT Access Tokens](https://go.outseta.com/support/kb/articles/wQX70amK/decode-and-verify-outseta-jwt-access-tokens-server-side)
-6. [Feedback Fort: Outseta with React & Supabase](https://go.outseta.com/support/kb/articles/VmAOa49a/feedback-fort-outseta-with-react-supabase)
-
