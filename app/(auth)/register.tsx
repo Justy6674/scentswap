@@ -1,8 +1,11 @@
 /**
  * Register Screen
  * 
- * Redirects to Outseta for registration with plan selection.
- * Users can choose Free, Premium, or Elite during signup.
+ * Redirects to Outseta hosted registration page with plan selection.
+ * Uses only Outseta-approved methods per documentation.
+ * 
+ * @see docs/OUTSETA_INTEGRATION.md
+ * @see .cursor/rules/outseta.mdc
  */
 
 import React, { useEffect, useState } from 'react';
@@ -15,6 +18,7 @@ import {
   Platform,
   ActivityIndicator,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
@@ -32,7 +36,7 @@ import { Button } from '@/components/Button';
 export default function RegisterScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, isLoading, openSignUp } = useSubscription();
+  const { isAuthenticated, isLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier>('free');
 
   // If already authenticated, redirect to tabs
@@ -42,26 +46,23 @@ export default function RegisterScreen() {
     }
   }, [isAuthenticated, isLoading]);
 
+  /**
+   * Handle sign up - redirect to Outseta hosted registration page
+   * This is the Outseta-approved method per their documentation
+   * 
+   * URL format: https://[subdomain].outseta.com/auth?widgetMode=register&planUid=[planUid]#o-anonymous
+   */
   const handleSignUp = (planTier: SubscriptionTier = selectedPlan) => {
     const plan = SUBSCRIPTION_PLANS[planTier];
     
+    // Build Outseta registration URL with selected plan
+    const signUpUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${plan.outsetaPlanUid}#o-anonymous`;
+    
     if (Platform.OS === 'web') {
-      // Check if Outseta is loaded for embedded widget
-      if (typeof window !== 'undefined' && (window as any).Outseta) {
-        try {
-          (window as any).Outseta.auth.open({ 
-            mode: 'register',
-            planUid: plan.outsetaPlanUid,
-          });
-          return;
-        } catch (e) {
-          console.log('Outseta widget not available, redirecting...');
-        }
-      }
-      // Fallback to redirect with plan
-      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${plan.outsetaPlanUid}#o-anonymous`;
+      window.location.href = signUpUrl;
     } else {
-      openSignUp();
+      // Mobile - open in system browser
+      Linking.openURL(signUpUrl);
     }
   };
 

@@ -200,44 +200,78 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * Initialize Outseta using only approved methods from documentation:
+   * - Outseta.getUser() - Get current user profile
+   * - Outseta.getJwtPayload() - Get decoded JWT payload
+   * - Outseta.setAccessToken(token) - Set access token
+   * 
+   * @see .cursor/rules/outseta.mdc
+   */
   const initializeOutseta = async () => {
     setIsLoading(true);
     
     try {
-      // Check if Outseta script is loaded
-      if (typeof (window as any).Outseta !== 'undefined') {
-        const Outseta = (window as any).Outseta;
-        
-        // Try to get current user
-        try {
-          const user = await Outseta.getUser();
-          if (user) {
-            const jwtPayload = await Outseta.getJwtPayload();
-            handleOutsetaUser(user, jwtPayload);
-          }
-        } catch (e) {
-          // No user logged in
-          console.log('No Outseta user session');
-        }
-        
-        // Listen for auth changes
-        Outseta.on('accessToken.set', async () => {
-          const user = await Outseta.getUser();
+      // Wait for Outseta script to load
+      await waitForOutseta();
+      
+      const Outseta = (window as any).Outseta;
+      
+      if (!Outseta) {
+        console.log('Outseta not available');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Try to get current user using approved method: Outseta.getUser()
+      try {
+        const user = await Outseta.getUser();
+        if (user) {
+          // Get JWT payload using approved method: Outseta.getJwtPayload()
           const jwtPayload = await Outseta.getJwtPayload();
           handleOutsetaUser(user, jwtPayload);
+        }
+      } catch (e) {
+        // No user logged in - this is expected for unauthenticated users
+        console.log('No Outseta user session');
+      }
+      
+      // Listen for auth changes using Outseta's event system
+      // These are documented events in Outseta's nocode module
+      if (Outseta.on) {
+        Outseta.on('accessToken.set', async () => {
+          try {
+            const user = await Outseta.getUser();
+            const jwtPayload = await Outseta.getJwtPayload();
+            handleOutsetaUser(user, jwtPayload);
+          } catch (e) {
+            console.error('Error handling accessToken.set:', e);
+          }
         });
         
         Outseta.on('accessToken.clear', () => {
           handleLogout();
         });
-      } else {
-        console.log('Outseta script not loaded yet');
       }
     } catch (error) {
       console.error('Error initializing Outseta:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * Wait for Outseta script to be available
+   */
+  const waitForOutseta = async (maxAttempts = 20): Promise<void> => {
+    for (let i = 0; i < maxAttempts; i++) {
+      if (typeof window !== 'undefined' && (window as any).Outseta) {
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    // Don't throw - just continue without Outseta
+    console.log('Outseta script did not load in time');
   };
 
   const handleOutsetaUser = (user: any, jwtPayload: any) => {
@@ -300,71 +334,142 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   };
 
   // =============================================================================
-  // AUTH METHODS
+  // AUTH METHODS - Using only Outseta-approved URL redirects
   // =============================================================================
 
+  /**
+   * Open sign up page - redirect to Outseta hosted registration
+   * This is the Outseta-approved method per documentation
+   */
   const openSignUp = () => {
+    const signUpUrl = OUTSETA_CONFIG.urls.signUp;
+    
     if (Platform.OS === 'web') {
-      window.location.href = OUTSETA_CONFIG.urls.signUp;
+      window.location.href = signUpUrl;
     } else {
-      // For mobile, open in browser or webview
-      console.log('Mobile sign up - implement with Linking or WebView');
+      // Mobile - use React Native Linking
+      import('react-native').then(({ Linking }) => {
+        Linking.openURL(signUpUrl);
+      });
     }
   };
 
+  /**
+   * Open login page - redirect to Outseta hosted login
+   * This is the Outseta-approved method per documentation
+   */
   const openLogin = () => {
+    const loginUrl = OUTSETA_CONFIG.urls.login;
+    
     if (Platform.OS === 'web') {
-      window.location.href = OUTSETA_CONFIG.urls.login;
+      window.location.href = loginUrl;
     } else {
-      console.log('Mobile login - implement with Linking or WebView');
+      import('react-native').then(({ Linking }) => {
+        Linking.openURL(loginUrl);
+      });
     }
   };
 
+  /**
+   * Open profile page - redirect to Outseta hosted profile
+   * This is the Outseta-approved method per documentation
+   */
   const openProfile = () => {
+    const profileUrl = OUTSETA_CONFIG.urls.profile;
+    
     if (Platform.OS === 'web') {
-      window.location.href = OUTSETA_CONFIG.urls.profile;
+      window.location.href = profileUrl;
     } else {
-      console.log('Mobile profile - implement with Linking or WebView');
+      import('react-native').then(({ Linking }) => {
+        Linking.openURL(profileUrl);
+      });
     }
   };
 
+  /**
+   * Logout - clear local state and redirect to clear Outseta session
+   * Per Outseta docs, logging out removes the token
+   */
   const logout = () => {
-    if (Platform.OS === 'web' && typeof (window as any).Outseta !== 'undefined') {
-      (window as any).Outseta.auth.logout();
-    }
+    // Clear local state first
     handleLogout();
-  };
-
-  // =============================================================================
-  // SUBSCRIPTION METHODS
-  // =============================================================================
-
-  const upgradeToPremium = () => {
-    // Redirect to Outseta checkout with Premium plan
-    if (Platform.OS === 'web') {
-      // Outseta will handle the upgrade flow
-      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.PREMIUM}#o-anonymous`;
-    }
-  };
-
-  const upgradeToElite = () => {
-    if (Platform.OS === 'web') {
-      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.ELITE}#o-anonymous`;
-    }
-  };
-
-  const refreshSubscription = async () => {
-    if (Platform.OS === 'web' && typeof (window as any).Outseta !== 'undefined') {
-      const Outseta = (window as any).Outseta;
+    
+    // Clear Outseta token if available
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Clear localStorage token that Outseta uses
       try {
-        const user = await Outseta.getUser();
-        const jwtPayload = await Outseta.getJwtPayload();
-        if (user) {
-          handleOutsetaUser(user, jwtPayload);
-        }
-      } catch (error) {
-        console.error('Error refreshing subscription:', error);
+        localStorage.removeItem('outseta-access-token');
+      } catch (e) {
+        // localStorage might not be available
       }
+      
+      // Redirect to home page after logout
+      window.location.href = '/';
+    }
+  };
+
+  // =============================================================================
+  // SUBSCRIPTION METHODS - Using only Outseta-approved URL redirects
+  // =============================================================================
+
+  /**
+   * Upgrade to Premium - redirect to Outseta registration with Premium plan
+   * URL format per Outseta docs: /auth?widgetMode=register&planUid=[planUid]#o-anonymous
+   */
+  const upgradeToPremium = () => {
+    const upgradeUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.PREMIUM}#o-anonymous`;
+    
+    if (Platform.OS === 'web') {
+      window.location.href = upgradeUrl;
+    } else {
+      import('react-native').then(({ Linking }) => {
+        Linking.openURL(upgradeUrl);
+      });
+    }
+  };
+
+  /**
+   * Upgrade to Elite - redirect to Outseta registration with Elite plan
+   */
+  const upgradeToElite = () => {
+    const upgradeUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.ELITE}#o-anonymous`;
+    
+    if (Platform.OS === 'web') {
+      window.location.href = upgradeUrl;
+    } else {
+      import('react-native').then(({ Linking }) => {
+        Linking.openURL(upgradeUrl);
+      });
+    }
+  };
+
+  /**
+   * Refresh subscription status using approved Outseta methods:
+   * - Outseta.getUser()
+   * - Outseta.getJwtPayload()
+   */
+  const refreshSubscription = async () => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+      return;
+    }
+    
+    const Outseta = (window as any).Outseta;
+    
+    if (!Outseta) {
+      console.log('Outseta not available for refresh');
+      return;
+    }
+    
+    try {
+      // Use approved methods: getUser() and getJwtPayload()
+      const user = await Outseta.getUser();
+      const jwtPayload = await Outseta.getJwtPayload();
+      
+      if (user) {
+        handleOutsetaUser(user, jwtPayload);
+      }
+    } catch (error) {
+      console.error('Error refreshing subscription:', error);
     }
   };
 

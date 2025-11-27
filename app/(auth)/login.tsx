@@ -1,8 +1,11 @@
 /**
  * Login Screen
  * 
- * Redirects to Outseta for authentication.
- * Users can also use the embedded form if Outseta script is loaded.
+ * Redirects to Outseta hosted login page.
+ * Uses only Outseta-approved methods per documentation.
+ * 
+ * @see docs/OUTSETA_INTEGRATION.md
+ * @see .cursor/rules/outseta.mdc
  */
 
 import React, { useEffect } from 'react';
@@ -14,6 +17,7 @@ import {
   Image,
   Platform,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
@@ -26,7 +30,7 @@ import { Button } from '@/components/Button';
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, isLoading, openLogin } = useSubscription();
+  const { isAuthenticated, isLoading } = useSubscription();
 
   // If already authenticated, redirect to tabs
   useEffect(() => {
@@ -35,22 +39,20 @@ export default function LoginScreen() {
     }
   }, [isAuthenticated, isLoading]);
 
+  /**
+   * Handle login - redirect to Outseta hosted login page
+   * This is the Outseta-approved method per their documentation
+   */
   const handleLogin = () => {
+    // Direct redirect to Outseta hosted login page
+    // Outseta will handle the auth flow and redirect back with access_token
+    const loginUrl = OUTSETA_CONFIG.urls.login;
+    
     if (Platform.OS === 'web') {
-      // Check if Outseta is loaded for embedded widget
-      if (typeof window !== 'undefined' && (window as any).Outseta) {
-        try {
-          (window as any).Outseta.auth.open({ mode: 'login' });
-          return;
-        } catch (e) {
-          console.log('Outseta widget not available, redirecting...');
-        }
-      }
-      // Fallback to redirect
-      window.location.href = OUTSETA_CONFIG.urls.login;
+      window.location.href = loginUrl;
     } else {
-      // Mobile - use Linking to open in browser
-      openLogin();
+      // Mobile - open in system browser
+      Linking.openURL(loginUrl);
     }
   };
 
