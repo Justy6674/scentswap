@@ -340,11 +340,22 @@ export default function RegisterScreen() {
 
   const handleSignUp = (planId: string) => {
     const plan = PLANS.find(p => p.id === planId) || PLANS[0];
-    const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
     
-    if (Platform.OS === 'web') {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      // Try using Outseta's embed API first (like TeleCheck does)
+      if ((window as any).Outseta && (window as any).Outseta.auth) {
+        (window as any).Outseta.auth.open({
+          widgetMode: 'register',
+          planUid: plan.uid,
+        });
+        return;
+      }
+      
+      // Fallback to URL redirect
+      const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
       window.location.href = signUpUrl;
     } else {
+      const signUpUrl = `https://scentswap.outseta.com/auth?widgetMode=register&planUid=${plan.uid}#o-anonymous`;
       Linking.openURL(signUpUrl);
     }
   };
