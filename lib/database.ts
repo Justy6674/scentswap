@@ -1079,23 +1079,215 @@ class DatabaseClient {
     }
   }
 
-  async logAdminAction(adminId: string, actionType: string, targetType: string, targetId: string, details?: any): Promise<void> {
+  // =============================================================================
+  // AI CONFIGURATION (ADMIN)
+  // =============================================================================
+
+  async getAiConfigs(): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('ai_configs')
+        .select('*')
+        .order('key', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching AI configs:', error);
+      return [];
+    }
+  }
+
+  async updateAiConfig(key: string, value: any, adminId: string): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      // First check if it exists
+      const { data: existing } = await supabase
+        .from('ai_configs')
+        .select('id')
+        .eq('key', key)
+        .single();
+
+      let error;
+      if (existing) {
+        const result = await supabase
+          .from('ai_configs')
+          .update({
+            value,
+            updated_at: new Date().toISOString(),
+            updated_by: adminId
+          })
+          .eq('key', key);
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('ai_configs')
+          .insert({
+            key,
+            value,
+            updated_by: adminId
+          });
+        error = result.error;
+      }
+
+      if (error) throw error;
+      
+      await this.logAdminAction(adminId, 'update_ai_config', 'config', key, { newValue: value });
+      return true;
+    } catch (error) {
+      console.error('Error updating AI config:', error);
+      return false;
+    }
+  }
+
+  async logAdminAction(adminId: string, action: string, targetType: string, targetId: string, details?: any): Promise<void> {
     if (!isSupabaseConfigured()) return;
 
     const supabase = getSupabase()!;
 
     try {
-      await supabase
-        .from('admin_actions')
+      // Try to insert into admin_logs (new table)
+      const { error } = await supabase
+        .from('admin_logs')
         .insert({
           admin_id: adminId,
-          action_type: actionType,
+          action,
           target_type: targetType,
-          target_id: targetId,
+          target_id: targetId, // Expects UUID
           details: details || {},
         });
+
+      if (error) {
+        // If UUID error (22P02), log with admin_id as target and original ID in details
+        if (error.code === '22P02') {
+           await supabase.from('admin_logs').insert({
+              admin_id: adminId,
+              action,
+              target_type: targetType,
+              target_id: adminId, 
+              details: { ...details, original_target_id: targetId }
+           });
+        } else {
+          throw error;
+        }
+      }
     } catch (error) {
       console.error('Error logging admin action:', error);
+    }
+  }
+  // =============================================================================
+  // AI REVIEW QUEUE
+  // =============================================================================
+
+  async getFlaggedListings(): Promise<Listing[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          *,
+          user:users(username)
+        `)
+        .eq('admin_verified', false)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching flagged listings:', error);
+      return [];
+    }
+  }
+
+  async approveListing(listingId: string, adminId: string, overrideData?: any): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+    const supabase = getSupabase()!;
+    try {
+      const updates: any = {
+        admin_verified: true,
+        admin_verified_at: new Date().toISOString(),
+      };
+      
+      if (overrideData) {
+        updates.ai_assessment_override = overrideData;
+      }
+
+      const { error } = await supabase
+        .from('listings')
+        .update(updates)
+        .eq('id', listingId);
+
+      if (error) throw error;
+      
+      await this.logAdminAction(adminId, 'approve_listing', 'listing', listingId, { override: !!overrideData });
+      return true;
+    } catch (error) {
+      console.error('Error approving listing:', error);
+      return false;
+    }
+  }
+  // =============================================================================
+  // TOKEN USAGE & QUOTAS
+  // =============================================================================
+
+  async trackTokenUsage(userId: string, feature: string, cost: number, model: string): Promise<void> {
+    if (!isSupabaseConfigured()) return;
+    const supabase = getSupabase()!;
+    try {
+      await supabase.from('token_usage').insert({
+        user_id: userId,
+        feature,
+        tokens_used: cost,
+        model_used: model
+      });
+    } catch (error) {
+      console.error('Error tracking token usage:', error);
+    }
+  }
+
+  async checkTokenQuota(userId: string, tier: string): Promise<{ allowed: boolean; remaining: number }> {
+    if (!isSupabaseConfigured()) return { allowed: true, remaining: 100 }; // Fail open if not configured
+    
+    const limits: Record<string, number> = {
+      'free': 5,
+      'premium': 50,
+      'elite': 999999 // Unlimited
+    };
+    
+    const limit = limits[tier] || 5;
+    if (limit > 10000) return { allowed: true, remaining: 999999 };
+
+    const supabase = getSupabase()!;
+    try {
+      // Get usage for current month
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { data, error } = await supabase
+        .from('token_usage')
+        .select('tokens_used')
+        .eq('user_id', userId)
+        .gte('created_at', startOfMonth.toISOString());
+
+      if (error) throw error;
+
+      const used = data?.reduce((sum, row) => sum + row.tokens_used, 0) || 0;
+      const remaining = Math.max(0, limit - used);
+      
+      return { allowed: remaining > 0, remaining };
+    } catch (error) {
+      console.error('Error checking token quota:', error);
+      return { allowed: true, remaining: 0 }; // Fail safe? Or block? Let's fail open for now.
     }
   }
 }

@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { db } from '@/lib/database';
@@ -31,7 +32,10 @@ const CONCENTRATIONS = ['Parfum', 'EDP', 'EDT', 'EDC', 'Cologne', 'Other'];
 export default function NewListingScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isAdmin: authIsAdmin } = useAuth();
+  const { isAdmin: subscriptionIsAdmin } = useSubscription();
+  
+  const isAdmin = authIsAdmin || subscriptionIsAdmin;
   
   const [photos, setPhotos] = useState<string[]>([]);
   const [name, setName] = useState('');
@@ -116,6 +120,8 @@ export default function NewListingScreen() {
       fragrance_id: null,
       swap_preferences: null,
       estimated_value: null,
+      admin_verified: isAdmin,
+      admin_verified_at: isAdmin ? new Date().toISOString() : null,
     });
     setLoading(false);
 

@@ -74,6 +74,9 @@ export interface Listing {
   updated_at: string;
   user?: User;
   fragrance?: Fragrance;
+  admin_verified?: boolean;
+  admin_verified_at?: string | null;
+  ai_assessment_override?: any;
 }
 
 export interface Swap {

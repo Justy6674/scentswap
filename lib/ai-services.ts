@@ -9,13 +9,25 @@
  */
 
 import { Listing } from '@/types';
+import { db } from './database';
 
 // API Configuration
 const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
-// Use Claude for complex reasoning, OpenAI for simpler tasks
-const AI_PROVIDER = ANTHROPIC_API_KEY ? 'anthropic' : (OPENAI_API_KEY ? 'openai' : 'mock');
+// Default provider from env
+const DEFAULT_PROVIDER = ANTHROPIC_API_KEY ? 'anthropic' : (OPENAI_API_KEY ? 'openai' : 'mock');
+
+// Helper to get active provider from DB config
+async function getActiveModelSettings() {
+  try {
+    const configs = await db.getAiConfigs();
+    const settings = configs.find(c => c.key === 'model_settings');
+    return settings?.value || { provider: DEFAULT_PROVIDER, default_model: 'gpt-3.5-turbo' };
+  } catch (e) {
+    return { provider: DEFAULT_PROVIDER, default_model: 'gpt-3.5-turbo' };
+  }
+}
 
 // =============================================================================
 // PHOTO AUTHENTICITY ANALYSIS
@@ -39,14 +51,33 @@ export async function analyzePhotoAuthenticity(
   fragranceName: string,
   house: string
 ): Promise<AuthenticityCheckResult> {
-  // If no AI provider, return mock result
-  if (AI_PROVIDER === 'mock') {
+  const settings = await getActiveModelSettings();
+  
+  // Fetch dynamic prompts
+  let systemPrompt = "Analyze the provided images for signs of authenticity.";
+  try {
+    const configs = await db.getAiConfigs();
+    const promptConfig = configs.find(c => c.key === 'assessment_prompts');
+    if (promptConfig?.value?.authenticity) {
+      systemPrompt = promptConfig.value.authenticity;
+    }
+  } catch (e) {}
+
+  // If no AI provider or mock selected, return mock result
+  if (settings.provider === 'mock') {
     return getMockAuthenticityResult();
   }
 
   try {
-    // For now, we'll do basic image analysis
-    // In production, this would use Claude Vision or similar
+    // Logic to route to specific provider
+    if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
+       // Call Claude with dynamic systemPrompt
+       // This would look similar to callClaudeAPI but for vision/authenticity
+       // For now, falling back to mock logic with dynamic prompt consideration if we had real vision API
+    } 
+    
+    // For now, we'll do basic image analysis (placeholder for real Vision API)
+    // In production, this would use Claude Vision or GPT-4o Vision
     const result: AuthenticityCheckResult = {
       confidence: 85,
       status: 'likely_authentic',
@@ -329,6 +360,7 @@ export async function getMediatorResponse(
     listings?: Listing[];
   }
 ): Promise<MediatorResponse> {
+  const settings = await getActiveModelSettings();
   const lowerQuestion = question.toLowerCase();
   
   // Detect intent from question
@@ -346,13 +378,13 @@ export async function getMediatorResponse(
   }
   
   // If AI provider available, use it for complex questions
-  if (AI_PROVIDER !== 'mock' && ANTHROPIC_API_KEY) {
+  if (settings.provider !== 'mock') {
     try {
-      const response = await callClaudeAPI(question, context);
-      return {
-        message: response,
-        type: 'info'
-      };
+      if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
+        const response = await callClaudeAPI(question, context);
+        return { message: response, type: 'info' };
+      }
+      // Add OpenAI logic here if provider is openai
     } catch (error) {
       console.error('AI mediator error:', error);
     }
