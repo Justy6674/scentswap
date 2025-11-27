@@ -21,6 +21,8 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
+
+// For web, we need to use native HTML elements with Outseta data attributes
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -300,29 +302,66 @@ function PlanCard({
           ))}
         </View>
 
-        {/* Button */}
-        <TouchableOpacity
-          style={[
-            styles.button,
-            plan.buttonFilled 
-              ? { backgroundColor: plan.color }
-              : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
-          ]}
-          onPress={onSignUp}
-          activeOpacity={0.8}
-        >
-          <Text style={[
-            styles.buttonText,
-            { color: plan.buttonFilled ? '#FFF' : plan.color }
-          ]}>
-            {plan.buttonText}
-          </Text>
-          <Ionicons 
-            name="arrow-forward" 
-            size={18} 
-            color={plan.buttonFilled ? '#FFF' : plan.color} 
-          />
-        </TouchableOpacity>
+        {/* Button - Use native anchor with Outseta data attributes for web */}
+        {Platform.OS === 'web' ? (
+          <a
+            href="#"
+            data-o-auth="1"
+            data-widget-mode="register"
+            data-plan-uid={plan.uid}
+            data-skip-plan-options="true"
+            data-mode="popup"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              paddingTop: 16,
+              paddingBottom: 16,
+              borderRadius: 14,
+              textDecoration: 'none',
+              backgroundColor: plan.buttonFilled ? plan.color : 'transparent',
+              border: plan.buttonFilled ? 'none' : `2px solid ${plan.color}`,
+            }}
+          >
+            <span style={{
+              fontSize: 16,
+              fontWeight: 700,
+              color: plan.buttonFilled ? '#FFF' : plan.color,
+            }}>
+              {plan.buttonText}
+            </span>
+            <Ionicons 
+              name="arrow-forward" 
+              size={18} 
+              color={plan.buttonFilled ? '#FFF' : plan.color} 
+            />
+          </a>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.button,
+              plan.buttonFilled 
+                ? { backgroundColor: plan.color }
+                : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
+            ]}
+            onPress={onSignUp}
+            activeOpacity={0.8}
+          >
+            <Text style={[
+              styles.buttonText,
+              { color: plan.buttonFilled ? '#FFF' : plan.color }
+            ]}>
+              {plan.buttonText}
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={18} 
+              color={plan.buttonFilled ? '#FFF' : plan.color} 
+            />
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     </Animated.View>
   );
