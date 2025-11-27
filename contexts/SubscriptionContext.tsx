@@ -9,6 +9,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Platform } from 'react-native';
+import { isAdmin as checkIsAdmin } from '@/lib/admin';
 
 // =============================================================================
 // OUTSETA CONFIGURATION - LIVE VALUES
@@ -159,6 +160,7 @@ interface SubscriptionContextType {
   outsetaUser: OutsetaUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   hasFeature: (feature: PremiumFeature) => boolean;
   canAddListing: (currentCount: number) => boolean;
   getMaxListings: () => number;
@@ -189,6 +191,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [outsetaUser, setOutsetaUser] = useState<OutsetaUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize Outseta on mount (web only)
   useEffect(() => {
@@ -296,6 +299,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     });
     
     setIsAuthenticated(true);
+    
+    // Check admin status based on email
+    const userEmail = user.Email || jwtPayload?.email;
+    setIsAdmin(checkIsAdmin(userEmail));
   };
 
   const handleLogout = () => {
@@ -306,6 +313,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       expiresAt: null,
     });
     setIsAuthenticated(false);
+    setIsAdmin(false);
   };
 
   // =============================================================================
@@ -482,6 +490,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         outsetaUser,
         isLoading,
         isAuthenticated,
+        isAdmin,
         hasFeature,
         canAddListing,
         getMaxListings,

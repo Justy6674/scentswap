@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/HapticTab';
@@ -7,25 +7,18 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/database';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    async function checkAdmin() {
-      if (user) {
-        const adminStatus = await db.isUserAdmin(user.id);
-        setIsAdmin(adminStatus);
-      } else {
-        setIsAdmin(false);
-      }
-    }
-    checkAdmin();
-  }, [user]);
+  
+  // Get admin status from both contexts (AuthContext for Supabase auth, SubscriptionContext for Outseta auth)
+  const { isAdmin: authIsAdmin } = useAuth();
+  const { isAdmin: subscriptionIsAdmin } = useSubscription();
+  
+  // User is admin if either context says so (covers both auth methods)
+  const isAdmin = authIsAdmin || subscriptionIsAdmin;
 
   return (
     <Tabs

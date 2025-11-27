@@ -27,6 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { db } from '@/lib/database';
 import { User, Listing, Swap } from '@/types';
 
@@ -48,9 +49,12 @@ interface AdminStats {
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const { isAdmin: subscriptionIsAdmin, outsetaUser } = useSubscription();
   
-  const [isAdmin, setIsAdmin] = useState(false);
+  // User is admin if either context says so (covers both auth methods)
+  const isAdmin = authIsAdmin || subscriptionIsAdmin;
+  
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -60,23 +64,23 @@ export default function AdminScreen() {
 
   useEffect(() => {
     checkAdminAccess();
-  }, [user]);
+  }, [user, isAdmin, outsetaUser]);
 
   async function checkAdminAccess() {
-    if (!user) {
+    // Check if user is authenticated via either method
+    const isAuthenticated = user || outsetaUser;
+    
+    if (!isAuthenticated) {
       setIsLoading(false);
       return;
     }
 
     try {
-      const adminStatus = await db.isUserAdmin(user.id);
-      setIsAdmin(adminStatus);
-      
-      if (adminStatus) {
+      if (isAdmin) {
         await loadAdminData();
       }
     } catch (error) {
-      console.error('Error checking admin status:', error);
+      console.error('Error loading admin data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -375,7 +379,10 @@ export default function AdminScreen() {
     );
   }
 
-  if (!user || !isAdmin) {
+  // Check if user is authenticated via either method
+  const isAuthenticated = user || outsetaUser;
+  
+  if (!isAuthenticated || !isAdmin) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.accessDenied}>

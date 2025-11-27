@@ -3,10 +3,12 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { User } from '@/types';
 import { db } from '@/lib/database';
+import { isAdmin as checkIsAdmin } from '@/lib/admin';
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -53,6 +55,7 @@ async function deleteStorageItem(key: string): Promise<void> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadStoredUser();
@@ -64,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
+        setIsAdmin(checkIsAdmin(parsedUser.email));
         db.setCurrentUser(parsedUser);
       }
     } catch (error) {
@@ -80,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (signedInUser) {
       setUser(signedInUser);
+      setIsAdmin(checkIsAdmin(signedInUser.email));
       await setStorageItem(USER_STORAGE_KEY, JSON.stringify(signedInUser));
     }
     return { error: null };
@@ -92,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     if (newUser) {
       setUser(newUser);
+      setIsAdmin(checkIsAdmin(newUser.email));
       await setStorageItem(USER_STORAGE_KEY, JSON.stringify(newUser));
     }
     return { error: null };
@@ -100,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signOut(): Promise<void> {
     await db.signOut();
     setUser(null);
+    setIsAdmin(false);
     await deleteStorageItem(USER_STORAGE_KEY);
   }
 
@@ -115,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut, updateUser }}>
+    <AuthContext.Provider value={{ user, isLoading, isAdmin, signIn, signUp, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
