@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,23 +12,116 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-// Luxury color palette
+// New Light Luxe color palette (from logo)
 const COLORS = {
-  gold: '#D4AF37',
-  goldLight: '#E8C547',
-  black: '#050505',
-  offBlack: '#0A0A0A',
-  charcoal: '#1A1A1A',
+  // Primary brand colors
+  teal: '#5BBFBA',
+  tealDark: '#4A9E9A',
+  tealLight: '#7DD3CE',
+  coral: '#E8927C',
+  coralDark: '#D4836D',
+  coralLight: '#F0A894',
+  
+  // Backgrounds
+  warmCream: '#FBF9F7',
+  softIvory: '#F5F3F0',
   white: '#FFFFFF',
-  offWhite: '#F5F5F5',
-  gray: '#888888',
-  grayLight: '#CCCCCC',
+  heroLight: '#E8F6F5',
+  heroLightEnd: '#D4EFED',
+  
+  // Text
+  charcoal: '#2D3436',
+  warmGray: '#636E72',
+  lightGray: '#B2BEC3',
+  
+  // Utility
+  border: '#E8E4E0',
+};
+
+// Spray particle component
+const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    const animate = () => {
+      animValue.setValue(0);
+      Animated.timing(animValue, {
+        toValue: 1,
+        duration: 3000,
+        delay: delay,
+        useNativeDriver: true,
+      }).start(() => animate());
+    };
+    animate();
+  }, []);
+
+  // Calculate trajectory - fan out from left side
+  const angle = -30 + (index * 8); // Spread from -30 to +90 degrees
+  const distance = 150 + Math.random() * 200;
+  const radians = (angle * Math.PI) / 180;
+  
+  const translateX = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.cos(radians) * distance],
+  });
+  
+  const translateY = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.sin(radians) * distance],
+  });
+  
+  const opacity = animValue.interpolate({
+    inputRange: [0, 0.2, 0.8, 1],
+    outputRange: [0, 0.7, 0.3, 0],
+  });
+  
+  const scale = animValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.5, 1, 0.3],
+  });
+
+  const isTeal = index % 3 !== 0; // 2/3 teal, 1/3 coral
+  const size = 6 + Math.random() * 8;
+
+  return (
+    <Animated.View
+      style={[
+        styles.sprayParticle,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: isTeal ? COLORS.teal : COLORS.coral,
+          opacity,
+          transform: [{ translateX }, { translateY }, { scale }],
+        },
+      ]}
+    />
+  );
+};
+
+// Spray effect component
+const SprayEffect = () => {
+  const particles = Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    delay: i * 150,
+  }));
+
+  return (
+    <View style={styles.sprayContainer}>
+      {/* Spray origin glow */}
+      <View style={styles.sprayOrigin} />
+      {/* Particles */}
+      {particles.map((particle) => (
+        <SprayParticle key={particle.id} delay={particle.delay} index={particle.id} />
+      ))}
+    </View>
+  );
 };
 
 export default function LandingPage() {
@@ -37,7 +130,6 @@ export default function LandingPage() {
   const [slideAnim] = useState(new Animated.Value(50));
 
   useEffect(() => {
-    // Animate on mount
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -52,7 +144,6 @@ export default function LandingPage() {
     ]).start();
   }, []);
 
-  // If user is logged in, redirect to main app
   useEffect(() => {
     if (!loading && user) {
       router.replace('/(tabs)');
@@ -99,19 +190,16 @@ export default function LandingPage() {
         </View>
       </View>
 
-      {/* Hero Section */}
+      {/* Hero Section - Light Teal */}
       <View style={styles.heroSection}>
+        {/* Background gradient effect */}
         <View style={styles.heroBackground}>
-          {/* Gradient overlay */}
-          <View style={styles.heroGradient} />
-          
-          {/* Decorative gradient circles */}
-          <View style={styles.heroPattern}>
-            <View style={[styles.gradientCircle, styles.circleTopLeft]} />
-            <View style={[styles.gradientCircle, styles.circleBottomRight]} />
-            <View style={[styles.gradientCircle, styles.circleCenter]} />
-          </View>
+          <View style={styles.heroGradientCircle1} />
+          <View style={styles.heroGradientCircle2} />
         </View>
+        
+        {/* Spray Effect */}
+        <SprayEffect />
 
         <Animated.View 
           style={[
@@ -150,7 +238,7 @@ export default function LandingPage() {
           <View style={styles.ctaContainer}>
             <TouchableOpacity style={styles.ctaPrimary} onPress={handleGetStarted}>
               <Text style={styles.ctaPrimaryText}>START SWAPPING</Text>
-              <Ionicons name="arrow-forward" size={18} color={COLORS.black} />
+              <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.ctaSecondary} onPress={handleExplore}>
@@ -168,7 +256,7 @@ export default function LandingPage() {
 
         {/* Scroll indicator */}
         <View style={styles.scrollIndicator}>
-          <Ionicons name="chevron-down" size={24} color={COLORS.gold} />
+          <Ionicons name="chevron-down" size={24} color={COLORS.teal} />
         </View>
       </View>
 
@@ -205,7 +293,7 @@ export default function LandingPage() {
                 <Text style={styles.stepNumberText}>{index + 1}</Text>
               </View>
               <View style={styles.stepIconContainer}>
-                <Ionicons name={step.icon as any} size={32} color={COLORS.gold} />
+                <Ionicons name={step.icon as any} size={32} color={COLORS.teal} />
               </View>
               <Text style={styles.stepTitle}>{step.title}</Text>
               <Text style={styles.stepDescription}>{step.description}</Text>
@@ -214,10 +302,10 @@ export default function LandingPage() {
         </View>
       </View>
 
-      {/* Features Section */}
-      <View style={[styles.section, styles.sectionDark]}>
-        <Text style={[styles.sectionLabel, { color: COLORS.gold }]}>WHY SCENTSWAP</Text>
-        <Text style={[styles.sectionTitle, { color: COLORS.white }]}>
+      {/* Features Section - Soft Teal Background */}
+      <View style={[styles.section, styles.sectionTeal]}>
+        <Text style={[styles.sectionLabel, { color: COLORS.tealDark }]}>WHY SCENTSWAP</Text>
+        <Text style={[styles.sectionTitle, { color: COLORS.charcoal }]}>
           Built for the Fragrance Community
         </Text>
 
@@ -256,7 +344,7 @@ export default function LandingPage() {
           ].map((feature, index) => (
             <View key={index} style={styles.featureCard}>
               <View style={styles.featureIconBg}>
-                <Ionicons name={feature.icon as any} size={24} color={COLORS.gold} />
+                <Ionicons name={feature.icon as any} size={24} color={COLORS.teal} />
               </View>
               <Text style={styles.featureTitle}>{feature.title}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
@@ -284,7 +372,7 @@ export default function LandingPage() {
       {/* Testimonial/Quote Section */}
       <View style={[styles.section, styles.quoteSection]}>
         <View style={styles.quoteContainer}>
-          <Ionicons name="chatbox-ellipses" size={40} color={COLORS.gold} style={{ opacity: 0.3 }} />
+          <Ionicons name="chatbox-ellipses" size={40} color={COLORS.coral} style={{ opacity: 0.4 }} />
           <Text style={styles.quoteText}>
             "Finally, a platform that understands the fragrance community. 
             No more sketchy Facebook trades or eBay fees."
@@ -304,7 +392,7 @@ export default function LandingPage() {
         
         <TouchableOpacity style={styles.finalCtaButton} onPress={handleGetStarted}>
           <Text style={styles.finalCtaButtonText}>CREATE FREE ACCOUNT</Text>
-          <Ionicons name="arrow-forward" size={20} color={COLORS.black} />
+          <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
         </TouchableOpacity>
 
         <Text style={styles.finalCtaNote}>
@@ -341,13 +429,13 @@ export default function LandingPage() {
 
           <View style={styles.footerSocial}>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-instagram" size={20} color={COLORS.gray} />
+              <Ionicons name="logo-instagram" size={20} color={COLORS.warmGray} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-facebook" size={20} color={COLORS.gray} />
+              <Ionicons name="logo-facebook" size={20} color={COLORS.warmGray} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialIcon}>
-              <Ionicons name="logo-tiktok" size={20} color={COLORS.gray} />
+              <Ionicons name="logo-tiktok" size={20} color={COLORS.warmGray} />
             </TouchableOpacity>
           </View>
         </View>
@@ -374,10 +462,35 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.offWhite,
+    backgroundColor: COLORS.warmCream,
   },
   contentContainer: {
     flexGrow: 1,
+  },
+
+  // Spray Effect
+  sprayContainer: {
+    position: 'absolute',
+    left: isWeb ? '5%' : 20,
+    top: '35%',
+    width: 300,
+    height: 300,
+    zIndex: 2,
+  },
+  sprayOrigin: {
+    position: 'absolute',
+    left: 0,
+    top: '50%',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.teal,
+    opacity: 0.3,
+  },
+  sprayParticle: {
+    position: 'absolute',
+    left: 10,
+    top: '50%',
   },
 
   // Header
@@ -387,10 +500,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 100,
-    backgroundColor: 'rgba(5, 5, 5, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(10px)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(212, 175, 55, 0.1)',
+    borderBottomColor: COLORS.border,
   },
   headerContent: {
     flexDirection: 'row',
@@ -414,7 +527,7 @@ const styles = StyleSheet.create({
   headerBrand: {
     fontSize: 18,
     fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.charcoal,
     letterSpacing: 1,
   },
   headerNav: {
@@ -428,122 +541,110 @@ const styles = StyleSheet.create({
   },
   headerNavText: {
     fontSize: 14,
-    color: COLORS.grayLight,
+    color: COLORS.warmGray,
     fontWeight: '500',
   },
   headerCta: {
-    backgroundColor: COLORS.gold,
+    backgroundColor: COLORS.teal,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 4,
+    borderRadius: 8,
   },
   headerCtaText: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.black,
+    color: COLORS.white,
   },
 
   // Hero Section
   heroSection: {
     minHeight: height,
-    backgroundColor: COLORS.black,
+    backgroundColor: COLORS.heroLight,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 100,
     paddingBottom: 60,
+    overflow: 'hidden',
   },
   heroBackground: {
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
   },
-  heroGradient: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: COLORS.black,
-  },
-  heroPattern: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-  },
-  gradientCircle: {
+  heroGradientCircle1: {
     position: 'absolute',
-    borderRadius: 999,
-    backgroundColor: COLORS.gold,
+    width: 800,
+    height: 800,
+    borderRadius: 400,
+    backgroundColor: COLORS.heroLightEnd,
+    top: -200,
+    right: -200,
+    opacity: 0.6,
   },
-  circleTopLeft: {
+  heroGradientCircle2: {
+    position: 'absolute',
     width: 600,
     height: 600,
-    top: -300,
-    left: -300,
-    opacity: 0.03,
-  },
-  circleBottomRight: {
-    width: 500,
-    height: 500,
-    bottom: -200,
-    right: -200,
-    opacity: 0.04,
-  },
-  circleCenter: {
-    width: 300,
-    height: 300,
-    top: '40%',
-    right: '10%',
-    opacity: 0.02,
+    borderRadius: 300,
+    backgroundColor: COLORS.white,
+    bottom: -100,
+    left: -100,
+    opacity: 0.4,
   },
   heroContent: {
     alignItems: 'center',
     maxWidth: 800,
     width: '100%',
-    zIndex: 1,
+    zIndex: 3,
   },
   logoContainer: {
     marginBottom: 16,
-    width: 80,
-    height: 80,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
+    shadowColor: COLORS.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
     shadowRadius: 20,
+    elevation: 8,
   },
   logo: {
-    width: 60,
-    height: 60,
+    width: 70,
+    height: 70,
   },
   brandName: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '300',
     letterSpacing: 6,
-    color: COLORS.white,
+    color: COLORS.charcoal,
     marginBottom: 8,
   },
   tagline: {
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 4,
-    color: COLORS.gold,
+    color: COLORS.teal,
     marginBottom: 24,
   },
   heroTitle: {
     fontSize: isWeb ? 56 : 36,
     fontWeight: '300',
-    color: COLORS.white,
+    color: COLORS.charcoal,
     textAlign: 'center',
     lineHeight: isWeb ? 68 : 44,
     marginBottom: 24,
   },
   heroTitleAccent: {
-    color: COLORS.gold,
+    color: COLORS.teal,
     fontWeight: '600',
   },
   heroSubtitle: {
     fontSize: 18,
-    color: COLORS.grayLight,
+    color: COLORS.warmGray,
     textAlign: 'center',
     lineHeight: 28,
     marginBottom: 40,
@@ -561,26 +662,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.gold,
+    backgroundColor: COLORS.teal,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 4,
+    borderRadius: 8,
     gap: 8,
     width: isWeb ? 'auto' : '100%',
     minWidth: 200,
+    shadowColor: COLORS.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
   },
   ctaPrimaryText: {
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1,
-    color: COLORS.black,
+    color: COLORS.white,
   },
   ctaSecondary: {
     paddingVertical: 16,
     paddingHorizontal: 32,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: COLORS.teal,
+    backgroundColor: 'transparent',
     width: isWeb ? 'auto' : '100%',
     minWidth: 200,
     alignItems: 'center',
@@ -589,17 +696,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 1,
-    color: COLORS.white,
+    color: COLORS.teal,
   },
   signInLink: {
     paddingVertical: 12,
   },
   signInText: {
     fontSize: 14,
-    color: COLORS.gray,
+    color: COLORS.warmGray,
   },
   signInTextBold: {
-    color: COLORS.gold,
+    color: COLORS.coral,
     fontWeight: '600',
   },
   scrollIndicator: {
@@ -613,21 +720,22 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     paddingHorizontal: 24,
     alignItems: 'center',
+    backgroundColor: COLORS.warmCream,
   },
-  sectionDark: {
-    backgroundColor: COLORS.charcoal,
+  sectionTeal: {
+    backgroundColor: COLORS.heroLight,
   },
   sectionLabel: {
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 3,
-    color: COLORS.gold,
+    color: COLORS.teal,
     marginBottom: 12,
   },
   sectionTitle: {
     fontSize: isWeb ? 40 : 28,
     fontWeight: '300',
-    color: COLORS.black,
+    color: COLORS.charcoal,
     textAlign: 'center',
     marginBottom: 48,
   },
@@ -643,16 +751,16 @@ const styles = StyleSheet.create({
   },
   stepCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 32,
     alignItems: 'center',
     width: isWeb ? 260 : '100%',
     maxWidth: 300,
-    shadowColor: COLORS.black,
+    shadowColor: COLORS.charcoal,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 20,
-    elevation: 2,
+    elevation: 3,
     position: 'relative',
   },
   stepNumber: {
@@ -662,20 +770,20 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.gold,
+    backgroundColor: COLORS.teal,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepNumberText: {
     fontSize: 14,
     fontWeight: '700',
-    color: COLORS.black,
+    color: COLORS.white,
   },
   stepIconContainer: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.offWhite,
+    backgroundColor: COLORS.heroLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -683,13 +791,13 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: COLORS.black,
+    color: COLORS.charcoal,
     marginBottom: 8,
     textAlign: 'center',
   },
   stepDescription: {
     fontSize: 14,
-    color: COLORS.gray,
+    color: COLORS.warmGray,
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -707,12 +815,19 @@ const styles = StyleSheet.create({
     width: isWeb ? 280 : '100%',
     maxWidth: 300,
     padding: 24,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    shadowColor: COLORS.charcoal,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   featureIconBg: {
     width: 48,
     height: 48,
-    borderRadius: 8,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderRadius: 12,
+    backgroundColor: COLORS.heroLight,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -720,12 +835,12 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: COLORS.white,
+    color: COLORS.charcoal,
     marginBottom: 8,
   },
   featureDescription: {
     fontSize: 14,
-    color: COLORS.grayLight,
+    color: COLORS.warmGray,
     lineHeight: 22,
   },
 
@@ -741,20 +856,20 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: isWeb ? 56 : 40,
     fontWeight: '300',
-    color: COLORS.gold,
+    color: COLORS.teal,
     marginBottom: 8,
   },
   statLabel: {
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 2,
-    color: COLORS.gray,
+    color: COLORS.warmGray,
     textTransform: 'uppercase',
   },
 
   // Quote
   quoteSection: {
-    backgroundColor: COLORS.offWhite,
+    backgroundColor: COLORS.softIvory,
   },
   quoteContainer: {
     maxWidth: 600,
@@ -763,7 +878,7 @@ const styles = StyleSheet.create({
   quoteText: {
     fontSize: isWeb ? 24 : 20,
     fontStyle: 'italic',
-    color: COLORS.black,
+    color: COLORS.charcoal,
     textAlign: 'center',
     lineHeight: isWeb ? 36 : 32,
     marginTop: 16,
@@ -772,13 +887,13 @@ const styles = StyleSheet.create({
   quoteAuthor: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.gold,
+    color: COLORS.coral,
     letterSpacing: 1,
   },
 
   // Final CTA
   finalCtaSection: {
-    backgroundColor: COLORS.black,
+    backgroundColor: COLORS.teal,
     paddingVertical: 100,
   },
   finalCtaTitle: {
@@ -790,7 +905,7 @@ const styles = StyleSheet.create({
   },
   finalCtaSubtitle: {
     fontSize: 18,
-    color: COLORS.grayLight,
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
     marginBottom: 40,
   },
@@ -798,10 +913,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.gold,
+    backgroundColor: COLORS.white,
     paddingVertical: 18,
     paddingHorizontal: 40,
-    borderRadius: 4,
+    borderRadius: 8,
     gap: 10,
     marginBottom: 24,
   },
@@ -809,17 +924,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1,
-    color: COLORS.black,
+    color: COLORS.teal,
   },
   finalCtaNote: {
     fontSize: 13,
-    color: COLORS.gray,
+    color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
   },
 
   // Footer
   footer: {
-    backgroundColor: COLORS.offBlack,
+    backgroundColor: COLORS.charcoal,
     paddingTop: 60,
     paddingBottom: 30,
     paddingHorizontal: 24,
@@ -844,7 +959,7 @@ const styles = StyleSheet.create({
   },
   footerTagline: {
     fontSize: 14,
-    color: COLORS.gray,
+    color: COLORS.lightGray,
   },
   footerLinks: {
     flexDirection: isWeb ? 'row' : 'column',
@@ -853,7 +968,7 @@ const styles = StyleSheet.create({
   },
   footerLink: {
     fontSize: 14,
-    color: COLORS.grayLight,
+    color: COLORS.lightGray,
   },
   footerSocial: {
     flexDirection: 'row',
@@ -863,13 +978,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.charcoal,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   footerBottom: {
     borderTopWidth: 1,
-    borderTopColor: COLORS.charcoal,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
     paddingTop: 24,
     flexDirection: isWeb ? 'row' : 'column',
     justifyContent: 'space-between',
@@ -881,7 +996,7 @@ const styles = StyleSheet.create({
   },
   footerCopyright: {
     fontSize: 13,
-    color: COLORS.gray,
+    color: COLORS.lightGray,
   },
   footerLegal: {
     flexDirection: 'row',
@@ -890,10 +1005,9 @@ const styles = StyleSheet.create({
   },
   footerLegalLink: {
     fontSize: 13,
-    color: COLORS.gray,
+    color: COLORS.lightGray,
   },
   footerLegalDivider: {
-    color: COLORS.gray,
+    color: COLORS.lightGray,
   },
 });
-
