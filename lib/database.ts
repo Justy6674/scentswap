@@ -488,6 +488,217 @@ class DatabaseClient {
 
     return { score, assessment, suggestions };
   }
+
+  // =============================================================================
+  // SHIPPING & TRACKING
+  // =============================================================================
+
+  async lockSwap(swapId: string): Promise<Swap | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('swaps')
+        .update({
+          status: 'locked',
+          locked_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', swapId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error locking swap:', error);
+      return null;
+    }
+  }
+
+  async updateTracking(
+    swapId: string,
+    userId: string,
+    trackingNumber: string,
+    carrier: string
+  ): Promise<Swap | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      // First get the swap to determine if user is initiator or recipient
+      const { data: swap, error: fetchError } = await supabase
+        .from('swaps')
+        .select('*')
+        .eq('id', swapId)
+        .single();
+
+      if (fetchError || !swap) throw fetchError || new Error('Swap not found');
+
+      const isInitiator = swap.initiator_id === userId;
+      const updateData: Partial<Swap> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (isInitiator) {
+        updateData.initiator_tracking = trackingNumber;
+        updateData.initiator_shipped_at = new Date().toISOString();
+      } else {
+        updateData.recipient_tracking = trackingNumber;
+        updateData.recipient_shipped_at = new Date().toISOString();
+      }
+
+      // Check if both have shipped to update status to 'shipping'
+      const bothShipped = isInitiator
+        ? swap.recipient_tracking && trackingNumber
+        : swap.initiator_tracking && trackingNumber;
+
+      if (bothShipped && swap.status === 'locked') {
+        updateData.status = 'shipping';
+      }
+
+      const { data, error } = await supabase
+        .from('swaps')
+        .update(updateData)
+        .eq('id', swapId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating tracking:', error);
+      return null;
+    }
+  }
+
+  async confirmReceived(swapId: string, userId: string): Promise<Swap | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      // First get the swap
+      const { data: swap, error: fetchError } = await supabase
+        .from('swaps')
+        .select('*')
+        .eq('id', swapId)
+        .single();
+
+      if (fetchError || !swap) throw fetchError || new Error('Swap not found');
+
+      const isInitiator = swap.initiator_id === userId;
+      const updateData: Partial<Swap> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (isInitiator) {
+        updateData.initiator_received_at = new Date().toISOString();
+      } else {
+        updateData.recipient_received_at = new Date().toISOString();
+      }
+
+      // Check if both have received to complete the swap
+      const bothReceived = isInitiator
+        ? swap.recipient_received_at && true
+        : swap.initiator_received_at && true;
+
+      if (bothReceived) {
+        updateData.status = 'completed';
+        updateData.completed_at = new Date().toISOString();
+      }
+
+      const { data, error } = await supabase
+        .from('swaps')
+        .update(updateData)
+        .eq('id', swapId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // If swap is completed, update user stats
+      if (data?.status === 'completed') {
+        await this.incrementUserSwapCount(swap.initiator_id);
+        await this.incrementUserSwapCount(swap.recipient_id);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error confirming received:', error);
+      return null;
+    }
+  }
+
+  private async incrementUserSwapCount(userId: string): Promise<void> {
+    if (!isSupabaseConfigured()) return;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data: user } = await supabase
+        .from('users')
+        .select('total_swaps')
+        .eq('id', userId)
+        .single();
+
+      if (user) {
+        await supabase
+          .from('users')
+          .update({
+            total_swaps: (user.total_swaps || 0) + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', userId);
+      }
+    } catch (error) {
+      console.error('Error incrementing swap count:', error);
+    }
+  }
+
+  async getUserShippingAddress(userId: string): Promise<string | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('shipping_address')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      return data?.shipping_address || null;
+    } catch (error) {
+      console.error('Error fetching shipping address:', error);
+      return null;
+    }
+  }
+
+  async updateShippingAddress(userId: string, address: string): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          shipping_address: address,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      return !error;
+    } catch (error) {
+      console.error('Error updating shipping address:', error);
+      return false;
+    }
+  }
 }
 
 export const db = new DatabaseClient();
