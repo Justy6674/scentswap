@@ -5,7 +5,7 @@ export interface User {
   username: string | null;
   avatar_url: string | null;
   australian_verified: boolean;
-  verification_tier: 'unverified' | 'verified' | 'trusted' | 'elite';
+  verification_tier: 'unverified' | 'verified' | 'trusted' | 'elite' | 'suspended';
   address_line1: string | null;
   address_line2: string | null;
   suburb: string | null;
@@ -17,6 +17,14 @@ export interface User {
   positive_percentage: number;
   created_at: string;
   updated_at: string;
+  // Admin fields
+  is_admin?: boolean;
+  admin_notes?: string | null;
+  // Outseta fields
+  outseta_person_uid?: string | null;
+  outseta_account_uid?: string | null;
+  subscription_plan?: string | null;
+  subscription_status?: string | null;
 }
 
 export interface Fragrance {
@@ -87,6 +95,8 @@ export interface Swap {
   updated_at: string;
   locked_at: string | null;
   completed_at: string | null;
+  dispute_reason?: string | null;
+  dispute_resolved_at?: string | null;
   initiator?: User;
   recipient?: User;
   initiator_listing_details?: Listing[];

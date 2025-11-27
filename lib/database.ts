@@ -930,6 +930,174 @@ class DatabaseClient {
       return false;
     }
   }
+
+  // =============================================================================
+  // ADMIN METHODS
+  // =============================================================================
+
+  async isUserAdmin(userId: string): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
+
+      if (error) return false;
+      return data?.is_admin === true;
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+  }
+
+  async getAdminStats(): Promise<any> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      // Get counts from each table
+      const [usersResult, listingsResult, swapsResult] = await Promise.all([
+        supabase.from('users').select('id, created_at, verification_tier, subscription_plan', { count: 'exact' }),
+        supabase.from('listings').select('id, created_at, is_active', { count: 'exact' }),
+        supabase.from('swaps').select('id, created_at, status', { count: 'exact' }),
+      ]);
+
+      const users = usersResult.data || [];
+      const listings = listingsResult.data || [];
+      const swaps = swapsResult.data || [];
+
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      return {
+        total_users: users.length,
+        new_users_7d: users.filter(u => new Date(u.created_at) > weekAgo).length,
+        active_listings: listings.filter(l => l.is_active).length,
+        new_listings_7d: listings.filter(l => new Date(l.created_at) > weekAgo).length,
+        total_swaps: swaps.length,
+        pending_swaps: swaps.filter(s => s.status === 'proposed').length,
+        completed_swaps: swaps.filter(s => s.status === 'completed').length,
+        disputed_swaps: swaps.filter(s => s.status === 'disputed').length,
+        new_swaps_7d: swaps.filter(s => new Date(s.created_at) > weekAgo).length,
+        verified_users: users.filter(u => u.verification_tier === 'verified' || u.verification_tier === 'trusted' || u.verification_tier === 'elite').length,
+        premium_users: users.filter(u => u.subscription_plan === 'premium').length,
+        elite_users: users.filter(u => u.subscription_plan === 'elite').length,
+      };
+    } catch (error) {
+      console.error('Error getting admin stats:', error);
+      return null;
+    }
+  }
+
+  async getRecentUsers(limit: number = 10): Promise<User[]> {
+    if (!isSupabaseConfigured()) return [];
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting recent users:', error);
+      return [];
+    }
+  }
+
+  async getDisputedSwaps(): Promise<Swap[]> {
+    if (!isSupabaseConfigured()) return [];
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('swaps')
+        .select('*')
+        .eq('status', 'disputed')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting disputed swaps:', error);
+      return [];
+    }
+  }
+
+  async adminUpdateUser(userId: string, updates: Partial<User>): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      return !error;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return false;
+    }
+  }
+
+  async adminResolveDispute(swapId: string, resolution: string): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { error } = await supabase
+        .from('swaps')
+        .update({
+          status: 'completed',
+          dispute_resolved_at: new Date().toISOString(),
+          ai_assessment: `Dispute resolved by admin: ${resolution}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', swapId);
+
+      return !error;
+    } catch (error) {
+      console.error('Error resolving dispute:', error);
+      return false;
+    }
+  }
+
+  async logAdminAction(adminId: string, actionType: string, targetType: string, targetId: string, details?: any): Promise<void> {
+    if (!isSupabaseConfigured()) return;
+
+    const supabase = getSupabase()!;
+
+    try {
+      await supabase
+        .from('admin_actions')
+        .insert({
+          admin_id: adminId,
+          action_type: actionType,
+          target_type: targetType,
+          target_id: targetId,
+          details: details || {},
+        });
+    } catch (error) {
+      console.error('Error logging admin action:', error);
+    }
+  }
 }
 
 export const db = new DatabaseClient();
