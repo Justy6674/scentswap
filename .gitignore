@@ -70,3 +70,4 @@ app-example
 
 # Server (using Supabase instead)
 server/
+.env
