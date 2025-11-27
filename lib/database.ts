@@ -699,6 +699,237 @@ class DatabaseClient {
       return false;
     }
   }
+
+  // =============================================================================
+  // OUTSETA USER SYNC
+  // =============================================================================
+
+  /**
+   * Get user by Outseta Person UID
+   */
+  async getUserByOutsetaId(outsetaPersonUid: string): Promise<User | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('outseta_person_uid', outsetaPersonUid)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+      return data || null;
+    } catch (error) {
+      console.error('Error fetching user by Outseta ID:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get user by email (for Outseta sync)
+   */
+  async getUserByEmail(email: string): Promise<User | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data || null;
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create user from Outseta data (no Supabase Auth required)
+   */
+  async createUserFromOutseta(userData: {
+    email: string;
+    full_name: string;
+    outseta_person_uid: string;
+    outseta_account_uid?: string;
+    subscription_plan?: string;
+    subscription_status?: string;
+  }): Promise<User | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      // Generate a UUID for the user
+      const userId = crypto.randomUUID();
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: userData.email,
+          full_name: userData.full_name,
+          username: userData.email.split('@')[0],
+          verification_tier: 'unverified',
+          outseta_person_uid: userData.outseta_person_uid,
+          outseta_account_uid: userData.outseta_account_uid,
+          subscription_plan: userData.subscription_plan || 'free',
+          subscription_status: userData.subscription_status || 'active',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      this.currentUser = data;
+      return data;
+    } catch (error) {
+      console.error('Error creating user from Outseta:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update user with Outseta data
+   */
+  async updateUserFromOutseta(userId: string, updates: {
+    outseta_person_uid?: string;
+    outseta_account_uid?: string;
+    subscription_plan?: string;
+    subscription_status?: string;
+  }): Promise<User | null> {
+    if (!isSupabaseConfigured()) return null;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (this.currentUser?.id === userId) {
+        this.currentUser = data;
+      }
+      return data;
+    } catch (error) {
+      console.error('Error updating user from Outseta:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Handle Outseta webhook for new user signup
+   */
+  async handleOutsetaSignup(webhookData: {
+    Person: {
+      Uid: string;
+      Email: string;
+      FirstName?: string;
+      LastName?: string;
+    };
+    Account: {
+      Uid: string;
+    };
+    Subscription?: {
+      Plan?: {
+        Uid: string;
+        Name: string;
+      };
+      Status?: string;
+    };
+  }): Promise<{ user: User | null; clientIdentifier: string | null }> {
+    try {
+      const { Person, Account, Subscription } = webhookData;
+      const fullName = `${Person.FirstName || ''} ${Person.LastName || ''}`.trim() || Person.Email.split('@')[0];
+
+      // Check if user already exists
+      let user = await this.getUserByOutsetaId(Person.Uid);
+      
+      if (!user) {
+        user = await this.getUserByEmail(Person.Email);
+      }
+
+      if (user) {
+        // Update existing user
+        user = await this.updateUserFromOutseta(user.id, {
+          outseta_person_uid: Person.Uid,
+          outseta_account_uid: Account.Uid,
+          subscription_plan: Subscription?.Plan?.Name?.toLowerCase() || 'free',
+          subscription_status: Subscription?.Status || 'active',
+        });
+      } else {
+        // Create new user
+        user = await this.createUserFromOutseta({
+          email: Person.Email,
+          full_name: fullName,
+          outseta_person_uid: Person.Uid,
+          outseta_account_uid: Account.Uid,
+          subscription_plan: Subscription?.Plan?.Name?.toLowerCase() || 'free',
+          subscription_status: Subscription?.Status || 'active',
+        });
+      }
+
+      return {
+        user,
+        clientIdentifier: user?.id || null,
+      };
+    } catch (error) {
+      console.error('Error handling Outseta signup:', error);
+      return { user: null, clientIdentifier: null };
+    }
+  }
+
+  /**
+   * Handle Outseta webhook for subscription update
+   */
+  async handleOutsetaSubscriptionUpdate(webhookData: {
+    Account: {
+      Uid: string;
+    };
+    Subscription: {
+      Plan?: {
+        Uid: string;
+        Name: string;
+      };
+      Status?: string;
+    };
+  }): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { Account, Subscription } = webhookData;
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          subscription_plan: Subscription?.Plan?.Name?.toLowerCase() || 'free',
+          subscription_status: Subscription?.Status || 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('outseta_account_uid', Account.Uid);
+
+      return !error;
+    } catch (error) {
+      console.error('Error handling subscription update:', error);
+      return false;
+    }
+  }
 }
 
 export const db = new DatabaseClient();

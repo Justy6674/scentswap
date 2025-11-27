@@ -1,111 +1,105 @@
-import React, { useState } from 'react';
+/**
+ * Login Screen
+ * 
+ * Redirects to Outseta for authentication.
+ * Users can also use the embedded form if Outseta script is loaded.
+ */
+
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
-import { Input } from '@/components/Input';
+import { useSubscription, OUTSETA_CONFIG } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const { isAuthenticated, isLoading, openLogin } = useSubscription();
 
-  function validate() {
-    const newErrors: { email?: string; password?: string } = {};
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    if (!password) {
-      newErrors.password = 'Password is required';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  async function handleLogin() {
-    if (!validate()) return;
-    setLoading(true);
-    const { error } = await signIn(email, password);
-    setLoading(false);
-    if (error) {
-      Alert.alert('Sign In Failed', error);
-    } else {
+  // If already authenticated, redirect to tabs
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
       router.replace('/(tabs)');
     }
-  }
+  }, [isAuthenticated, isLoading]);
+
+  const handleLogin = () => {
+    if (Platform.OS === 'web') {
+      // Check if Outseta is loaded for embedded widget
+      if (typeof window !== 'undefined' && (window as any).Outseta) {
+        try {
+          (window as any).Outseta.auth.open({ mode: 'login' });
+          return;
+        } catch (e) {
+          console.log('Outseta widget not available, redirecting...');
+        }
+      }
+      // Fallback to redirect
+      window.location.href = OUTSETA_CONFIG.urls.login;
+    } else {
+      // Mobile - use Linking to open in browser
+      openLogin();
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
     },
-    scrollContent: {
-      flexGrow: 1,
+    content: {
+      flex: 1,
       justifyContent: 'center',
+      alignItems: 'center',
       padding: 24,
     },
-    header: {
-      alignItems: 'center',
-      marginBottom: 40,
-    },
     logoContainer: {
-      width: 120,
-      height: 120,
+      width: 140,
+      height: 140,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 32,
     },
     logo: {
       width: '100%',
       height: '100%',
     },
     title: {
-      fontSize: 28,
+      fontSize: 32,
       fontWeight: 'bold',
       color: colors.text,
+      marginBottom: 8,
     },
     subtitle: {
       fontSize: 16,
       color: colors.textSecondary,
-      marginTop: 8,
       textAlign: 'center',
+      marginBottom: 48,
+      maxWidth: 300,
     },
-    form: {
-      marginBottom: 24,
-    },
-    forgotPassword: {
-      alignSelf: 'flex-end',
-      marginTop: -8,
-      marginBottom: 24,
-    },
-    forgotPasswordText: {
-      fontSize: 14,
-      color: colors.primary,
+    buttonContainer: {
+      width: '100%',
+      maxWidth: 320,
+      gap: 16,
     },
     divider: {
       flexDirection: 'row',
       alignItems: 'center',
       marginVertical: 24,
+      width: '100%',
+      maxWidth: 320,
     },
     dividerLine: {
       flex: 1,
@@ -121,6 +115,7 @@ export default function LoginScreen() {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
+      marginTop: 32,
     },
     footerText: {
       fontSize: 14,
@@ -143,74 +138,103 @@ export default function LoginScreen() {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    featureList: {
+      marginTop: 32,
+      gap: 12,
+    },
+    featureItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    featureIcon: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: colors.primary + '20',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    featureText: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
   });
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.content}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color={colors.text} />
       </TouchableOpacity>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('@/assets/images/logo-nobg.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+
+      <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/assets/images/logo-nobg.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>
+          Sign in to continue swapping fragrances with collectors across Australia
+        </Text>
+
+        <View style={styles.buttonContainer}>
+          <Button
+            title="Sign In with Email"
+            onPress={handleLogin}
+            icon="mail-outline"
+          />
+        </View>
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>secure login via Outseta</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <View style={styles.featureList}>
+          <View style={styles.featureItem}>
+            <View style={styles.featureIcon}>
+              <Ionicons name="shield-checkmark" size={14} color={colors.primary} />
             </View>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to continue swapping</Text>
+            <Text style={styles.featureText}>Secure authentication</Text>
           </View>
+          <View style={styles.featureItem}>
+            <View style={styles.featureIcon}>
+              <Ionicons name="card" size={14} color={colors.primary} />
+            </View>
+            <Text style={styles.featureText}>Easy subscription management</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <View style={styles.featureIcon}>
+              <Ionicons name="lock-closed" size={14} color={colors.primary} />
+            </View>
+            <Text style={styles.featureText}>Your data stays private</Text>
+          </View>
+        </View>
 
-          <View style={styles.form}>
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              leftIcon="mail-outline"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              error={errors.email}
-            />
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              leftIcon="lock-closed-outline"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              error={errors.password}
-            />
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account?</Text>
+          <Link href="/(auth)/register" asChild>
+            <TouchableOpacity>
+              <Text style={styles.footerLink}>Sign Up</Text>
             </TouchableOpacity>
-            <Button
-              title="Sign In"
-              onPress={handleLogin}
-              loading={loading}
-            />
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
-            <Link href="/(auth)/register" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>Sign Up</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </Link>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

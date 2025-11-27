@@ -1,75 +1,69 @@
-import React, { useState } from 'react';
+/**
+ * Register Screen
+ * 
+ * Redirects to Outseta for registration with plan selection.
+ * Users can choose Free, Premium, or Elite during signup.
+ */
+
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TouchableOpacity,
-  Alert,
   Image,
+  Platform,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
-import { Input } from '@/components/Input';
+import { 
+  useSubscription, 
+  OUTSETA_CONFIG, 
+  SUBSCRIPTION_PLANS,
+  SubscriptionTier 
+} from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 
 export default function RegisterScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { signUp } = useAuth();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{
-    fullName?: string;
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const { isAuthenticated, isLoading, openSignUp } = useSubscription();
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionTier>('free');
 
-  function validate() {
-    const newErrors: typeof errors = {};
-    if (!fullName) {
-      newErrors.fullName = 'Full name is required';
-    }
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  async function handleRegister() {
-    if (!validate()) return;
-    setLoading(true);
-    const { error } = await signUp(email, password, fullName);
-    setLoading(false);
-    if (error) {
-      Alert.alert('Registration Failed', error);
-    } else {
+  // If already authenticated, redirect to tabs
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
       router.replace('/(tabs)');
     }
-  }
+  }, [isAuthenticated, isLoading]);
+
+  const handleSignUp = (planTier: SubscriptionTier = selectedPlan) => {
+    const plan = SUBSCRIPTION_PLANS[planTier];
+    
+    if (Platform.OS === 'web') {
+      // Check if Outseta is loaded for embedded widget
+      if (typeof window !== 'undefined' && (window as any).Outseta) {
+        try {
+          (window as any).Outseta.auth.open({ 
+            mode: 'register',
+            planUid: plan.outsetaPlanUid,
+          });
+          return;
+        } catch (e) {
+          console.log('Outseta widget not available, redirecting...');
+        }
+      }
+      // Fallback to redirect with plan
+      window.location.href = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${plan.outsetaPlanUid}#o-anonymous`;
+    } else {
+      openSignUp();
+    }
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -78,19 +72,19 @@ export default function RegisterScreen() {
     },
     scrollContent: {
       flexGrow: 1,
-      justifyContent: 'center',
       padding: 24,
     },
     header: {
       alignItems: 'center',
-      marginBottom: 32,
+      marginTop: 40,
+      marginBottom: 24,
     },
     logoContainer: {
-      width: 120,
-      height: 120,
+      width: 100,
+      height: 100,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     logo: {
       width: '100%',
@@ -100,30 +94,91 @@ export default function RegisterScreen() {
       fontSize: 28,
       fontWeight: 'bold',
       color: colors.text,
+      marginBottom: 8,
     },
     subtitle: {
       fontSize: 16,
       color: colors.textSecondary,
-      marginTop: 8,
       textAlign: 'center',
+      maxWidth: 300,
     },
-    form: {
+    plansContainer: {
+      gap: 16,
       marginBottom: 24,
     },
-    termsText: {
+    planCard: {
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 20,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    planCardSelected: {
+      borderColor: colors.primary,
+    },
+    planCardPremium: {
+      borderColor: '#E8927C',
+    },
+    planHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    planName: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    planPrice: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.primary,
+    },
+    planPriceLabel: {
       fontSize: 12,
       color: colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: 16,
-      lineHeight: 18,
     },
-    termsLink: {
-      color: colors.primary,
+    planDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 16,
+    },
+    planFeatures: {
+      gap: 8,
+    },
+    planFeature: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    planFeatureText: {
+      fontSize: 14,
+      color: colors.text,
+    },
+    popularBadge: {
+      position: 'absolute',
+      top: -10,
+      right: 16,
+      backgroundColor: '#E8927C',
+      paddingHorizontal: 12,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    popularBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    selectButton: {
+      marginTop: 16,
     },
     footer: {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
+      marginTop: 16,
+      marginBottom: 32,
     },
     footerText: {
       fontSize: 14,
@@ -145,95 +200,171 @@ export default function RegisterScreen() {
       backgroundColor: colors.backgroundSecondary,
       justifyContent: 'center',
       alignItems: 'center',
+      zIndex: 10,
+    },
+    termsText: {
+      fontSize: 12,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 16,
+      lineHeight: 18,
+    },
+    termsLink: {
+      color: colors.primary,
     },
   });
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const plans: { tier: SubscriptionTier; popular?: boolean }[] = [
+    { tier: 'free' },
+    { tier: 'premium', popular: true },
+    { tier: 'elite' },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color={colors.text} />
       </TouchableOpacity>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('@/assets/images/logo-nobg.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join Australia's fragrance swap community</Text>
-          </View>
 
-          <View style={styles.form}>
-            <Input
-              label="Full Name"
-              placeholder="Enter your full name"
-              leftIcon="person-outline"
-              value={fullName}
-              onChangeText={setFullName}
-              autoCapitalize="words"
-              error={errors.fullName}
-            />
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              leftIcon="mail-outline"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              error={errors.email}
-            />
-            <Input
-              label="Password"
-              placeholder="Create a password"
-              leftIcon="lock-closed-outline"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              error={errors.password}
-            />
-            <Input
-              label="Confirm Password"
-              placeholder="Confirm your password"
-              leftIcon="lock-closed-outline"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              error={errors.confirmPassword}
-            />
-            <Text style={styles.termsText}>
-              By creating an account, you agree to our{' '}
-              <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
-              <Text style={styles.termsLink}>Privacy Policy</Text>
-            </Text>
-            <Button
-              title="Create Account"
-              onPress={handleRegister}
-              loading={loading}
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('@/assets/images/logo-nobg.png')}
+              style={styles.logo}
+              resizeMode="contain"
             />
           </View>
+          <Text style={styles.title}>Join ScentSwap</Text>
+          <Text style={styles.subtitle}>
+            Choose a plan and start swapping fragrances today
+          </Text>
+        </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
-            <Link href="/(auth)/login" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>Sign In</Text>
+        <View style={styles.plansContainer}>
+          {plans.map(({ tier, popular }) => {
+            const plan = SUBSCRIPTION_PLANS[tier];
+            const isSelected = selectedPlan === tier;
+            
+            return (
+              <TouchableOpacity
+                key={tier}
+                style={[
+                  styles.planCard,
+                  isSelected && styles.planCardSelected,
+                  popular && styles.planCardPremium,
+                ]}
+                onPress={() => setSelectedPlan(tier)}
+                activeOpacity={0.7}
+              >
+                {popular && (
+                  <View style={styles.popularBadge}>
+                    <Text style={styles.popularBadgeText}>MOST POPULAR</Text>
+                  </View>
+                )}
+                
+                <View style={styles.planHeader}>
+                  <Text style={styles.planName}>{plan.name}</Text>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.planPrice}>
+                      {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                    </Text>
+                    {plan.price > 0 && (
+                      <Text style={styles.planPriceLabel}>/month AUD</Text>
+                    )}
+                  </View>
+                </View>
+
+                <Text style={styles.planDescription}>{plan.description}</Text>
+
+                <View style={styles.planFeatures}>
+                  <View style={styles.planFeature}>
+                    <Ionicons 
+                      name="checkmark-circle" 
+                      size={18} 
+                      color={colors.primary} 
+                    />
+                    <Text style={styles.planFeatureText}>
+                      {plan.maxListings === -1 ? 'Unlimited' : plan.maxListings} listings
+                    </Text>
+                  </View>
+                  
+                  {tier === 'premium' && (
+                    <>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>Priority matching</Text>
+                      </View>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>Photo verification</Text>
+                      </View>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>No ads</Text>
+                      </View>
+                    </>
+                  )}
+                  
+                  {tier === 'elite' && (
+                    <>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>All Premium features</Text>
+                      </View>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>Advanced analytics</Text>
+                      </View>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>Early access to features</Text>
+                      </View>
+                      <View style={styles.planFeature}>
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Text style={styles.planFeatureText}>Bulk upload</Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+
+                <View style={styles.selectButton}>
+                  <Button
+                    title={isSelected ? 'Selected - Continue' : `Select ${plan.name}`}
+                    onPress={() => handleSignUp(tier)}
+                    variant={isSelected ? 'primary' : 'outline'}
+                  />
+                </View>
               </TouchableOpacity>
-            </Link>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+            );
+          })}
+        </View>
+
+        <Text style={styles.termsText}>
+          By creating an account, you agree to our{' '}
+          <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
+          <Text style={styles.termsLink}>Privacy Policy</Text>
+        </Text>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account?</Text>
+          <Link href="/(auth)/login" asChild>
+            <TouchableOpacity>
+              <Text style={styles.footerLink}>Sign In</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
