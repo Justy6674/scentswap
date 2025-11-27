@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,10 +20,10 @@ import { Button } from '@/components/Button';
 import { db } from '@/lib/database';
 
 const CONDITIONS = [
-  { key: 'new', label: 'New', description: 'Sealed, never used' },
-  { key: 'like_new', label: 'Like New', description: 'Used 1-2 times' },
-  { key: 'good', label: 'Good', description: 'Light use, good condition' },
-  { key: 'fair', label: 'Fair', description: 'Moderate use, some wear' },
+  { key: 'New', label: 'New', description: 'Sealed, never used' },
+  { key: 'Like New', label: 'Like New', description: 'Used 1-2 times' },
+  { key: 'Good', label: 'Good', description: 'Light use, good condition' },
+  { key: 'Fair', label: 'Fair', description: 'Moderate use, some wear' },
 ];
 
 const CONCENTRATIONS = ['Parfum', 'EDP', 'EDT', 'EDC', 'Cologne', 'Other'];
@@ -31,7 +31,7 @@ const CONCENTRATIONS = ['Parfum', 'EDP', 'EDT', 'EDC', 'Cologne', 'Other'];
 export default function NewListingScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   
   const [photos, setPhotos] = useState<string[]>([]);
   const [name, setName] = useState('');
@@ -39,7 +39,7 @@ export default function NewListingScreen() {
   const [concentration, setConcentration] = useState('');
   const [sizeMl, setSizeMl] = useState('');
   const [fillPercentage, setFillPercentage] = useState('100');
-  const [condition, setCondition] = useState('like_new');
+  const [condition, setCondition] = useState('Like New');
   const [batchCode, setBatchCode] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -108,7 +108,7 @@ export default function NewListingScreen() {
       concentration: concentration || null,
       size_ml: parseInt(sizeMl),
       fill_percentage: parseInt(fillPercentage),
-      condition: condition as 'new' | 'like_new' | 'good' | 'fair',
+      condition: condition as 'New' | 'Like New' | 'Good' | 'Fair',
       batch_code: batchCode || null,
       description: description || null,
       photos: photos,
@@ -294,8 +294,13 @@ export default function NewListingScreen() {
     },
   });
 
-  if (!user) {
-    router.replace('/(auth)/login');
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace('/(auth)/login');
+    }
+  }, [user, authLoading]);
+
+  if (authLoading || !user) {
     return null;
   }
 

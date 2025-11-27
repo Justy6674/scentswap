@@ -55,7 +55,7 @@ export interface Listing {
   concentration: string | null;
   size_ml: number;
   fill_percentage: number;
-  condition: 'new' | 'like_new' | 'good' | 'fair';
+  condition: 'New' | 'Like New' | 'Good' | 'Fair';
   batch_code: string | null;
   description: string | null;
   photos: string[];
