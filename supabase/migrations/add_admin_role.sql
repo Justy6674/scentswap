@@ -10,10 +10,10 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS admin_notes TEXT;
 -- Create index for admin lookup
 CREATE INDEX IF NOT EXISTS idx_users_is_admin ON users(is_admin) WHERE is_admin = true;
 
--- Set your email as admin (CHANGE THIS TO YOUR EMAIL)
+-- Set your email as admin
 UPDATE users 
 SET is_admin = true 
-WHERE email = 'downscaleweightloss@gmail.com';
+WHERE email = 'downscale@icloud.com';
 
 -- Create admin_actions audit log table
 CREATE TABLE IF NOT EXISTS admin_actions (
