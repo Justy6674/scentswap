@@ -173,6 +173,92 @@ See [PRD.md](./PRD.md) for complete product requirements and UX specifications.
 
 ---
 
+## Admin Authentication
+
+ScentSwap uses a **hardcoded email whitelist** for admin access (similar to TeleCheck's approach). This is simple, secure, and works across both Supabase and Outseta authentication methods.
+
+### How It Works
+
+```
+User logs in (via Outseta or Supabase)
+         ↓
+App checks email against ADMIN_EMAILS whitelist
+         ↓
+isAdmin('downscale@icloud.com') → true
+         ↓
+Admin tab visible in navigation
+Admin dashboard accessible
+```
+
+### Admin Whitelist
+
+Located in `lib/admin.ts`:
+
+```typescript
+const ADMIN_EMAILS = ['downscale@icloud.com'];
+
+export function isAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+```
+
+### Adding New Admins
+
+1. Edit `lib/admin.ts`
+2. Add email to the `ADMIN_EMAILS` array
+3. Deploy the change
+
+```typescript
+const ADMIN_EMAILS = [
+  'downscale@icloud.com',
+  'new-admin@example.com',  // Add new admin here
+];
+```
+
+### Admin Features
+
+- **Platform Statistics**: Users, listings, swaps, subscription tiers
+- **User Management**: Verify users, suspend accounts
+- **Dispute Resolution**: Review and resolve swap disputes
+- **Listing Moderation**: (Coming soon)
+
+---
+
+## Outseta Integration
+
+ScentSwap uses [Outseta](https://outseta.com) for authentication and subscription management.
+
+### Configuration
+
+| Setting | Value |
+|---------|-------|
+| Domain | `scentswap.outseta.com` |
+| Free Plan UID | `z9MP7yQ4` |
+| Premium Plan UID | `vW5RoJm4` |
+| Elite Plan UID | `aWxr2rQV` |
+
+### Auth URLs
+
+- **Login**: `https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous`
+- **Sign Up**: `https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous`
+- **Profile**: `https://scentswap.outseta.com/profile#o-authenticated`
+
+### Creating a Founder/Admin Account with 100% Discount
+
+1. Go to **Outseta Admin > BILLING > COUPONS**
+2. Create new coupon:
+   - **Code**: `FOUNDER100`
+   - **Discount**: 100%
+   - **Duration**: Forever
+   - **Max Redemptions**: 1
+3. Sign up for Elite plan using the coupon code
+4. Your email must be in the `ADMIN_EMAILS` whitelist in `lib/admin.ts`
+
+See `.cursor/rules/outseta.mdc` for full Outseta integration documentation.
+
+---
+
 ## Color Theme
 
 | Color | Hex | Usage |
