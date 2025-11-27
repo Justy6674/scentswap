@@ -74,8 +74,14 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
   }, []);
 
   // Calculate trajectory - fan out from top-left
+  // Use deterministic pseudo-random values based on index to prevent hydration mismatch
+  const pseudoRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
   const angle = -20 + (index * 12);
-  const distance = 100 + Math.random() * 150;
+  const distance = 100 + pseudoRandom(index) * 150;
   const radians = (angle * Math.PI) / 180;
   
   const translateX = animValue.interpolate({
@@ -99,7 +105,7 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
   });
 
   const isTeal = index % 3 !== 0;
-  const size = 4 + Math.random() * 6;
+  const size = 4 + pseudoRandom(index + 100) * 6;
 
   return (
     <Animated.View

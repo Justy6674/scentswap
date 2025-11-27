@@ -101,34 +101,63 @@ var o_options = {
 
 ---
 
-## Step 2: Login/Signup Flow (No-Code Approach)
+## Step 2: Login/Signup Flow (JavaScript API Approach)
 
-### Triggering Auth
+### Triggering Auth via Popup (Recommended for React/Expo)
 
-Simply redirect users to Outseta's hosted pages:
+Using `Outseta.auth.open()` with `mode: 'popup'` avoids redirect issues and keeps the user on your site.
 
 ```javascript
-// Login - redirect to Outseta hosted page
-window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous';
+// Login - Open Popup
+if (window.Outseta) {
+  Outseta.auth.open({
+    widgetMode: 'login',
+    mode: 'popup'
+  });
+}
 
-// Sign up (no plan pre-selected)
-window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous';
+// Sign up (general)
+if (window.Outseta) {
+  Outseta.auth.open({
+    widgetMode: 'register',
+    mode: 'popup'
+  });
+}
 
 // Sign up with specific plan pre-selected
-window.location.href = 'https://scentswap.outseta.com/auth?widgetMode=register&planUid=vW5RoJm4#o-anonymous';
+if (window.Outseta) {
+  Outseta.auth.open({
+    widgetMode: 'register',
+    mode: 'popup',
+    planUid: 'vW5RoJm4', // e.g. Premium
+    skipPlanOptions: true
+  });
+}
 
 // Profile/Billing management
-window.location.href = 'https://scentswap.outseta.com/profile#o-authenticated';
+if (window.Outseta) {
+  Outseta.profile.open({
+    mode: 'popup'
+  });
+}
 ```
 
-### After Login
+### After Login (Popup Mode)
 
-Outseta redirects to your **Post Login URL**. The Outseta script:
-1. Automatically detects the session
-2. Stores the token (if `tokenStorage: "local"`)
-3. Makes `Outseta.getUser()` and `Outseta.getJwtPayload()` available
+When the popup closes after successful login/signup:
+1. The `tokenStorage: "local"` setting automatically saves the JWT token to localStorage.
+2. Outseta fires the `accessToken.set` event.
+3. Your `SubscriptionContext` listener catches this event and updates the app state immediately.
 
-Your `SubscriptionContext` then picks this up and updates the app state.
+**No redirect to a callback page is required.**
+
+### After Login (Redirect Mode - Fallback)
+
+If you use `window.location.href` or if popup is blocked:
+1. Outseta redirects to your **Post Login URL**.
+2. The Outseta embed script runs on page load.
+3. It detects the session and stores the token.
+4. `SubscriptionContext` picks up the user via `Outseta.getUser()`.
 
 ---
 
