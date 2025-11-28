@@ -14,6 +14,8 @@ import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { GlobalHeader } from '@/components/GlobalHeader';
+import { GlobalFooter } from '@/components/GlobalFooter';
 
 // Deterministic pseudo-random values based on index to prevent hydration mismatch
 const pseudoRandom = (seed: number) => {
@@ -239,16 +241,11 @@ export default function FAQScreen() {
   const colors = Colors[colorScheme];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Help Center</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      {/* Global Header */}
+      <GlobalHeader />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.hero}>
@@ -269,7 +266,7 @@ export default function FAQScreen() {
           </View>
         ))}
 
-        <View style={styles.footer}>
+        <View style={styles.contactSection}>
           <Text style={[styles.footerText, { color: colors.textSecondary }]}>
             Still need help?
           </Text>
@@ -277,8 +274,11 @@ export default function FAQScreen() {
             <Text style={styles.contactButtonText}>Contact Support</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Global Footer */}
+        <GlobalFooter />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -286,24 +286,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 0,
   },
   hero: {
     alignItems: 'center',
@@ -367,9 +352,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
     opacity: 0.6,
   },
-  footer: {
+  contactSection: {
     alignItems: 'center',
     marginTop: 24,
+    marginBottom: 32,
     paddingTop: 24,
     borderTopWidth: 1,
     borderTopColor: '#E8E4E0',

@@ -26,6 +26,8 @@ import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { GlobalHeader } from '@/components/GlobalHeader';
+import { GlobalFooter } from '@/components/GlobalFooter';
 
 const { width, height } = Dimensions.get('window');
 
@@ -424,17 +426,15 @@ export default function RegisterScreen() {
         <CardSpray count={15} color={COLORS.coral} />
       </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        {/* Back Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.charcoal} />
-        </TouchableOpacity>
+      {/* Global Header */}
+      <GlobalHeader />
 
+      <SafeAreaView style={styles.safeArea}>
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
+          {/* Page Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Choose Your Plan</Text>
             <Text style={styles.subtitle}>
@@ -472,12 +472,10 @@ export default function RegisterScreen() {
               </Link>
             </View>
             
-            <Link href="/faq" asChild>
-              <TouchableOpacity style={{ marginTop: 8 }}>
-                <Text style={{ color: COLORS.warmGray, fontSize: 14 }}>Questions? Check our FAQ</Text>
-              </TouchableOpacity>
-            </Link>
           </View>
+          
+          {/* Global Footer */}
+          <GlobalFooter />
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -510,31 +508,10 @@ const styles = StyleSheet.create({
     zIndex: 0,
     transform: [{ rotate: '180deg' }],
   },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 20,
-    left: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-    ...(Platform.OS === 'web' ? {
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    } : {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-    }),
-  },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 80 : 70,
-    paddingBottom: 40,
+    paddingTop: 20,
+    paddingBottom: 0,
   },
   header: {
     alignItems: 'center',
