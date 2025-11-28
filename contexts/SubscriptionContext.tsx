@@ -227,20 +227,33 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         return;
       }
       
+      // First check if there's a token in localStorage (per tokenStorage: "local")
+      const storedToken = localStorage.getItem('outseta-token') || localStorage.getItem('Outseta.nocode.accessToken');
+      console.log('Outseta token in localStorage:', storedToken ? 'Found' : 'Not found');
+      
       // Try to get current user using approved method: Outseta.getUser()
+      // Add timeout because getUser() can hang if no session exists
       try {
         console.log('Checking for Outseta user session...');
-        const user = await Outseta.getUser();
-        console.log('Outseta.getUser() returned:', user ? 'User found' : 'No user');
+        
+        // Race between getUser() and a timeout
+        const userPromise = Outseta.getUser();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 3000)
+        );
+        
+        const user = await Promise.race([userPromise, timeoutPromise]);
+        console.log('Outseta.getUser() returned:', user ? `User found: ${user.Email}` : 'No user');
+        
         if (user) {
           // Get JWT payload using approved method: Outseta.getJwtPayload()
           const jwtPayload = await Outseta.getJwtPayload();
           console.log('Outseta.getJwtPayload() returned:', jwtPayload ? 'JWT found' : 'No JWT');
           handleOutsetaUser(user, jwtPayload);
         }
-      } catch (e) {
-        // No user logged in - this is expected for unauthenticated users
-        console.log('No Outseta user session:', e);
+      } catch (e: any) {
+        // No user logged in or timeout - this is expected for unauthenticated users
+        console.log('No Outseta user session:', e?.message || e);
       }
       
       // Listen for auth changes using Outseta's event system
