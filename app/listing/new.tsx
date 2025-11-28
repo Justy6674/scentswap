@@ -20,6 +20,7 @@ import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { db } from '@/lib/database';
 import { calculateTradeValue } from '@/lib/valuation';
+import { analyzePhotoAuthenticity } from '@/lib/ai-services';
 
 const CONDITIONS = [
   { key: 'New', label: 'New', description: 'Sealed, never used' },
@@ -141,6 +142,27 @@ export default function NewListingScreen() {
     if (!validate() || !user) return;
     
     setLoading(true);
+
+    // AI Verification
+    let aiScore = 0;
+    let verificationStatus = 'pending';
+    
+    try {
+      if (photos.length > 0) {
+        const aiResult = await analyzePhotoAuthenticity(photos, name, house);
+        aiScore = aiResult.confidence;
+        
+        if (aiResult.status === 'likely_authentic') {
+          verificationStatus = 'approved';
+        } else if (aiResult.status === 'suspicious') {
+          verificationStatus = 'flagged';
+          Alert.alert('Verification Notice', 'Our AI system has flagged potential issues with your photos. This listing will require manual review.');
+        }
+      }
+    } catch (e) {
+      console.error('AI verification failed:', e);
+    }
+
     const listing = await db.createListing({
       user_id: user.id,
       custom_name: name,
@@ -155,7 +177,7 @@ export default function NewListingScreen() {
       is_active: true,
       fragrance_id: null,
       swap_preferences: null,
-      estimated_value: null,
+      estimated_value: estimatedValue, // Use the calculated value
       admin_verified: isAdmin,
       admin_verified_at: isAdmin ? new Date().toISOString() : null,
       purchase_source: purchaseSource || null,
@@ -164,6 +186,8 @@ export default function NewListingScreen() {
       has_cap: hasCap,
       storage_history: storageHistory,
       authenticity_declaration: authenticityDeclared,
+      ai_verification_score: aiScore,
+      verification_status: isAdmin ? 'approved' : verificationStatus,
     });
     setLoading(false);
 
