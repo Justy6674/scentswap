@@ -720,6 +720,7 @@ const styles = StyleSheet.create({
     width: '100%',
     minWidth: 200,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaSecondaryText: {
     fontSize: 14,
