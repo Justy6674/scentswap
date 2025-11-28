@@ -16,7 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
 
 // New Light Luxe color palette (from logo)
 const COLORS = {
@@ -492,7 +491,7 @@ const styles = StyleSheet.create({
   // Spray Effect
   sprayContainer: {
     position: 'absolute',
-    left: isWeb ? '5%' : 20,
+    left: 20, // Default mobile
     top: '35%',
     width: 300,
     height: 300,
@@ -516,7 +515,7 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    position: 'absolute', // Default for all
+    position: 'absolute', 
     top: 0,
     left: 0,
     right: 0,
@@ -681,7 +680,7 @@ const styles = StyleSheet.create({
     maxWidth: 500,
   },
   ctaContainer: {
-    flexDirection: isWeb ? 'row' : 'column',
+    flexDirection: 'column',
     gap: 16,
     marginBottom: 24,
     width: '100%',
@@ -697,7 +696,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 8,
     gap: 8,
-    width: isWeb ? 'auto' : '100%',
+    width: '100%',
     minWidth: 200,
     shadowColor: COLORS.teal,
     shadowOffset: { width: 0, height: 4 },
@@ -718,7 +717,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: COLORS.coral,
     backgroundColor: 'transparent',
-    width: isWeb ? 'auto' : '100%',
+    width: '100%',
     minWidth: 200,
     alignItems: 'center',
   },
@@ -772,7 +771,7 @@ const styles = StyleSheet.create({
 
   // Steps
   stepsContainer: {
-    flexDirection: 'column', // Mobile default
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 24,
     maxWidth: 1200,
@@ -884,7 +883,7 @@ const styles = StyleSheet.create({
 
   // Stats
   statsContainer: {
-    flexDirection: 'column', // Mobile default
+    flexDirection: 'column',
     gap: 40,
     alignItems: 'center',
   },
@@ -938,7 +937,7 @@ const styles = StyleSheet.create({
     paddingVertical: 100,
   },
   finalCtaTitle: {
-    fontSize: isWeb ? 40 : 28,
+    fontSize: 40,
     fontWeight: '300',
     color: COLORS.white,
     textAlign: 'center',
