@@ -235,9 +235,6 @@ export default function LandingPage() {
             <TouchableOpacity onPress={() => router.push('/register')} style={styles.headerNavLink}>
               <Text style={styles.headerNavText}>Pricing</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/register')} style={styles.headerNavLink}>
-              <Text style={styles.headerNavText}>Pricing</Text>
-            </TouchableOpacity>
             <TouchableOpacity onPress={handleSignIn} style={styles.headerNavLink}>
               <Text style={styles.headerNavText}>Sign In</Text>
             </TouchableOpacity>
