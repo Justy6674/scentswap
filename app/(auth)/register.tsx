@@ -56,8 +56,16 @@ const COLORS = {
   border: '#E0DCD8',
 };
 
-// Spray particle component (matching landing page)
-const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
+// Spray particle component
+const SprayParticle = ({ 
+  delay, 
+  index, 
+  color 
+}: { 
+  delay: number; 
+  index: number; 
+  color?: string;
+}) => {
   const animValue = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
@@ -65,23 +73,16 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
       animValue.setValue(0);
       Animated.timing(animValue, {
         toValue: 1,
-        duration: 4000,
+        duration: 3000,
         delay: delay,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(() => animate());
     };
     animate();
   }, []);
 
-  // Calculate trajectory - fan out from top-left
-  // Use deterministic pseudo-random values based on index to prevent hydration mismatch
-  const pseudoRandom = (seed: number) => {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
-
   const angle = -20 + (index * 12);
-  const distance = 100 + pseudoRandom(index) * 150;
+  const distance = 80 + Math.random() * 100; // Smaller distance for cards
   const radians = (angle * Math.PI) / 180;
   
   const translateX = animValue.interpolate({
@@ -104,35 +105,36 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
     outputRange: [0.3, 0.8, 0.2],
   });
 
-  const isTeal = index % 3 !== 0;
-  const size = 4 + pseudoRandom(index + 100) * 6;
+  const size = 3 + Math.random() * 4;
 
   return (
     <Animated.View
       style={{
         position: 'absolute',
+        right: -10, // Start from top-right corner
+        top: -10,
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: isTeal ? COLORS.teal : COLORS.coral,
+        backgroundColor: color || (index % 3 !== 0 ? COLORS.teal : COLORS.coral),
         opacity,
-        transform: [{ translateX }, { translateY }, { scale }],
+        transform: [{ translateX: -translateX }, { translateY }, { scale }], // Fan out left/down
       }}
     />
   );
 };
 
-// Spray effect container
-const SprayEffect = () => {
-  const particles = Array.from({ length: 12 }, (_, i) => ({
+// Card Spray Component
+const CardSpray = ({ count, color }: { count: number; color: string }) => {
+  const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
-    delay: i * 200,
+    delay: i * 150,
   }));
 
   return (
-    <View style={styles.sprayContainer}>
-      {particles.map((particle) => (
-        <SprayParticle key={particle.id} delay={particle.delay} index={particle.id} />
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {particles.map((p) => (
+        <SprayParticle key={p.id} delay={p.delay} index={p.id} color={color} />
       ))}
     </View>
   );
@@ -162,8 +164,9 @@ const PLANS = [
       'Community access',
       'Standard support',
     ],
-    buttonText: 'Get Started Free',
-    buttonFilled: false,
+    buttonText: 'Get Free',
+    buttonFilled: true,
+    sprayCount: 5,
   },
   {
     id: 'premium',
@@ -184,6 +187,7 @@ const PLANS = [
     ],
     buttonText: 'Get Premium',
     buttonFilled: true,
+    sprayCount: 15,
   },
   {
     id: 'elite',
@@ -201,8 +205,9 @@ const PLANS = [
       'Early feature access',
       'Bulk upload tools',
     ],
-    buttonText: 'Go Elite',
-    buttonFilled: false,
+    buttonText: 'Get Elite',
+    buttonFilled: true,
+    sprayCount: 30,
   },
 ];
 
@@ -249,22 +254,25 @@ function PlanCard({
         style={[
           styles.card,
           {
-            borderColor: isSelected ? plan.color : COLORS.border,
-            borderWidth: isSelected ? 2 : 1,
+            borderColor: plan.color,
+            borderWidth: isSelected ? 3 : 1,
             ...(Platform.OS === 'web' ? {
               boxShadow: isSelected 
-                ? `0 8px 32px ${plan.color}30, 0 4px 16px rgba(0,0,0,0.08)`
-                : `0 4px 16px rgba(0,0,0,0.06)`,
+                ? `0 8px 32px ${plan.color}40, 0 4px 16px rgba(0,0,0,0.08)`
+                : `0 4px 16px ${plan.color}10`,
             } : {
-              shadowColor: isSelected ? plan.color : '#000',
+              shadowColor: plan.color,
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: isSelected ? 0.25 : 0.08,
+              shadowOpacity: isSelected ? 0.4 : 0.1,
               shadowRadius: isSelected ? 16 : 8,
               elevation: isSelected ? 8 : 4,
             }),
           },
         ]}
       >
+        {/* Internal Spray Effect */}
+        <CardSpray count={plan.sprayCount} color={plan.color} />
+
         {/* Popular Badge */}
         {plan.popular && (
           <View style={[styles.popularBadge, { backgroundColor: plan.color }]}>
@@ -306,27 +314,25 @@ function PlanCard({
           ))}
         </View>
 
-        {/* Button */}
+        {/* Button - ALWAYS FILLED */}
         <TouchableOpacity
           style={[
             styles.button,
-            plan.buttonFilled 
-              ? { backgroundColor: plan.color }
-              : { backgroundColor: 'transparent', borderWidth: 2, borderColor: plan.color },
+            { backgroundColor: plan.color, borderColor: plan.color, borderWidth: 0 },
           ]}
           onPress={onSignUp}
           activeOpacity={0.8}
         >
           <Text style={[
             styles.buttonText,
-            { color: plan.buttonFilled ? '#FFF' : plan.color }
+            { color: '#FFF' }
           ]}>
             {plan.buttonText}
           </Text>
           <Ionicons 
             name="arrow-forward" 
             size={18} 
-            color={plan.buttonFilled ? '#FFF' : plan.color} 
+            color="#FFF" 
           />
         </TouchableOpacity>
       </TouchableOpacity>
