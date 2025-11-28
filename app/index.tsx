@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
   Animated,
+  useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -132,6 +133,9 @@ const SprayEffect = () => {
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
+  
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
 
@@ -242,13 +246,13 @@ export default function LandingPage() {
           </Text>
 
           {/* CTA Buttons */}
-          <View style={styles.ctaContainer}>
-            <TouchableOpacity style={styles.ctaPrimary} onPress={handleGetStarted}>
+          <View style={[styles.ctaContainer, isDesktop && { flexDirection: 'row' }]}>
+            <TouchableOpacity style={[styles.ctaPrimary, isDesktop && { width: 'auto' }]} onPress={handleGetStarted}>
               <Text style={styles.ctaPrimaryText}>START SWAPPING</Text>
               <Ionicons name="arrow-forward" size={18} color={COLORS.white} />
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.ctaSecondary} onPress={handleExplore}>
+            <TouchableOpacity style={[styles.ctaSecondary, isDesktop && { width: 'auto' }]} onPress={handleExplore}>
               <Text style={styles.ctaSecondaryText}>EXPLORE LISTINGS</Text>
             </TouchableOpacity>
           </View>
@@ -272,7 +276,7 @@ export default function LandingPage() {
         <Text style={styles.sectionLabel}>THE PROCESS</Text>
         <Text style={styles.sectionTitle}>How ScentSwap Works</Text>
         
-        <View style={styles.stepsContainer}>
+        <View style={[styles.stepsContainer, isDesktop && { flexDirection: 'row' }]}>
           {[
             {
               icon: 'camera-outline',
@@ -372,7 +376,7 @@ export default function LandingPage() {
 
       {/* Stats Section */}
       <View style={styles.section}>
-        <View style={styles.statsContainer}>
+        <View style={[styles.statsContainer, isDesktop && { flexDirection: 'row', gap: 80 }]}>
           {[
             { value: '$850M+', label: 'AU Fragrance Market', accent: false },
             { value: '100%', label: 'Cashless Trading', accent: true },
@@ -419,8 +423,8 @@ export default function LandingPage() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <View style={styles.footerContent}>
-          <View style={styles.footerLogo}>
+        <View style={[styles.footerContent, isDesktop && { flexDirection: 'row', alignItems: 'flex-start' }]}>
+          <View style={[styles.footerLogo, isDesktop && { alignItems: 'flex-start' }]}>
             <Image 
               source={require('@/assets/images/logo-nobg.png')} 
               style={styles.footerLogoImage}
@@ -429,7 +433,7 @@ export default function LandingPage() {
             <Text style={styles.footerTagline}>Trade scents, not cash</Text>
           </View>
 
-          <View style={styles.footerLinks}>
+          <View style={[styles.footerLinks, isDesktop && { flexDirection: 'row', gap: 32 }]}>
             <TouchableOpacity onPress={() => router.push('/faq')}>
               <Text style={styles.footerLink}>FAQ</Text>
             </TouchableOpacity>
@@ -457,7 +461,7 @@ export default function LandingPage() {
           </View>
         </View>
 
-        <View style={styles.footerBottom}>
+        <View style={[styles.footerBottom, isDesktop && { flexDirection: 'row' }]}>
           <Text style={styles.footerCopyright}>
             © 2025 ScentSwap. Made in Australia 🇦🇺
           </Text>
@@ -760,7 +764,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: isWeb ? 40 : 28,
+    fontSize: 36,
     fontWeight: '300',
     color: COLORS.charcoal,
     textAlign: 'center',
@@ -769,9 +773,8 @@ const styles = StyleSheet.create({
 
   // Steps
   stepsContainer: {
-    flexDirection: isWeb ? 'row' : 'column',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: 'column', // Mobile default
+    alignItems: 'center',
     gap: 24,
     maxWidth: 1200,
     width: '100%',
@@ -781,7 +784,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 32,
     alignItems: 'center',
-    width: isWeb ? 260 : '100%',
+    width: '100%',
     maxWidth: 300,
     shadowColor: COLORS.charcoal,
     shadowOffset: { width: 0, height: 4 },
@@ -845,7 +848,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   featureCard: {
-    width: isWeb ? 280 : '100%',
+    width: '100%',
     maxWidth: 300,
     padding: 24,
     backgroundColor: COLORS.white,
@@ -882,15 +885,15 @@ const styles = StyleSheet.create({
 
   // Stats
   statsContainer: {
-    flexDirection: isWeb ? 'row' : 'column',
-    gap: isWeb ? 80 : 40,
+    flexDirection: 'column', // Mobile default
+    gap: 40,
     alignItems: 'center',
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    fontSize: isWeb ? 56 : 40,
+    fontSize: 40,
     fontWeight: '300',
     color: COLORS.teal,
     marginBottom: 8,
@@ -915,11 +918,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quoteText: {
-    fontSize: isWeb ? 24 : 20,
+    fontSize: 20,
     fontStyle: 'italic',
     color: COLORS.charcoal,
     textAlign: 'center',
-    lineHeight: isWeb ? 36 : 32,
+    lineHeight: 32,
     marginTop: 16,
     marginBottom: 24,
   },
@@ -979,9 +982,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   footerContent: {
-    flexDirection: isWeb ? 'row' : 'column',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: isWeb ? 'flex-start' : 'center',
+    alignItems: 'center',
     gap: 40,
     maxWidth: 1200,
     width: '100%',
@@ -989,7 +992,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   footerLogo: {
-    alignItems: isWeb ? 'flex-start' : 'center',
+    alignItems: 'center',
   },
   footerLogoImage: {
     width: 60,
@@ -1001,8 +1004,8 @@ const styles = StyleSheet.create({
     color: COLORS.lightGray,
   },
   footerLinks: {
-    flexDirection: isWeb ? 'row' : 'column',
-    gap: isWeb ? 32 : 16,
+    flexDirection: 'column',
+    gap: 16,
     alignItems: 'center',
   },
   footerLink: {
@@ -1025,7 +1028,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
     paddingTop: 24,
-    flexDirection: isWeb ? 'row' : 'column',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 16,
