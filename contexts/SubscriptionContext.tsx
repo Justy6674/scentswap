@@ -229,15 +229,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       
       // Try to get current user using approved method: Outseta.getUser()
       try {
+        console.log('Checking for Outseta user session...');
         const user = await Outseta.getUser();
+        console.log('Outseta.getUser() returned:', user ? 'User found' : 'No user');
         if (user) {
           // Get JWT payload using approved method: Outseta.getJwtPayload()
           const jwtPayload = await Outseta.getJwtPayload();
+          console.log('Outseta.getJwtPayload() returned:', jwtPayload ? 'JWT found' : 'No JWT');
           handleOutsetaUser(user, jwtPayload);
         }
       } catch (e) {
         // No user logged in - this is expected for unauthenticated users
-        console.log('No Outseta user session');
+        console.log('No Outseta user session:', e);
       }
       
       // Listen for auth changes using Outseta's event system
@@ -278,6 +281,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   };
 
   const handleOutsetaUser = (user: any, jwtPayload: any) => {
+    console.log('handleOutsetaUser called with:', { email: user?.Email, planUid: jwtPayload?.['outseta:planUid'] });
     const planUid = jwtPayload?.['outseta:planUid'] || OUTSETA_CONFIG.planUids.FREE;
     const tier = getTierFromPlanUid(planUid);
     

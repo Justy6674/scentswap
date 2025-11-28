@@ -82,19 +82,30 @@ export function OutsetaScript() {
 
   /**
    * Handle post-login redirect token
-   * Per Outseta docs: "Outseta appends an access_token (JWT) in the URL query string"
+   * Per Outseta docs: "Outseta appends an access_token (JWT) in the URL"
    * The nocode module should handle this automatically, but we can assist
+   * 
+   * Token can be in:
+   * - Query string: ?access_token=xxx
+   * - Hash: #access_token=xxx
    * 
    * @see .cursor/rules/outseta.mdc Step 2
    */
   function handlePostLoginToken() {
     if (typeof window === 'undefined') return;
     
+    // Check query string first
     const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
+    let accessToken = urlParams.get('access_token');
+    
+    // Also check hash (Outseta sometimes uses hash-based tokens)
+    if (!accessToken && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      accessToken = hashParams.get('access_token');
+    }
     
     if (accessToken) {
-      console.log('Access token found in URL');
+      console.log('Access token found in URL, setting via Outseta.setAccessToken()');
       
       // Per docs: "Outseta's nocode module will grab the token from the URL and store it"
       // The script should handle this automatically, but if Outseta is ready, we can set it
