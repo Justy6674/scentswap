@@ -189,6 +189,9 @@ export default function LandingPage() {
             <Text style={styles.headerBrand}>ScentSwap</Text>
           </View>
           <View style={styles.headerNav}>
+            <TouchableOpacity onPress={() => router.push('/faq')} style={styles.headerNavLink}>
+              <Text style={styles.headerNavText}>FAQ</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={handleSignIn} style={styles.headerNavLink}>
               <Text style={styles.headerNavText}>Sign In</Text>
             </TouchableOpacity>
