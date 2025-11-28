@@ -44,7 +44,17 @@ const COLORS = {
 };
 
 // Spray particle component
-const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
+const SprayParticle = ({ 
+  delay, 
+  index, 
+  sizeScale = 1, 
+  mirror = false 
+}: { 
+  delay: number; 
+  index: number; 
+  sizeScale?: number; 
+  mirror?: boolean; 
+}) => {
   const animValue = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
@@ -73,7 +83,7 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
   
   const translateX = animValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, Math.cos(radians) * distance],
+    outputRange: [0, Math.cos(radians) * distance * (mirror ? -1 : 1)],
   });
   
   const translateY = animValue.interpolate({
@@ -92,7 +102,7 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
   });
 
   const isTeal = index % 3 !== 0; // 2/3 teal, 1/3 coral
-  const size = 6 + pseudoRandom(index + 100) * 8;
+  const size = (6 + pseudoRandom(index + 100) * 8) * sizeScale;
 
   return (
     <Animated.View
@@ -105,13 +115,14 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
           backgroundColor: isTeal ? COLORS.teal : COLORS.coral,
           opacity,
           transform: [{ translateX }, { translateY }, { scale }],
+          [mirror ? 'right' : 'left']: 10, // Flip origin
         },
       ]}
     />
   );
 };
 
-// Spray effect component
+// Main Spray effect component (Left)
 const SprayEffect = () => {
   const particles = Array.from({ length: 18 }, (_, i) => ({
     id: i,
@@ -125,6 +136,32 @@ const SprayEffect = () => {
       {/* Particles */}
       {particles.map((particle) => (
         <SprayParticle key={particle.id} delay={particle.delay} index={particle.id} />
+      ))}
+    </View>
+  );
+};
+
+// Fine Mist Effect (Right - Smaller, more particles)
+const FineMistEffect = () => {
+  const { width } = useWindowDimensions();
+  const isDesktop = width > 768;
+  
+  const particles = Array.from({ length: 25 }, (_, i) => ({
+    id: i,
+    delay: i * 120,
+  }));
+
+  return (
+    <View style={[styles.mistContainer, isDesktop && { right: '10%', top: '10%' }]}>
+      <View style={styles.sprayOrigin} />
+      {particles.map((particle) => (
+        <SprayParticle 
+          key={particle.id} 
+          delay={particle.delay} 
+          index={particle.id} 
+          sizeScale={0.5} // Smaller
+          mirror={true}   // Fan Left
+        />
       ))}
     </View>
   );
@@ -213,6 +250,7 @@ export default function LandingPage() {
         
         {/* Spray Effect */}
         <SprayEffect />
+        <FineMistEffect />
 
         <Animated.View 
           style={[
@@ -499,6 +537,15 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     zIndex: 2,
+  },
+  mistContainer: {
+    position: 'absolute',
+    right: 20, // Default mobile
+    top: '15%', // Higher up
+    width: 200,
+    height: 200,
+    zIndex: 2,
+    transform: [{ scaleX: -1 }], // Flip horizontally for right-side spray
   },
   sprayOrigin: {
     position: 'absolute',
