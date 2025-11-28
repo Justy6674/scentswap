@@ -14,7 +14,6 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
@@ -34,10 +33,8 @@ const CONCENTRATIONS = ['Parfum', 'EDP', 'EDT', 'EDC', 'Cologne', 'Other'];
 export default function NewListingScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user, isLoading: authLoading, isAdmin: authIsAdmin } = useAuth();
-  const { isAdmin: subscriptionIsAdmin } = useSubscription();
+  const { isAuthenticated, outsetaUser, isLoading: authLoading, isAdmin, openLogin } = useSubscription();
   
-  const isAdmin = authIsAdmin || subscriptionIsAdmin;
   
   const [photos, setPhotos] = useState<string[]>([]);
   const [name, setName] = useState('');
@@ -139,7 +136,7 @@ export default function NewListingScreen() {
   }
 
   async function handleSubmit() {
-    if (!validate() || !user) return;
+    if (!validate() || !outsetaUser) return;
     
     setLoading(true);
 
@@ -164,7 +161,7 @@ export default function NewListingScreen() {
     }
 
     const listing = await db.createListing({
-      user_id: user.id,
+      user_id: outsetaUser?.personUid || '',
       custom_name: name,
       house: house,
       concentration: concentration || null,
@@ -396,12 +393,12 @@ export default function NewListingScreen() {
   });
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/(auth)/login');
+    if (!authLoading && !isAuthenticated) {
+      openLogin();
     }
-  }, [user, authLoading]);
+  }, [isAuthenticated, authLoading]);
 
-  if (authLoading || !user) {
+  if (authLoading || !isAuthenticated) {
     return null;
   }
 

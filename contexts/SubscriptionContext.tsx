@@ -194,11 +194,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize Outseta on mount (web only)
+  // CRITICAL: Keep isLoading=true until auth check completes (like TeleCheck)
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      // Don't block UI - set loading false immediately, then check for user in background
-      setIsLoading(false);
-      initializeOutseta();
+      // Keep loading true until we've checked for existing session
+      initializeOutseta().finally(() => {
+        setIsLoading(false);
+      });
     } else {
       // For mobile, we'll use a different auth flow
       setIsLoading(false);

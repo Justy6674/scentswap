@@ -14,20 +14,72 @@ import { db } from './database';
 // API Configuration
 const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
 const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const DEEPSEEK_API_KEY = process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY;
 
-// Default provider from env
-const DEFAULT_PROVIDER = ANTHROPIC_API_KEY ? 'anthropic' : (OPENAI_API_KEY ? 'openai' : 'mock');
+// Default provider from env - Prefer Gemini for cost, fallback to Anthropic/OpenAI
+const DEFAULT_PROVIDER = GEMINI_API_KEY ? 'gemini' : (ANTHROPIC_API_KEY ? 'anthropic' : (OPENAI_API_KEY ? 'openai' : 'mock'));
 
 // Helper to get active provider from DB config
 async function getActiveModelSettings() {
   try {
     const configs = await db.getAiConfigs();
     const settings = configs.find(c => c.key === 'model_settings');
-    return settings?.value || { provider: DEFAULT_PROVIDER, default_model: 'gpt-3.5-turbo' };
+    return settings?.value || { provider: DEFAULT_PROVIDER, default_model: 'gemini-1.5-flash' };
   } catch (e) {
-    return { provider: DEFAULT_PROVIDER, default_model: 'gpt-3.5-turbo' };
+    return { provider: DEFAULT_PROVIDER, default_model: 'gemini-1.5-flash' };
   }
 }
+
+// --- API HELPERS ---
+
+async function callGeminiAPI(prompt: string, imageBase64?: string): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  
+  const contents = [];
+  if (imageBase64) {
+    contents.push({
+      parts: [
+        { text: prompt },
+        { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
+      ]
+    });
+  } else {
+    contents.push({ parts: [{ text: prompt }] });
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents })
+  });
+
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't analyze that.";
+}
+
+async function callDeepSeekAPI(prompt: string, systemPrompt?: string): Promise<string> {
+  // Using Together AI for DeepSeek access
+  const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "deepseek-ai/DeepSeek-V3", // Using Together's model name
+      messages: [
+        { role: "system", content: systemPrompt || "You are a helpful assistant." },
+        { role: "user", content: prompt }
+      ],
+      stream: false
+    })
+  });
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || "I couldn't process that.";
+}
+
 
 // =============================================================================
 // PHOTO AUTHENTICITY ANALYSIS
@@ -70,10 +122,13 @@ export async function analyzePhotoAuthenticity(
 
   try {
     // Logic to route to specific provider
-    if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
-       // Call Claude with dynamic systemPrompt
-       // This would look similar to callClaudeAPI but for vision/authenticity
-       // For now, falling back to mock logic with dynamic prompt consideration if we had real vision API
+    if (settings.provider === 'gemini' && GEMINI_API_KEY) {
+       // Gemini is ideal for high-volume image analysis
+       // Note: Real implementation requires fetching image -> base64
+       // For this PR, we'll keep the robust mock/heuristic check unless we have real base64 data
+       // but the infrastructure is now ready.
+    } else if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
+       // Claude logic
     } 
     
     // For now, we'll do basic image analysis (placeholder for real Vision API)
@@ -380,6 +435,10 @@ export async function getMediatorResponse(
   // If AI provider available, use it for complex questions
   if (settings.provider !== 'mock') {
     try {
+      if (settings.provider === 'deepseek' && DEEPSEEK_API_KEY) {
+        const response = await callDeepSeekAPI(question, "You are ScentBot, a helpful AI assistant for ScentSwap.");
+        return { message: response, type: 'info' };
+      }
       if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
         const response = await callClaudeAPI(question, context);
         return { message: response, type: 'info' };
@@ -454,6 +513,17 @@ export async function parseFragranceData(text: string): Promise<any> {
 
   if (settings.provider !== 'mock') {
     try {
+      if (settings.provider === 'gemini' && GEMINI_API_KEY) {
+        // Use Gemini for text parsing (it's fast and cheap)
+        const response = await callGeminiAPI(prompt);
+        const cleaned = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleaned);
+      }
+      if (settings.provider === 'deepseek' && DEEPSEEK_API_KEY) {
+        const response = await callDeepSeekAPI(prompt, "You are a data extraction assistant. Output ONLY valid JSON.");
+        const cleaned = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleaned);
+      }
       if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
         const response = await callClaudeAPI(prompt, null, "You are a data extraction assistant. Output ONLY valid JSON.");
         // Clean up response (remove markdown code blocks if any)

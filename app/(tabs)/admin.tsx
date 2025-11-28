@@ -1,18 +1,3 @@
-/**
- * Admin Dashboard
- * 
- * Only accessible to users with is_admin = true
- * Features:
- * - Platform statistics
- * - User management
- * - Listing moderation
- * - Swap monitoring
- * - Dispute resolution
- * - AI Configuration & Management (New)
- * - Admin Marketplace (New)
- * - Fragrance Database Management (New)
- */
-
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -649,6 +634,32 @@ export default function AdminScreen() {
     },
   });
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const isAuthenticated = user || outsetaUser;
+  
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.accessDenied}>
+          <Ionicons name="lock-closed" size={64} color={colors.textSecondary} />
+          <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+          <Text style={styles.accessDeniedText}>
+            You don't have admin privileges to access this page.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // Define tabs list for cleaner rendering
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -1057,6 +1068,26 @@ export default function AdminScreen() {
                   alignItems: 'center'
                 }}>
                   <Text style={{color: colors.text}}>Claude 3.5</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{
+                  padding: 12, 
+                  borderWidth: 1, 
+                  borderColor: colors.border, 
+                  borderRadius: 8,
+                  flex: 1,
+                  alignItems: 'center'
+                }}>
+                  <Text style={{color: colors.text}}>DeepSeek</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={{
+                  padding: 12, 
+                  borderWidth: 1, 
+                  borderColor: colors.border, 
+                  borderRadius: 8,
+                  flex: 1,
+                  alignItems: 'center'
+                }}>
+                  <Text style={{color: colors.text}}>Gemini</Text>
                 </TouchableOpacity>
               </View>
             </View>

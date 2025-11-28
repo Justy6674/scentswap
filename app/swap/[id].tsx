@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { formatDistanceToNow } from 'date-fns';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 import { ListingCard } from '@/components/ListingCard';
 import { Swap, Message } from '@/types';
@@ -25,7 +25,7 @@ export default function SwapDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { isAuthenticated, outsetaUser } = useSubscription();
   const [swap, setSwap] = useState<Swap | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -42,8 +42,8 @@ export default function SwapDetailScreen() {
 
   async function loadSwapDetails() {
     setLoading(true);
-    if (user) {
-      const swaps = await db.getSwaps(user.id);
+    if (isAuthenticated && outsetaUser) {
+      const swaps = await db.getSwaps(outsetaUser.personUid);
       const found = swaps.find(s => s.id === id);
       setSwap(found || null);
       if (found) {
@@ -55,9 +55,9 @@ export default function SwapDetailScreen() {
   }
 
   async function sendMessage() {
-    if (!newMessage.trim() || !user || !swap) return;
+    if (!newMessage.trim() || !isAuthenticated || !outsetaUser || !swap) return;
     setSending(true);
-    const message = await db.sendMessage(swap.id, user.id, newMessage.trim());
+    const message = await db.sendMessage(swap.id, outsetaUser?.personUid || '', newMessage.trim());
     if (message) {
       setMessages([...messages, message]);
       setNewMessage('');

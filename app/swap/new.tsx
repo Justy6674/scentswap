@@ -12,7 +12,7 @@ import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types';
@@ -23,7 +23,7 @@ export default function NewSwapScreen() {
   const { targetListing } = useLocalSearchParams<{ targetListing?: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { isAuthenticated, outsetaUser, isLoading, openLogin } = useSubscription();
   
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [targetListingData, setTargetListingData] = useState<Listing | null>(null);
@@ -50,11 +50,11 @@ export default function NewSwapScreen() {
   }, []);
 
   async function loadData() {
-    if (!user) return;
+    if (!isAuthenticated || !outsetaUser) return;
     setLoading(true);
     
     const [userListings, allListings] = await Promise.all([
-      db.getUserListings(user.id),
+      db.getUserListings(outsetaUser?.personUid || ''),
       db.getListings(),
     ]);
     
@@ -110,7 +110,7 @@ export default function NewSwapScreen() {
   }
 
   async function submitSwap() {
-    if (!user || !targetListingData || selectedMyListings.length === 0) return;
+    if (!isAuthenticated || !outsetaUser || !targetListingData || selectedMyListings.length === 0) return;
     
     // Validation: Must be balanced OR loss accepted
     if (!isBalanced && !lossAccepted && Math.abs(valueDiff) > 5) {
@@ -120,7 +120,7 @@ export default function NewSwapScreen() {
     
     setSubmitting(true);
     const { swap, fairnessScore } = await db.createSwap({
-      initiator_id: user.id,
+      initiator_id: outsetaUser?.personUid || '',
       recipient_id: targetListingData.user_id,
       initiator_listings: selectedMyListings,
       recipient_listings: [targetListingData.id],
@@ -275,8 +275,8 @@ export default function NewSwapScreen() {
     );
   }
 
-  if (!user) {
-    router.replace('/(auth)/login');
+  if (!isLoading && !isAuthenticated) {
+    openLogin();
     return null;
   }
 

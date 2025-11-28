@@ -9,12 +9,13 @@ import {
   Alert,
   Dimensions,
   ActivityIndicator,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
@@ -25,7 +26,7 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -46,10 +47,27 @@ export default function ListingDetailScreen() {
     setLoading(false);
   }
 
+  async function handleShare() {
+    if (!listing) return;
+    
+    const message = `Check out this ${listing.house || ''} ${listing.custom_name || ''} on ScentSwap! Trade value ~$${listing.estimated_value?.toFixed(0) || '?'}. #ScentSwap`;
+    const url = `https://www.scentswap.com.au/listing/${listing.id}`;
+    
+    try {
+      await Share.share({
+        message: `${message} ${url}`,
+        url: url, // iOS
+        title: 'ScentSwap Listing'
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   function handleProposeSwap() {
-    if (!user) {
+    if (!isAuthenticated) {
       Alert.alert('Sign In Required', 'Please sign in to propose a swap.');
-      router.push('/(auth)/login');
+      openLogin();
       return;
     }
     router.push(`/swap/new?targetListing=${id}`);
@@ -290,7 +308,7 @@ export default function ListingDetailScreen() {
     );
   }
 
-  const isOwner = user?.id === listing.user_id;
+  const isOwner = outsetaUser?.personUid === listing.user_id;
 
   return (
     <>
@@ -298,6 +316,11 @@ export default function ListingDetailScreen() {
         options={{
           title: '',
           headerTransparent: true,
+          headerRight: () => (
+            <TouchableOpacity onPress={handleShare} style={{ marginRight: 16, padding: 8, backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 20 }}>
+              <Ionicons name="share-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+          ),
         }}
       />
       <View style={styles.container}>

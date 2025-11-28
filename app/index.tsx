@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -176,7 +176,7 @@ const FineMistEffect = () => {
 };
 
 export default function LandingPage() {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, isLoading: loading } = useSubscription();
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
   
@@ -199,10 +199,10 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && isAuthenticated) {
       router.replace('/(tabs)');
     }
-  }, [user, loading]);
+  }, [isAuthenticated, loading]);
 
   const handleGetStarted = () => {
     router.push('/(auth)/register');
