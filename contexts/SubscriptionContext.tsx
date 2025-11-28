@@ -246,10 +246,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       // Listen for auth changes using Outseta's event system
       // These are documented events in Outseta's nocode module
       if (Outseta.on) {
+        console.log('Setting up Outseta event listeners...');
+        
         Outseta.on('accessToken.set', async () => {
+          console.log('Outseta event: accessToken.set triggered');
           try {
             const user = await Outseta.getUser();
             const jwtPayload = await Outseta.getJwtPayload();
+            console.log('accessToken.set - User found:', user?.Email);
             handleOutsetaUser(user, jwtPayload);
           } catch (e) {
             console.error('Error handling accessToken.set:', e);
@@ -257,8 +261,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         });
         
         Outseta.on('accessToken.clear', () => {
+          console.log('Outseta event: accessToken.clear triggered');
           handleLogout();
         });
+        
+        console.log('Outseta event listeners registered');
+      } else {
+        console.log('Outseta.on not available - cannot register event listeners');
       }
     } catch (error) {
       console.error('Error initializing Outseta:', error);

@@ -28,8 +28,9 @@ declare global {
     Outseta: {
       getUser: () => Promise<any>;
       getJwtPayload: () => Promise<any>;
-      setAccessToken: (token: string) => void;
+      setAccessToken: (token: string | null) => void;
       on: (event: string, callback: () => void) => void;
+      off: (event: string, callback: () => void) => void;
     };
   }
 }
@@ -47,15 +48,15 @@ export function OutsetaScript() {
       return;
     }
 
-    // Set Outseta options - EXACT CONFIG FROM TELECHECK
-    // tokenStorage: "local" is CRITICAL - without it, user completes payment but isn't logged in
-    // monitorDom: "true" - scans for data-attributes on buttons (required for popup mode)
-    // load: "nocode,auth,profile" - minimal set needed for subscription flow
+    // Set Outseta options per official documentation
+    // tokenStorage: "local" - CRITICAL: Persists JWT in localStorage across sessions
+    // monitorDom: true - Monitors DOM for SPA navigation (React/Vue/etc)
+    // load: "auth" - Minimal modules needed
     window.o_options = {
       domain: OUTSETA_CONFIG.domain,
-      monitorDom: "true", // STRING not boolean - exactly as TeleCheck does it
-      load: "nocode,auth,profile", // Minimal load - exactly as TeleCheck does it
-      tokenStorage: "local", // CRITICAL: Stores JWT in localStorage after signup
+      monitorDom: true, // Boolean per Outseta docs for SPA support
+      load: "auth,profile,nocode", // Auth modules for login/signup
+      tokenStorage: "local", // CRITICAL: Stores JWT in localStorage
     };
 
     // Create and inject script per documentation
