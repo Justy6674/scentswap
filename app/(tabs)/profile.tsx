@@ -13,7 +13,6 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Button } from '@/components/Button';
 import { Rating } from '@/types';
@@ -22,19 +21,18 @@ import { db } from '@/lib/database';
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user, signOut } = useAuth();
-  const { subscription, openProfile, logout, getPlan } = useSubscription();
+  const { isAuthenticated, outsetaUser, subscription, openProfile, logout, getPlan, openLogin } = useSubscription();
   const [ratings, setRatings] = useState<Rating[]>([]);
 
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated && outsetaUser) {
       loadRatings();
     }
-  }, [user]);
+  }, [isAuthenticated, outsetaUser]);
 
   async function loadRatings() {
-    if (!user) return;
-    const data = await db.getUserRatings(user.id);
+    if (!outsetaUser) return;
+    const data = await db.getUserRatings(outsetaUser.personUid);
     setRatings(data);
   }
 
@@ -47,11 +45,10 @@ export default function ProfileScreen() {
         { 
           text: 'Sign Out', 
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => {
             // Use Outseta logout which clears the session
             logout();
-            await signOut();
-            router.replace('/(auth)/login');
+            router.replace('/');
           }
         },
       ]
@@ -321,7 +318,7 @@ export default function ProfileScreen() {
     },
   });
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.authContainer}>
@@ -333,7 +330,7 @@ export default function ProfileScreen() {
           <View style={styles.authButton}>
             <Button
               title="Sign In"
-              onPress={() => router.push('/(auth)/login')}
+              onPress={openLogin}
             />
           </View>
           <View style={[styles.authButton, { marginTop: 12 }]}>
@@ -348,7 +345,15 @@ export default function ProfileScreen() {
     );
   }
 
-  const badge = getVerificationBadge(user.verification_tier);
+  // Use Outseta user data for display
+  const displayName = outsetaUser?.firstName 
+    ? `${outsetaUser.firstName} ${outsetaUser.lastName || ''}`.trim()
+    : outsetaUser?.email?.split('@')[0] || 'User';
+  const displayEmail = outsetaUser?.email || '';
+  const avatarInitial = (outsetaUser?.firstName || outsetaUser?.email || '?')[0].toUpperCase();
+  
+  // Default badge for now (TODO: fetch from Supabase user profile)
+  const badge = getVerificationBadge('verified');
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -356,13 +361,13 @@ export default function ProfileScreen() {
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
             <Text style={styles.avatarText}>
-              {(user.username || user.email || '?')[0].toUpperCase()}
+              {avatarInitial}
             </Text>
           </View>
           <Text style={styles.username}>
-            {user.username || user.email?.split('@')[0]}
+            {displayName}
           </Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={styles.email}>{displayEmail}</Text>
           <View style={[styles.badgeContainer, { backgroundColor: badge.color + '20' }]}>
             <Ionicons name={badge.icon as any} size={16} color={badge.color} />
             <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
@@ -371,21 +376,21 @@ export default function ProfileScreen() {
 
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{user.total_swaps}</Text>
+            <Text style={styles.statValue}>0</Text>
             <Text style={styles.statLabel}>Swaps</Text>
           </View>
           <View style={styles.statCard}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Ionicons name="star" size={20} color={colors.accent} />
               <Text style={[styles.statValue, { marginLeft: 4 }]}>
-                {user.rating > 0 ? user.rating.toFixed(1) : '-'}
+                -
               </Text>
             </View>
             <Text style={styles.statLabel}>Rating</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>
-              {user.positive_percentage > 0 ? `${user.positive_percentage.toFixed(0)}%` : '-'}
+              -
             </Text>
             <Text style={styles.statLabel}>Positive</Text>
           </View>

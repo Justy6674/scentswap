@@ -14,7 +14,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { ListingCard } from '@/components/ListingCard';
 import { Button } from '@/components/Button';
 import { Listing } from '@/types';
@@ -23,23 +23,25 @@ import { db } from '@/lib/database';
 export default function CabinetScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      if (user) {
+      if (isAuthenticated && outsetaUser) {
         loadListings();
       }
-    }, [user])
+    }, [isAuthenticated, outsetaUser])
   );
 
   async function loadListings() {
-    if (!user) return;
+    if (!outsetaUser) return;
     setLoading(true);
-    const data = await db.getUserListings(user.id);
+    // Use Outseta person UID to get listings
+    // TODO: Update db.getUserListings to work with Outseta UIDs
+    const data = await db.getUserListings(outsetaUser.personUid);
     setListings(data);
     setLoading(false);
   }
@@ -176,7 +178,7 @@ export default function CabinetScreen() {
     },
   });
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.authContainer}>
@@ -188,7 +190,7 @@ export default function CabinetScreen() {
           <View style={styles.authButton}>
             <Button
               title="Sign In to Continue"
-              onPress={() => router.push('/(auth)/login')}
+              onPress={openLogin}
             />
           </View>
         </View>

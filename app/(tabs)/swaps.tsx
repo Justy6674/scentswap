@@ -13,7 +13,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { SwapCard } from '@/components/SwapCard';
 import { Button } from '@/components/Button';
 import { Swap } from '@/types';
@@ -29,7 +29,7 @@ const STATUS_FILTERS = [
 export default function SwapsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user } = useAuth();
+  const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
   const [swaps, setSwaps] = useState<Swap[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,16 +37,16 @@ export default function SwapsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (user) {
+      if (isAuthenticated && outsetaUser) {
         loadSwaps();
       }
-    }, [user])
+    }, [isAuthenticated, outsetaUser])
   );
 
   async function loadSwaps() {
-    if (!user) return;
+    if (!outsetaUser) return;
     setLoading(true);
-    const data = await db.getSwaps(user.id);
+    const data = await db.getSwaps(outsetaUser.personUid);
     setSwaps(data);
     setLoading(false);
   }
@@ -201,7 +201,7 @@ export default function SwapsScreen() {
     },
   });
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.authContainer}>
@@ -213,7 +213,7 @@ export default function SwapsScreen() {
           <View style={styles.authButton}>
             <Button
               title="Sign In to Continue"
-              onPress={() => router.push('/(auth)/login')}
+              onPress={openLogin}
             />
           </View>
         </View>
