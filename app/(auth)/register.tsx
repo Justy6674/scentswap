@@ -56,15 +56,23 @@ const COLORS = {
   border: '#E0DCD8',
 };
 
-// Spray particle component
-const SprayParticle = ({ 
+// Deterministic pseudo-random for SSR compatibility
+const pseudoRandom = (seed: number) => {
+  const x = Math.sin(seed * 9999) * 10000;
+  return x - Math.floor(x);
+};
+
+// Spray particle component for cards
+const CardSprayParticle = ({ 
   delay, 
   index, 
-  color 
+  color,
+  intensity = 1, // 1 = normal, higher = more dramatic
 }: { 
   delay: number; 
   index: number; 
-  color?: string;
+  color: string;
+  intensity?: number;
 }) => {
   const animValue = useRef(new Animated.Value(0)).current;
   
@@ -73,7 +81,7 @@ const SprayParticle = ({
       animValue.setValue(0);
       Animated.timing(animValue, {
         toValue: 1,
-        duration: 3000,
+        duration: 2500 + pseudoRandom(index) * 1000,
         delay: delay,
         useNativeDriver: Platform.OS !== 'web',
       }).start(() => animate());
@@ -81,13 +89,14 @@ const SprayParticle = ({
     animate();
   }, []);
 
-  const angle = -20 + (index * 12);
-  const distance = 80 + Math.random() * 100; // Smaller distance for cards
+  // Fan out from top-right corner, spreading left and down
+  const angle = -45 + (index * 15) + pseudoRandom(index + 50) * 20;
+  const distance = (60 + pseudoRandom(index) * 80) * intensity;
   const radians = (angle * Math.PI) / 180;
   
   const translateX = animValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, Math.cos(radians) * distance],
+    outputRange: [0, Math.cos(radians) * distance * -1], // Negative = go left
   });
   
   const translateY = animValue.interpolate({
@@ -96,45 +105,55 @@ const SprayParticle = ({
   });
   
   const opacity = animValue.interpolate({
-    inputRange: [0, 0.2, 0.7, 1],
-    outputRange: [0, 0.5, 0.2, 0],
+    inputRange: [0, 0.15, 0.6, 1],
+    outputRange: [0, 0.8, 0.4, 0], // More visible
   });
   
   const scale = animValue.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.3, 0.8, 0.2],
+    inputRange: [0, 0.4, 1],
+    outputRange: [0.5, 1.2, 0.3],
   });
 
-  const size = 3 + Math.random() * 4;
+  // Larger, more visible particles
+  const size = 6 + pseudoRandom(index + 100) * 8;
 
   return (
     <Animated.View
       style={{
         position: 'absolute',
-        right: -10, // Start from top-right corner
-        top: -10,
+        right: 10,
+        top: 10,
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: color || (index % 3 !== 0 ? COLORS.teal : COLORS.coral),
+        backgroundColor: color,
         opacity,
-        transform: [{ translateX: -translateX }, { translateY }, { scale }], // Fan out left/down
+        transform: [{ translateX }, { translateY }, { scale }],
       }}
     />
   );
 };
 
-// Card Spray Component
+// Card Spray Component - escalating intensity per tier
 const CardSpray = ({ count, color }: { count: number; color: string }) => {
+  // Intensity scales with count: 5->1x, 15->1.5x, 30->2x
+  const intensity = count <= 5 ? 1 : count <= 15 ? 1.3 : 1.6;
+  
   const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
-    delay: i * 150,
+    delay: i * 100, // Faster stagger for more particles
   }));
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+    <View style={[StyleSheet.absoluteFill, { overflow: 'visible' }]} pointerEvents="none">
       {particles.map((p) => (
-        <SprayParticle key={p.id} delay={p.delay} index={p.id} color={color} />
+        <CardSprayParticle 
+          key={p.id} 
+          delay={p.delay} 
+          index={p.id} 
+          color={color}
+          intensity={intensity}
+        />
       ))}
     </View>
   );
