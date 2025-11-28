@@ -227,29 +227,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // First check if there's a token in localStorage (per tokenStorage: "local")
-      // Outseta can use various key names depending on version
-      const possibleKeys = [
-        'outseta-token',
-        'Outseta.nocode.accessToken', 
-        'o_accessToken',
-        'outseta_access_token',
-        'access_token'
-      ];
-      
-      // Log ALL localStorage keys to find Outseta's token
+      // Check both localStorage and sessionStorage for tokens
+      // Per Outseta docs: tokenStorage can be 'local', 'session', or 'cookie'
       console.log('All localStorage keys:', Object.keys(localStorage));
+      console.log('All sessionStorage keys:', Object.keys(sessionStorage));
       
-      let storedToken = null;
-      for (const key of possibleKeys) {
-        const value = localStorage.getItem(key);
-        if (value) {
-          console.log(`Found token at key: ${key}`);
-          storedToken = value;
-          break;
-        }
+      // Look for any key containing 'outseta' or 'token' (case insensitive)
+      const allLocalKeys = Object.keys(localStorage);
+      const allSessionKeys = Object.keys(sessionStorage);
+      
+      const tokenKeys = [...allLocalKeys, ...allSessionKeys].filter(k => 
+        k.toLowerCase().includes('outseta') || k.toLowerCase().includes('token')
+      );
+      console.log('Potential token keys found:', tokenKeys);
+      
+      // Check if there's an access_token in the URL (after login redirect)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('access_token');
+      if (urlToken) {
+        console.log('Found access_token in URL - user just logged in!');
       }
-      console.log('Outseta token in localStorage:', storedToken ? 'Found' : 'Not found');
       
       // Try to get current user using approved method: Outseta.getUser()
       // Add timeout because getUser() can hang if no session exists
@@ -277,19 +274,27 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
       
       // Listen for auth changes using Outseta's event system
-      // These are documented events in Outseta's nocode module
+      // Per Outseta docs: https://go.outseta.com/support/kb/articles/6Dmw7qm4/access-user-info-client-side-with-javascript
+      // The accessToken.set event receives the decoded JWT payload as a parameter
       if (Outseta.on) {
         console.log('Setting up Outseta event listeners...');
         
-        Outseta.on('accessToken.set', async () => {
-          console.log('Outseta event: accessToken.set triggered');
+        // Per docs: Outseta.on('accessToken.set', (payload) => { ... })
+        // The payload IS the decoded JWT - no need to call getJwtPayload()
+        Outseta.on('accessToken.set', async (payload: any) => {
+          console.log('Outseta event: accessToken.set triggered with payload:', payload);
           try {
+            // Get full user profile (has more data than JWT payload)
             const user = await Outseta.getUser();
-            const jwtPayload = await Outseta.getJwtPayload();
             console.log('accessToken.set - User found:', user?.Email);
-            handleOutsetaUser(user, jwtPayload);
+            handleOutsetaUser(user, payload);
           } catch (e) {
             console.error('Error handling accessToken.set:', e);
+            // Even if getUser fails, we have the JWT payload
+            if (payload && payload.email) {
+              console.log('Using JWT payload directly');
+              handleOutsetaUser({ Email: payload.email, Uid: payload.sub }, payload);
+            }
           }
         });
         
