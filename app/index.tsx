@@ -9,6 +9,7 @@ import {
   Platform,
   Animated,
   useWindowDimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -189,6 +190,15 @@ export default function LandingPage() {
   
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
+
+  // Guard against hydration mismatch
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={COLORS.teal} />
+      </View>
+    );
+  }
 
   useEffect(() => {
     Animated.parallel([
