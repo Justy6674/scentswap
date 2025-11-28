@@ -397,12 +397,12 @@ export default function RegisterScreen() {
         end={{ x: 1, y: 1 }}
       />
       
-      {/* Spray Effects */}
+      {/* Background Spray Effects - using CardSpray with brand colors */}
       <View style={styles.sprayTopLeft}>
-        <SprayEffect />
+        <CardSpray count={12} color={COLORS.teal} />
       </View>
       <View style={styles.sprayBottomRight}>
-        <SprayEffect />
+        <CardSpray count={15} color={COLORS.coral} />
       </View>
 
       <SafeAreaView style={styles.safeArea}>

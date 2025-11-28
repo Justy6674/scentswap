@@ -81,9 +81,12 @@ const SprayParticle = ({
   const distance = 150 + pseudoRandom(index) * 200;
   const radians = (angle * Math.PI) / 180;
   
+  // For mirror=true (right side spray), we need particles to go LEFT (negative X)
+  // The angle math gives us rightward movement, so we negate for mirror
+  const xDirection = mirror ? -1 : 1;
   const translateX = animValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, Math.cos(radians) * distance * (mirror ? -1 : 1)],
+    outputRange: [0, Math.cos(radians) * distance * xDirection],
   });
   
   const translateY = animValue.interpolate({
@@ -228,6 +231,9 @@ export default function LandingPage() {
           <View style={styles.headerNav}>
             <TouchableOpacity onPress={() => router.push('/faq')} style={styles.headerNavLink}>
               <Text style={styles.headerNavText}>FAQ</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/register')} style={styles.headerNavLink}>
+              <Text style={styles.headerNavText}>Pricing</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/register')} style={styles.headerNavLink}>
               <Text style={styles.headerNavText}>Pricing</Text>
@@ -540,6 +546,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     zIndex: 2,
+    overflow: 'visible', // Allow particles to spray beyond container
   },
   mistContainer: {
     position: 'absolute',
@@ -548,7 +555,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     zIndex: 2,
-    transform: [{ scaleX: -1 }], // Flip horizontally for right-side spray
+    overflow: 'visible', // Allow particles to spray beyond container
   },
   sprayOrigin: {
     position: 'absolute',
