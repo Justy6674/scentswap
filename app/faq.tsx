@@ -16,6 +16,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GlobalHeader } from '@/components/GlobalHeader';
 import { GlobalFooter } from '@/components/GlobalFooter';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 // Deterministic pseudo-random values based on index to prevent hydration mismatch
 const pseudoRandom = (seed: number) => {
@@ -239,6 +240,17 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 export default function FAQScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
+  const { isLoading: authLoading } = useSubscription();
+
+  if (authLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          {/* Minimal loader to match server HTML structure as closely as possible */}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -316,7 +328,13 @@ const styles = StyleSheet.create({
   sectionItems: {
     gap: 12,
   },
-  itemContainer: {
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: 200,
+    },
+    itemContainer: {
     borderWidth: 1,
     borderRadius: 12,
     overflow: 'hidden',

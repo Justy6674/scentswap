@@ -29,7 +29,8 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { GlobalHeader } from '@/components/GlobalHeader';
 import { GlobalFooter } from '@/components/GlobalFooter';
 
-const { width, height } = Dimensions.get('window');
+const windowDimensions = Dimensions.get('window');
+const { width: initialWidth } = windowDimensions;
 
 // Colors matching landing page
 const COLORS = {
@@ -362,14 +363,29 @@ function PlanCard({
 }
 
 export default function RegisterScreen() {
-  const { isAuthenticated } = useSubscription();
+  const { isAuthenticated, isLoading: authLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState('premium');
+  
+  // Use state to track mounting for hydration safe rendering
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       router.replace('/(tabs)');
     }
   }, [isAuthenticated]);
+
+  if (authLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={{ width: 40, height: 40 }} />
+      </View>
+    );
+  }
 
   /**
    * Handle sign up - uses Outseta's JavaScript API with Popup Mode

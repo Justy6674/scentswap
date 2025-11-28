@@ -18,6 +18,7 @@ import {
   Image,
   Platform,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
@@ -33,7 +34,7 @@ const OUTSETA_LOGIN_URL = 'https://scentswap.outseta.com/auth?widgetMode=login#o
 export default function LoginScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated } = useSubscription();
+  const { isAuthenticated, isLoading: authLoading } = useSubscription();
 
   // If already authenticated, redirect to tabs
   useEffect(() => {
@@ -41,6 +42,16 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     }
   }, [isAuthenticated]);
+
+  if (authLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   /**
    * Open Outseta login popup - like TeleCheck does
