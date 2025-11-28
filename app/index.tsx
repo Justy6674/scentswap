@@ -144,26 +144,31 @@ const SprayEffect = () => {
   );
 };
 
-// Fine Mist Effect (Right - Smaller, more particles)
+// Fine Mist Effect (Right - Ultra-fine, top-right corner, sprays leftward)
 const FineMistEffect = () => {
   const { width } = useWindowDimensions();
   const isDesktop = width > 768;
   
-  const particles = Array.from({ length: 25 }, (_, i) => ({
+  // More particles for denser mist effect
+  const particles = Array.from({ length: 35 }, (_, i) => ({
     id: i,
-    delay: i * 120,
+    delay: i * 80, // Faster stagger for continuous mist
   }));
 
   return (
-    <View style={[styles.mistContainer, isDesktop && { right: '10%', top: '10%' }]}>
-      <View style={styles.sprayOrigin} />
+    <View style={[
+      styles.mistContainer, 
+      // Desktop: top-right corner, in top third of viewport
+      isDesktop && { right: 40, top: 80 }
+    ]}>
+      {/* No visible origin for ultra-fine mist */}
       {particles.map((particle) => (
         <SprayParticle 
           key={particle.id} 
           delay={particle.delay} 
           index={particle.id} 
-          sizeScale={0.5} // Smaller
-          mirror={true}   // Fan Left
+          sizeScale={0.3}  // Ultra-fine particles
+          mirror={true}    // Spray leftward towards center
         />
       ))}
     </View>
@@ -547,10 +552,10 @@ const styles = StyleSheet.create({
   },
   mistContainer: {
     position: 'absolute',
-    right: 20, // Default mobile
-    top: '15%', // Higher up
-    width: 200,
-    height: 200,
+    right: 10,  // Mobile: near right edge
+    top: 100,   // Mobile: top third (below header)
+    width: 150, // Smaller container for fine mist
+    height: 150,
     zIndex: 2,
     overflow: 'visible', // Allow particles to spray beyond container
   },
