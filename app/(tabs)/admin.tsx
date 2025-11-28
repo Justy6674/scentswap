@@ -52,8 +52,8 @@ type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-c
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { user, isAdmin: authIsAdmin } = useAuth();
-  const { isAdmin: subscriptionIsAdmin, outsetaUser } = useSubscription();
+  const { user, isAdmin: authIsAdmin, isLoading: legacyAuthLoading } = useAuth();
+  const { isAdmin: subscriptionIsAdmin, outsetaUser, isLoading: subscriptionLoading } = useSubscription();
   
   // User is admin if either context says so (covers both auth methods)
   const isAdmin = authIsAdmin || subscriptionIsAdmin;
@@ -633,6 +633,16 @@ export default function AdminScreen() {
       fontSize: 12,
     },
   });
+
+  if (legacyAuthLoading || subscriptionLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (

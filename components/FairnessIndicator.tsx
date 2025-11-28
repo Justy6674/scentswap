@@ -10,13 +10,10 @@ import {
   Text,
   StyleSheet,
   Animated,
-  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FairnessResult } from '@/lib/ai-services';
 import { Colors } from '@/constants/Colors';
-
-const { width } = Dimensions.get('window');
 
 interface FairnessIndicatorProps {
   fairness: FairnessResult;

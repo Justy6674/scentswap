@@ -23,7 +23,7 @@ export default function NewSwapScreen() {
   const { targetListing } = useLocalSearchParams<{ targetListing?: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, outsetaUser, isLoading, openLogin } = useSubscription();
+  const { isAuthenticated, outsetaUser, isLoading: authLoading, openLogin } = useSubscription();
   
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [targetListingData, setTargetListingData] = useState<Listing | null>(null);
@@ -46,8 +46,10 @@ export default function NewSwapScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated && outsetaUser) {
+      loadData();
+    }
+  }, [isAuthenticated, outsetaUser, targetListing]);
 
   async function loadData() {
     if (!isAuthenticated || !outsetaUser) return;
@@ -265,7 +267,55 @@ export default function NewSwapScreen() {
       flexDirection: 'row',
       gap: 12,
     },
+    authContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+      backgroundColor: colors.background,
+    },
+    authTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginTop: 20,
+      textAlign: 'center',
+    },
+    authSubtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: 8,
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+    authButton: {
+      marginTop: 24,
+      width: '80%',
+    },
   });
+
+  if (authLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated || !outsetaUser) {
+    return (
+      <View style={styles.authContainer}>
+        <Ionicons name="lock-closed-outline" size={72} color={colors.primary} />
+        <Text style={styles.authTitle}>Sign in to propose swaps</Text>
+        <Text style={styles.authSubtitle}>
+          Log in to assemble trade bundles, check fairness, and send a proposal.
+        </Text>
+        <View style={styles.authButton}>
+          <Button title="Sign In" onPress={openLogin} />
+        </View>
+      </View>
+    );
+  }
 
   if (loading) {
     return (

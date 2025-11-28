@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Dimensions,
   Platform,
   Animated,
   useWindowDimensions,
@@ -14,8 +13,6 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-
-const { width, height } = Dimensions.get('window');
 
 // New Light Luxe color palette (from logo)
 const COLORS = {
@@ -145,9 +142,10 @@ const SprayEffect = () => {
 };
 
 // Fine Mist Effect (Right - Ultra-fine, top-right corner, sprays leftward)
-const FineMistEffect = () => {
+const FineMistEffect = ({ mounted }: { mounted: boolean }) => {
   const { width } = useWindowDimensions();
-  const isDesktop = width > 768;
+  // Use safe default during SSR
+  const isDesktop = mounted ? width > 768 : false;
   
   // More particles for denser mist effect
   const particles = Array.from({ length: 35 }, (_, i) => ({
@@ -178,7 +176,16 @@ const FineMistEffect = () => {
 export default function LandingPage() {
   const { isAuthenticated, isLoading: loading } = useSubscription();
   const { width } = useWindowDimensions();
-  const isDesktop = width > 768;
+  
+  // CRITICAL: Prevent hydration mismatch by only rendering responsive content after mount
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // Use safe default during SSR, actual value after mount
+  const isDesktop = mounted ? width > 768 : false;
   
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
@@ -261,7 +268,7 @@ export default function LandingPage() {
         
         {/* Spray Effect */}
         <SprayEffect />
-        <FineMistEffect />
+        <FineMistEffect mounted={mounted} />
 
         <Animated.View 
           style={[

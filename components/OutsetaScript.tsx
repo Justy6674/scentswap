@@ -23,7 +23,7 @@ declare global {
       domain: string;
       load: string;
       tokenStorage?: string;
-      monitorDom?: boolean;
+      monitorDom?: boolean | string;
     };
     Outseta: {
       getUser: () => Promise<any>;
@@ -54,9 +54,9 @@ export function OutsetaScript() {
     // load: "auth" - Minimal modules needed
     window.o_options = {
       domain: OUTSETA_CONFIG.domain,
-      monitorDom: true, // Boolean per Outseta docs for SPA support
-      load: "auth,profile,nocode", // Auth modules for login/signup
-      tokenStorage: "local", // CRITICAL: Stores JWT in localStorage
+      monitorDom: 'true', // Outseta docs recommend string "true" for SPA monitoring
+      load: 'auth,customForm,emailList,leadCapture,nocode,profile,support',
+      tokenStorage: 'local', // CRITICAL: Stores JWT in localStorage
     };
 
     // Create and inject script per documentation

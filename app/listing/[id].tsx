@@ -7,9 +7,9 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  Dimensions,
   ActivityIndicator,
   Share,
+  useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,13 +20,13 @@ import { Button } from '@/components/Button';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
 
-const { width } = Dimensions.get('window');
-
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
+  const { width } = useWindowDimensions();
+  const [hasMounted, setHasMounted] = useState(false);
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -38,6 +38,12 @@ export default function ListingDetailScreen() {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const windowWidth = hasMounted ? width : 390;
 
   async function loadListing() {
     setLoading(true);
@@ -104,8 +110,8 @@ export default function ListingDetailScreen() {
       alignItems: 'center',
     },
     imageContainer: {
-      width: width,
-      height: width,
+      width: windowWidth,
+      height: windowWidth,
       backgroundColor: colors.backgroundSecondary,
     },
     image: {

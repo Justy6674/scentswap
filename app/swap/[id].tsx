@@ -25,7 +25,7 @@ export default function SwapDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, outsetaUser } = useSubscription();
+  const { isAuthenticated, outsetaUser, isLoading: authLoading, openLogin } = useSubscription();
   const [swap, setSwap] = useState<Swap | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -279,7 +279,55 @@ export default function SwapDetailScreen() {
     listingsList: {
       gap: 12,
     },
+    authContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+      backgroundColor: colors.background,
+    },
+    authTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginTop: 20,
+      textAlign: 'center',
+    },
+    authSubtitle: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: 8,
+      textAlign: 'center',
+      lineHeight: 24,
+    },
+    authButton: {
+      marginTop: 24,
+      width: '80%',
+    },
   });
+
+  if (authLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated || !outsetaUser) {
+    return (
+      <View style={styles.authContainer}>
+        <Ionicons name="lock-closed-outline" size={72} color={colors.primary} />
+        <Text style={styles.authTitle}>Sign in to view swaps</Text>
+        <Text style={styles.authSubtitle}>
+          You need to be logged in to manage swap conversations and shipping.
+        </Text>
+        <View style={styles.authButton}>
+          <Button title="Sign In" onPress={openLogin} />
+        </View>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -301,7 +349,8 @@ export default function SwapDetailScreen() {
     );
   }
 
-  const isInitiator = user?.id === swap.initiator_id;
+  const currentUserId = outsetaUser?.personUid || '';
+  const isInitiator = currentUserId === swap.initiator_id;
   const myListings = isInitiator ? swap.initiator_listing_details : swap.recipient_listing_details;
   const theirListings = isInitiator ? swap.recipient_listing_details : swap.initiator_listing_details;
   const statusColor = getStatusColor(swap.status);
@@ -427,7 +476,7 @@ export default function SwapDetailScreen() {
                       styles.messageItem,
                       msg.is_ai_mediation
                         ? styles.aiMessage
-                        : msg.sender_id === user?.id
+                        : msg.sender_id === currentUserId
                         ? styles.myMessage
                         : styles.theirMessage,
                     ]}
@@ -435,7 +484,7 @@ export default function SwapDetailScreen() {
                     <Text
                       style={[
                         styles.messageText,
-                        msg.sender_id === user?.id ? styles.myMessageText : styles.theirMessageText,
+                        msg.sender_id === currentUserId ? styles.myMessageText : styles.theirMessageText,
                       ]}
                     >
                       {msg.message}
@@ -443,7 +492,7 @@ export default function SwapDetailScreen() {
                     <Text
                       style={[
                         styles.messageTime,
-                        { color: msg.sender_id === user?.id ? '#FFFFFF' : colors.textSecondary },
+                        { color: msg.sender_id === currentUserId ? '#FFFFFF' : colors.textSecondary },
                       ]}
                     >
                       {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}

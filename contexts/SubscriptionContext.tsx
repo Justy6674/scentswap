@@ -240,6 +240,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         k.toLowerCase().includes('outseta') || k.toLowerCase().includes('token')
       );
       console.log('Potential token keys found:', tokenKeys);
+
+      // Some browsers/nocodes store the JWT under ...settings; extract if present
+      const restoredToken = extractTokenFromSettings();
+      if (restoredToken && Outseta.setAccessToken) {
+        console.log('Rehydrating Outseta token from localStorage settings');
+        Outseta.setAccessToken(restoredToken);
+      }
       
       // Check if there's an access_token in the URL (after login redirect)
       const urlParams = new URLSearchParams(window.location.search);
@@ -325,6 +332,26 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
     // Don't throw - just continue without Outseta
     console.log('Outseta script did not load in time');
+  };
+
+  const extractTokenFromSettings = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const storageKey = `outseta.auth--${OUTSETA_CONFIG.domain}.settings`;
+      const raw = window.localStorage?.getItem(storageKey) || window.sessionStorage?.getItem(storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return (
+        parsed?.accessToken ||
+        parsed?.AccessToken ||
+        parsed?.token ||
+        parsed?.auth?.accessToken ||
+        null
+      );
+    } catch (error) {
+      console.error('Failed to parse Outseta settings for token', error);
+      return null;
+    }
   };
 
   const handleOutsetaUser = (user: any, jwtPayload: any) => {
