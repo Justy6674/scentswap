@@ -55,7 +55,7 @@ const SprayParticle = ({ delay, index }: { delay: number; index: number }) => {
         toValue: 1,
         duration: 3000,
         delay: delay,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start(() => animate());
     };
     animate();
@@ -144,12 +144,12 @@ export default function LandingPage() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 800,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, []);
@@ -516,13 +516,12 @@ const styles = StyleSheet.create({
 
   // Header
   header: {
-    position: isWeb ? 'fixed' : 'absolute',
+    position: 'absolute', // Default for all
     top: 0,
     left: 0,
     right: 0,
     zIndex: 100,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(10px)',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
@@ -579,7 +578,7 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroSection: {
-    minHeight: height,
+    minHeight: Platform.OS === 'web' ? '100vh' : height,
     backgroundColor: COLORS.heroLight,
     position: 'relative',
     justifyContent: 'center',
@@ -662,11 +661,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   heroTitle: {
-    fontSize: isWeb ? 56 : 36,
+    fontSize: 36,
     fontWeight: '300',
     color: COLORS.charcoal,
     textAlign: 'center',
-    lineHeight: isWeb ? 68 : 44,
+    lineHeight: 44,
     marginBottom: 24,
   },
   heroTitleAccent: {
@@ -764,7 +763,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '300',
     color: COLORS.charcoal,
     textAlign: 'center',
