@@ -228,7 +228,27 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
       
       // First check if there's a token in localStorage (per tokenStorage: "local")
-      const storedToken = localStorage.getItem('outseta-token') || localStorage.getItem('Outseta.nocode.accessToken');
+      // Outseta can use various key names depending on version
+      const possibleKeys = [
+        'outseta-token',
+        'Outseta.nocode.accessToken', 
+        'o_accessToken',
+        'outseta_access_token',
+        'access_token'
+      ];
+      
+      // Log ALL localStorage keys to find Outseta's token
+      console.log('All localStorage keys:', Object.keys(localStorage));
+      
+      let storedToken = null;
+      for (const key of possibleKeys) {
+        const value = localStorage.getItem(key);
+        if (value) {
+          console.log(`Found token at key: ${key}`);
+          storedToken = value;
+          break;
+        }
+      }
       console.log('Outseta token in localStorage:', storedToken ? 'Found' : 'Not found');
       
       // Try to get current user using approved method: Outseta.getUser()
