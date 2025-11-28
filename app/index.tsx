@@ -430,13 +430,13 @@ export default function LandingPage() {
           </View>
 
           <View style={styles.footerLinks}>
-            <TouchableOpacity>
-              <Text style={styles.footerLink}>About</Text>
+            <TouchableOpacity onPress={() => router.push('/faq')}>
+              <Text style={styles.footerLink}>FAQ</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/faq')}>
               <Text style={styles.footerLink}>How It Works</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/faq')}>
               <Text style={styles.footerLink}>Trust & Safety</Text>
             </TouchableOpacity>
             <TouchableOpacity>

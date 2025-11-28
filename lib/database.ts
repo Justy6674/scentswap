@@ -1080,6 +1080,252 @@ class DatabaseClient {
   }
 
   // =============================================================================
+  // FRAGRANCE DATABASE (CORE)
+  // =============================================================================
+
+  async createBrand(brand: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('brands').insert(brand).select().single();
+    if (error) console.error('Create brand error:', error);
+    return data;
+  }
+
+  async getBrands(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('brands').select('*').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async createPerfumer(perfumer: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('perfumers').insert(perfumer).select().single();
+    if (error) console.error('Create perfumer error:', error);
+    return data;
+  }
+
+  async getPerfumers(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('perfumers').select('*').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async createNote(note: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('notes').insert(note).select().single();
+    if (error) console.error('Create note error:', error);
+    return data;
+  }
+
+  async getNotes(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('notes').select('*, family:families(name)').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async getFamilies(): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    const { data } = await supabase.from('families').select('*').order('name');
+    return data || [];
+  }
+
+  // Full Fragrance Creation with Relationships
+  async createFragrance(
+    fragrance: any, 
+    notes: { top: string[], middle: string[], base: string[] },
+    perfumerIds: string[]
+  ): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+
+    try {
+      // 1. Create Fragrance
+      const { data: newFragrance, error: fragError } = await supabase
+        .from('fragrances')
+        .insert(fragrance)
+        .select()
+        .single();
+
+      if (fragError) throw fragError;
+
+      // 2. Add Notes (Pyramid)
+      const noteInserts: any[] = [];
+      notes.top.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'top' }));
+      notes.middle.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'middle' }));
+      notes.base.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'base' }));
+      
+      if (noteInserts.length > 0) {
+        const { error: notesError } = await supabase.from('fragrance_notes').insert(noteInserts);
+        if (notesError) console.error('Error adding notes:', notesError);
+      }
+
+      // 3. Add Perfumers
+      if (perfumerIds.length > 0) {
+        const perfumerInserts = perfumerIds.map(pid => ({ fragrance_id: newFragrance.id, perfumer_id: pid }));
+        const { error: perfError } = await supabase.from('fragrance_perfumers').insert(perfumerInserts);
+        if (perfError) console.error('Error adding perfumers:', perfError);
+      }
+
+      return newFragrance;
+    } catch (error) {
+      console.error('Error creating full fragrance:', error);
+      return null;
+    }
+  }
+
+  async getFragrance(id: string): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase
+      .from('fragrances')
+      .select(`
+        *,
+        brand:brands(*),
+        fragrance_notes(type, note:notes(*)),
+        fragrance_perfumers(perfumer:perfumers(*))
+      `)
+      .eq('id', id)
+      .single();
+    
+    return data || null;
+  }
+
+  // =============================================================================
+  // FRAGRANCE DATABASE (CORE)
+  // =============================================================================
+
+  async createBrand(brand: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('brands').insert(brand).select().single();
+    if (error) console.error('Create brand error:', error);
+    return data;
+  }
+
+  async getBrands(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('brands').select('*').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async createPerfumer(perfumer: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('perfumers').insert(perfumer).select().single();
+    if (error) console.error('Create perfumer error:', error);
+    return data;
+  }
+
+  async getPerfumers(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('perfumers').select('*').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async createNote(note: any): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase.from('notes').insert(note).select().single();
+    if (error) console.error('Create note error:', error);
+    return data;
+  }
+
+  async getNotes(search?: string): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    let query = supabase.from('notes').select('*, family:families(name)').order('name');
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data } = await query.limit(50);
+    return data || [];
+  }
+
+  async getFamilies(): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+    const { data } = await supabase.from('families').select('*').order('name');
+    return data || [];
+  }
+
+  // Full Fragrance Creation with Relationships
+  async createFragrance(
+    fragrance: any, 
+    notes: { top: string[], middle: string[], base: string[] },
+    perfumerIds: string[]
+  ): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+
+    try {
+      // 1. Create Fragrance
+      const { data: newFragrance, error: fragError } = await supabase
+        .from('fragrances')
+        .insert(fragrance)
+        .select()
+        .single();
+
+      if (fragError) throw fragError;
+
+      // 2. Add Notes (Pyramid)
+      const noteInserts: any[] = [];
+      notes.top.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'top' }));
+      notes.middle.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'middle' }));
+      notes.base.forEach(nid => noteInserts.push({ fragrance_id: newFragrance.id, note_id: nid, type: 'base' }));
+      
+      if (noteInserts.length > 0) {
+        const { error: notesError } = await supabase.from('fragrance_notes').insert(noteInserts);
+        if (notesError) console.error('Error adding notes:', notesError);
+      }
+
+      // 3. Add Perfumers
+      if (perfumerIds.length > 0) {
+        const perfumerInserts = perfumerIds.map(pid => ({ fragrance_id: newFragrance.id, perfumer_id: pid }));
+        const { error: perfError } = await supabase.from('fragrance_perfumers').insert(perfumerInserts);
+        if (perfError) console.error('Error adding perfumers:', perfError);
+      }
+
+      return newFragrance;
+    } catch (error) {
+      console.error('Error creating full fragrance:', error);
+      return null;
+    }
+  }
+
+  async getFragrance(id: string): Promise<any | null> {
+    if (!isSupabaseConfigured()) return null;
+    const supabase = getSupabase()!;
+    const { data, error } = await supabase
+      .from('fragrances')
+      .select(`
+        *,
+        brand:brands(*),
+        fragrance_notes(type, note:notes(*)),
+        fragrance_perfumers(perfumer:perfumers(*))
+      `)
+      .eq('id', id)
+      .single();
+    
+    return data || null;
+  }
+
+  // =============================================================================
   // AI CONFIGURATION (ADMIN)
   // =============================================================================
 

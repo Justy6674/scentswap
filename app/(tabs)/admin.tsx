@@ -10,6 +10,7 @@
  * - Dispute resolution
  * - AI Configuration & Management (New)
  * - Admin Marketplace (New)
+ * - Fragrance Database Management (New)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -35,6 +36,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { db } from '@/lib/database';
 import { User, Listing, Swap } from '@/types';
+import { parseFragranceData } from '@/lib/ai-services';
 
 // ... (Previous Interfaces)
 interface AdminStats {
@@ -60,7 +62,7 @@ interface AIConfig {
   description: string;
 }
 
-type AdminTab = 'overview' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market';
+type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market';
 
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -82,48 +84,41 @@ export default function AdminScreen() {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [fairnessWeights, setFairnessWeights] = useState({ authenticity: 0.5, condition: 0.3, fill_level: 0.2 });
   
+  // Database Tab State
+  const [dbSubTab, setDbSubTab] = useState<'search' | 'new' | 'import'>('search');
+  const [dbSearch, setDbSearch] = useState('');
+  
+  // Manual Entry Form State
+  const [newFragrance, setNewFragrance] = useState({
+    name: '',
+    brand: '',
+    concentration: 'edp',
+    gender: 'unisex',
+    year: '',
+    description: '',
+    image_url: ''
+  });
+  const [pyramid, setPyramid] = useState({ top: '', middle: '', base: '' }); // Comma separated strings for now
+  const [perfumersInput, setPerfumersInput] = useState(''); // Comma separated
+  const [magicText, setMagicText] = useState(''); // AI Text Extraction Input
+
+  // AI Review Queue State
+  const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
+  
   useEffect(() => {
     checkAdminAccess();
   }, [user, isAdmin, outsetaUser]);
 
-  // Load AI configs when activeTab changes to 'ai-config'
+  // Load AI configs/Review queue when activeTab changes
   useEffect(() => {
-    if (activeTab === 'ai-config' && isAdmin) {
+    if (!isAdmin) return;
+    
+    if (activeTab === 'ai-config') {
       loadAiConfigs();
+    } else if (activeTab === 'review') {
+      loadReviewQueue();
     }
   }, [activeTab, isAdmin]);
-
-  async function loadAiConfigs() {
-    try {
-      const configs = await db.getAiConfigs();
-      
-      const promptConfig = configs.find(c => c.key === 'assessment_prompts');
-      if (promptConfig) {
-        // Assuming promptConfig.value is { authenticity: "...", condition: "..." }
-        // We'll display it as JSON string for editing for now, or just one part
-        setSystemPrompt(JSON.stringify(promptConfig.value, null, 2));
-      }
-
-      const weightsConfig = configs.find(c => c.key === 'criteria_weights');
-      if (weightsConfig) {
-        setFairnessWeights(weightsConfig.value);
-      }
-    } catch (error) {
-      console.error('Error loading AI configs:', error);
-    }
-  }
-
-  async function handleSaveConfig(key: string, value: any) {
-    if (!user && !outsetaUser) return;
-    const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin'; // Fallback if ID missing
-    
-    try {
-      await db.updateAiConfig(key, value, adminId);
-      Alert.alert('Success', 'Configuration updated successfully');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update configuration');
-    }
-  }
 
   async function checkAdminAccess() {
     const isAuthenticated = user || outsetaUser;
@@ -155,12 +150,6 @@ export default function AdminScreen() {
       setStats(statsData);
       setRecentUsers(usersData);
       setDisputedSwaps(swapsData);
-      
-      // Load AI Configs if on that tab (or pre-load)
-      // For now, we'll load them when the tab is active or just here
-      // const configs = await db.getAiConfigs(); // TODO: Implement this in db
-      // setAiConfigs(configs);
-
     } catch (error) {
       console.error('Error loading admin data:', error);
     }
@@ -170,6 +159,178 @@ export default function AdminScreen() {
     setRefreshing(true);
     await loadAdminData();
     setRefreshing(false);
+  }
+
+  async function loadReviewQueue() {
+    try {
+      const listings = await db.getFlaggedListings();
+      setFlaggedListings(listings);
+    } catch (error) {
+      console.error('Error loading review queue:', error);
+    }
+  }
+
+  async function handleApproveListing(listing: Listing) {
+    if (!user && !outsetaUser) return;
+    const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+    
+    Alert.alert(
+      'Approve Listing',
+      `Mark ${listing.house} - ${listing.custom_name} as verified?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Approve',
+          onPress: async () => {
+            await db.approveListing(listing.id, adminId);
+            await loadReviewQueue(); // Refresh list
+          }
+        }
+      ]
+    );
+  }
+
+  async function loadAiConfigs() {
+    try {
+      const configs = await db.getAiConfigs();
+      
+      const promptConfig = configs.find(c => c.key === 'assessment_prompts');
+      if (promptConfig) {
+        setSystemPrompt(JSON.stringify(promptConfig.value, null, 2));
+      }
+
+      const weightsConfig = configs.find(c => c.key === 'criteria_weights');
+      if (weightsConfig) {
+        setFairnessWeights(weightsConfig.value);
+      }
+    } catch (error) {
+      console.error('Error loading AI configs:', error);
+    }
+  }
+
+  async function handleSaveConfig(key: string, value: any) {
+    if (!user && !outsetaUser) return;
+    const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin'; 
+    
+    try {
+      await db.updateAiConfig(key, value, adminId);
+      Alert.alert('Success', 'Configuration updated successfully');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update configuration');
+    }
+  }
+
+  async function handleCreateFragrance() {
+    if (!newFragrance.name || !newFragrance.brand) {
+      Alert.alert('Error', 'Name and Brand are required');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      // Brand: Find or Create
+      let brandId;
+      const brands = await db.getBrands(newFragrance.brand);
+      const existingBrand = brands.find(b => b.name.toLowerCase() === newFragrance.brand.toLowerCase());
+      if (existingBrand) {
+        brandId = existingBrand.id;
+      } else {
+        const newB = await db.createBrand({ name: newFragrance.brand });
+        if (newB) brandId = newB.id;
+      }
+
+      if (!brandId) throw new Error('Failed to resolve brand');
+
+      // Notes: Find or Create
+      const processNotes = async (input: string) => {
+        const names = input.split(',').map(s => s.trim()).filter(s => s);
+        const ids = [];
+        for (const name of names) {
+          const existing = await db.getNotes(name);
+          const match = existing.find(n => n.name.toLowerCase() === name.toLowerCase());
+          if (match) {
+            ids.push(match.id);
+          } else {
+            const newN = await db.createNote({ name });
+            if (newN) ids.push(newN.id);
+          }
+        }
+        return ids;
+      };
+
+      const topIds = await processNotes(pyramid.top);
+      const midIds = await processNotes(pyramid.middle);
+      const baseIds = await processNotes(pyramid.base);
+
+      // Perfumers: Find or Create
+      const perfumerIds = [];
+      const pNames = perfumersInput.split(',').map(s => s.trim()).filter(s => s);
+      for (const name of pNames) {
+        const existing = await db.getPerfumers(name);
+        const match = existing.find(p => p.name.toLowerCase() === name.toLowerCase());
+        if (match) {
+          perfumerIds.push(match.id);
+        } else {
+          const newP = await db.createPerfumer({ name });
+          if (newP) perfumerIds.push(newP.id);
+        }
+      }
+
+      // Create Fragrance
+      await db.createFragrance({
+        name: newFragrance.name,
+        brand_id: brandId,
+        concentration: newFragrance.concentration,
+        gender: newFragrance.gender,
+        launch_year: newFragrance.year ? parseInt(newFragrance.year) : null,
+        description: newFragrance.description,
+        image_url: newFragrance.image_url
+      }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
+
+      Alert.alert('Success', 'Fragrance added to database');
+      setNewFragrance({ name: '', brand: '', concentration: 'edp', gender: 'unisex', year: '', description: '', image_url: '' });
+      setPyramid({ top: '', middle: '', base: '' });
+      setPerfumersInput('');
+      
+    } catch (e) {
+      Alert.alert('Error', 'Failed to create fragrance');
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleAnalyzeText() {
+    setIsLoading(true);
+    try {
+      const data = await parseFragranceData(magicText);
+      // Pre-fill form state
+      setNewFragrance({
+        name: data.name || '',
+        brand: data.brand || '',
+        concentration: data.concentration || 'edp',
+        gender: data.gender || 'unisex',
+        year: data.year?.toString() || '',
+        description: data.description || '',
+        image_url: ''
+      });
+      setPyramid({
+        top: data.notes?.top?.join(', ') || '',
+        middle: data.notes?.middle?.join(', ') || '',
+        base: data.notes?.base?.join(', ') || ''
+      });
+      setPerfumersInput(data.perfumers?.join(', ') || '');
+      
+      // Switch to 'new' tab to review
+      setDbSubTab('new');
+      Alert.alert('Success', 'Data extracted! Please review and save.');
+    } catch (e) {
+      Alert.alert('Error', 'Failed to parse text');
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   // ... (Previous Handlers: handleVerifyUser, handleSuspendUser, handleResolveDispute)
@@ -488,35 +649,10 @@ export default function AdminScreen() {
     },
   });
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  const isAuthenticated = user || outsetaUser;
-  
-  if (!isAuthenticated || !isAdmin) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.accessDenied}>
-          <Ionicons name="lock-closed" size={64} color={colors.textSecondary} />
-          <Text style={styles.accessDeniedTitle}>Access Denied</Text>
-          <Text style={styles.accessDeniedText}>
-            You don't have admin privileges to access this page.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // Define tabs list for cleaner rendering
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'database', label: 'Database' },
     { id: 'users', label: 'Users' },
     { id: 'listings', label: 'Listings' },
     { id: 'swaps', label: 'Swaps' },
@@ -592,6 +728,170 @@ export default function AdminScreen() {
                </View>
             )}
           </>
+        )}
+
+        {activeTab === 'database' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Fragrance Database</Text>
+            <View style={{flexDirection: 'row', marginBottom: 16, gap: 8}}>
+              {(['search', 'new', 'import'] as const).map(sub => (
+                <TouchableOpacity 
+                  key={sub} 
+                  onPress={() => setDbSubTab(sub)}
+                  style={[
+                    styles.actionButton, 
+                    {
+                      backgroundColor: dbSubTab === sub ? colors.primary : 'transparent', 
+                      borderColor: colors.primary,
+                      flex: 1
+                    }
+                  ]}
+                >
+                  <Text style={{
+                    color: dbSubTab === sub ? '#FFF' : colors.primary, 
+                    fontWeight: 'bold',
+                    textTransform: 'capitalize'
+                  }}>{sub}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {dbSubTab === 'search' && (
+              <View>
+                <TextInput 
+                  style={[styles.configInput, {marginBottom: 16, minHeight: 40}]} 
+                  placeholder="Search fragrances..." 
+                  value={dbSearch}
+                  onChangeText={setDbSearch}
+                />
+                <View style={styles.emptyState}>
+                  <Ionicons name="search" size={48} color={colors.textSecondary} />
+                  <Text style={styles.emptyStateText}>Search to find fragrances</Text>
+                </View>
+              </View>
+            )}
+
+            {dbSubTab === 'new' && (
+              <View>
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Core Information</Text>
+                  <View style={{gap: 12}}>
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Fragrance Name" 
+                      value={newFragrance.name}
+                      onChangeText={t => setNewFragrance({...newFragrance, name: t})}
+                    />
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Brand / House" 
+                      value={newFragrance.brand}
+                      onChangeText={t => setNewFragrance({...newFragrance, brand: t})}
+                    />
+                    <View style={{flexDirection: 'row', gap: 12}}>
+                      <TextInput 
+                        style={[styles.configInput, {flex: 1}]} 
+                        placeholder="Year" 
+                        keyboardType="numeric"
+                        value={newFragrance.year}
+                        onChangeText={t => setNewFragrance({...newFragrance, year: t})}
+                      />
+                      <TextInput 
+                        style={[styles.configInput, {flex: 1}]} 
+                        placeholder="Concentration (edp, edt...)" 
+                        value={newFragrance.concentration}
+                        onChangeText={t => setNewFragrance({...newFragrance, concentration: t})}
+                      />
+                    </View>
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Gender (male, female, unisex)" 
+                      value={newFragrance.gender}
+                      onChangeText={t => setNewFragrance({...newFragrance, gender: t})}
+                    />
+                    <TextInput 
+                      style={[styles.configInput, {minHeight: 60}]} 
+                      placeholder="Description" 
+                      multiline
+                      value={newFragrance.description}
+                      onChangeText={t => setNewFragrance({...newFragrance, description: t})}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Note Pyramid (comma separated)</Text>
+                  <View style={{gap: 12}}>
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Top Notes (e.g. Bergamot, Lemon)" 
+                      value={pyramid.top}
+                      onChangeText={t => setPyramid({...pyramid, top: t})}
+                    />
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Middle/Heart Notes" 
+                      value={pyramid.middle}
+                      onChangeText={t => setPyramid({...pyramid, middle: t})}
+                    />
+                    <TextInput 
+                      style={styles.configInput} 
+                      placeholder="Base Notes" 
+                      value={pyramid.base}
+                      onChangeText={t => setPyramid({...pyramid, base: t})}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Credits</Text>
+                  <TextInput 
+                    style={styles.configInput} 
+                    placeholder="Perfumers (comma separated)" 
+                    value={perfumersInput}
+                    onChangeText={setPerfumersInput}
+                  />
+                </View>
+
+                <TouchableOpacity 
+                  style={[styles.saveButton, {marginBottom: 40}]} 
+                  onPress={handleCreateFragrance}
+                >
+                  <Text style={styles.saveButtonText}>Add to Database</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {dbSubTab === 'import' && (
+              <View>
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Magic Text Extraction (AI)</Text>
+                  <Text style={styles.configDescription}>
+                    Paste text from a brand website, Fragrantica, or press release. The AI will parse it into the database format.
+                  </Text>
+                  <TextInput 
+                    style={[styles.configInput, {marginBottom: 12}]} 
+                    multiline
+                    numberOfLines={8}
+                    placeholder="Paste unstructured text here..."
+                    value={magicText}
+                    onChangeText={setMagicText}
+                  />
+                  <TouchableOpacity style={styles.saveButton} onPress={handleAnalyzeText}>
+                    <Text style={styles.saveButtonText}>Analyze & Populate Form</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Bulk CSV Upload</Text>
+                  <Text style={styles.configDescription}>Coming soon in v2.</Text>
+                  <View style={styles.emptyState}>
+                    <Ionicons name="document-attach-outline" size={48} color={colors.textSecondary} />
+                  </View>
+                </View>
+              </View>
+            )}
+          </View>
         )}
 
         {activeTab === 'users' && (

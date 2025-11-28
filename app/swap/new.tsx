@@ -17,6 +17,7 @@ import { Button } from '@/components/Button';
 import { ListingCard } from '@/components/ListingCard';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
+import { calculateTradeValue, calculateVariance } from '@/lib/valuation';
 
 export default function NewSwapScreen() {
   const { targetListing } = useLocalSearchParams<{ targetListing?: string }>();
@@ -28,6 +29,14 @@ export default function NewSwapScreen() {
   const [targetListingData, setTargetListingData] = useState<Listing | null>(null);
   const [selectedMyListings, setSelectedMyListings] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Fairness State
+  const [initiatorValue, setInitiatorValue] = useState(0);
+  const [recipientValue, setRecipientValue] = useState(0);
+  const [valueDiff, setValueDiff] = useState(0);
+  const [isBalanced, setIsBalanced] = useState(false);
+  const [lossAccepted, setLossAccepted] = useState(false);
+  
   const [fairnessCheck, setFairnessCheck] = useState<{
     score: number;
     assessment: string;
@@ -69,22 +78,52 @@ export default function NewSwapScreen() {
   }
 
   async function checkFairness() {
-    if (!targetListing || selectedMyListings.length === 0) return;
+    if (!targetListingData || selectedMyListings.length === 0) return;
     setCheckingFairness(true);
-    const result = await db.checkFairness(selectedMyListings, [targetListing]);
-    setFairnessCheck(result);
+
+    // Calculate Initiator Value
+    const selectedItems = myListings.filter(l => selectedMyListings.includes(l.id));
+    const initiatorTotal = selectedItems.reduce((sum, item) => {
+        const base = item.estimated_value || (item.size_ml * 1.5); // Fallback base price
+        return sum + calculateTradeValue(item, base).value;
+    }, 0);
+
+    // Calculate Recipient Value
+    const recipientBase = targetListingData.estimated_value || (targetListingData.size_ml * 1.5);
+    const recipientTotal = calculateTradeValue(targetListingData, recipientBase).value;
+
+    const variance = calculateVariance(initiatorTotal, recipientTotal);
+
+    setInitiatorValue(initiatorTotal);
+    setRecipientValue(recipientTotal);
+    setValueDiff(variance.diff);
+    setIsBalanced(variance.isBalanced);
+    setLossAccepted(false);
+
+    setFairnessCheck({
+      score: recipientTotal > 0 ? Math.max(0, 100 - Math.round((Math.abs(variance.diff) / recipientTotal) * 100)) : 0,
+      assessment: variance.suggestion,
+      suggestions: variance.isBalanced ? [] : ['Add a sample or decant', 'Accept the value difference']
+    });
+    
     setCheckingFairness(false);
   }
 
   async function submitSwap() {
     if (!user || !targetListingData || selectedMyListings.length === 0) return;
     
+    // Validation: Must be balanced OR loss accepted
+    if (!isBalanced && !lossAccepted && Math.abs(valueDiff) > 5) {
+      Alert.alert('Unbalanced Trade', 'Please balance the trade value or explicitly accept the loss to proceed.');
+      return;
+    }
+    
     setSubmitting(true);
-    const { swap, fairnessScore, aiAssessment } = await db.createSwap({
+    const { swap, fairnessScore } = await db.createSwap({
       initiator_id: user.id,
       recipient_id: targetListingData.user_id,
       initiator_listings: selectedMyListings,
-      recipient_listings: [targetListing!],
+      recipient_listings: [targetListingData.id],
     });
     setSubmitting(false);
 
@@ -304,45 +343,40 @@ export default function NewSwapScreen() {
 
           {fairnessCheck && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>AI Fairness Check</Text>
+              <Text style={styles.sectionTitle}>Value Comparison</Text>
               <View style={styles.fairnessCard}>
-                <View style={styles.fairnessScore}>
-                  <Ionicons
-                    name="shield-checkmark"
-                    size={32}
-                    color={fairnessCheck.score >= 80 ? colors.success : colors.warning}
-                  />
-                  <Text
-                    style={[
-                      styles.fairnessValue,
-                      { color: fairnessCheck.score >= 80 ? colors.success : colors.warning },
-                    ]}
-                  >
-                    {fairnessCheck.score}%
-                  </Text>
+                {/* Comparison Bar Visual */}
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8}}>
+                  <Text style={{color: colors.text}}>You Give: ${initiatorValue.toFixed(2)}</Text>
+                  <Text style={{color: colors.text}}>You Get: ${recipientValue.toFixed(2)}</Text>
                 </View>
-                <Text style={styles.fairnessLabel}>
-                  {fairnessCheck.score >= 90
-                    ? 'Excellent match!'
-                    : fairnessCheck.score >= 80
-                    ? 'Good, fair swap'
-                    : fairnessCheck.score >= 60
-                    ? 'Acceptable, but slightly imbalanced'
-                    : 'Consider adjusting your offer'}
+                <View style={{height: 10, flexDirection: 'row', borderRadius: 5, overflow: 'hidden', marginBottom: 16, backgroundColor: colors.backgroundSecondary}}>
+                  <View style={{flex: initiatorValue || 1, backgroundColor: colors.primary}} />
+                  <View style={{width: 2, backgroundColor: '#FFF'}} />
+                  <View style={{flex: recipientValue || 1, backgroundColor: '#9B7DFF'}} />
+                </View>
+                
+                <Text style={[styles.assessmentText, {fontWeight: 'bold', color: isBalanced ? '#22C55E' : '#F59E0B', textAlign: 'center'}]}>
+                  {Math.abs(valueDiff) < 5 
+                    ? "Perfectly Balanced" 
+                    : valueDiff > 0 
+                      ? `You are offering $${valueDiff.toFixed(2)} more value.` 
+                      : `You are receiving $${Math.abs(valueDiff).toFixed(2)} less value.`}
                 </Text>
-                <Text style={styles.assessmentText}>{fairnessCheck.assessment}</Text>
-                {fairnessCheck.suggestions.length > 0 && (
-                  <View style={{ marginTop: 12 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
-                      Suggestions:
+                <Text style={[styles.assessmentText, {marginTop: 4, textAlign: 'center'}]}>{fairnessCheck.assessment}</Text>
+                
+                {!isBalanced && Math.abs(valueDiff) > 5 && (
+                  <TouchableOpacity 
+                    style={{marginTop: 16, flexDirection: 'row', alignItems: 'center', padding: 12, backgroundColor: colors.background, borderRadius: 8}} 
+                    onPress={() => setLossAccepted(!lossAccepted)}
+                  >
+                    <View style={{width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: lossAccepted ? colors.primary : colors.border, marginRight: 12, justifyContent: 'center', alignItems: 'center', backgroundColor: lossAccepted ? colors.primary : 'transparent'}}>
+                       {lossAccepted && <Ionicons name="checkmark" size={16} color="#FFF" />}
+                    </View>
+                    <Text style={{color: colors.text, flex: 1, fontSize: 14}}>
+                      I accept this value difference and wish to proceed with the trade.
                     </Text>
-                    {fairnessCheck.suggestions.map((suggestion, index) => (
-                      <View key={index} style={styles.suggestionItem}>
-                        <Ionicons name="bulb-outline" size={16} color={colors.accent} />
-                        <Text style={styles.suggestionText}>{suggestion}</Text>
-                      </View>
-                    ))}
-                  </View>
+                  </TouchableOpacity>
                 )}
               </View>
             </View>

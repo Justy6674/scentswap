@@ -446,6 +446,12 @@ export default function RegisterScreen() {
                 </TouchableOpacity>
               </Link>
             </View>
+            
+            <Link href="/faq" asChild>
+              <TouchableOpacity style={{ marginTop: 8 }}>
+                <Text style={{ color: COLORS.warmGray, fontSize: 14 }}>Questions? Check our FAQ</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </ScrollView>
       </SafeAreaView>

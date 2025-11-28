@@ -393,7 +393,11 @@ export async function getMediatorResponse(
   return MEDIATOR_RESPONSES['default']();
 }
 
-async function callClaudeAPI(question: string, context?: any): Promise<string> {
+async function callClaudeAPI(question: string, context?: any, systemPrompt?: string): Promise<string> {
+  const settings = await getActiveModelSettings();
+  // Use dynamic model if available, otherwise default to haiku
+  const model = settings.default_model === 'gpt-3.5-turbo' ? 'claude-3-haiku-20240307' : 'claude-3-5-sonnet-20240620'; // Simplified mapping
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -402,9 +406,9 @@ async function callClaudeAPI(question: string, context?: any): Promise<string> {
       'anthropic-version': '2023-06-01'
     },
     body: JSON.stringify({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-haiku-20240307', // Force Haiku for now to be safe, or use dynamic 'model' variable
       max_tokens: 300,
-      system: `You are ScentBot, a helpful AI assistant for ScentSwap, Australia's fragrance trading platform. 
+      system: systemPrompt || `You are ScentBot, a helpful AI assistant for ScentSwap, Australia's fragrance trading platform. 
 You help users with:
 - Assessing swap fairness
 - Fragrance authenticity tips
@@ -423,6 +427,56 @@ Keep responses concise, friendly, and helpful. Use Australian English.`,
 
   const data = await response.json();
   return data.content?.[0]?.text || 'I couldn\'t process that question. Please try again.';
+}
+
+export async function parseFragranceData(text: string): Promise<any> {
+  const settings = await getActiveModelSettings();
+  
+  const prompt = `Extract detailed fragrance data from the text below and return it as a valid JSON object.
+  Schema:
+  {
+    "name": "Fragrance Name",
+    "brand": "Brand Name",
+    "concentration": "edp" | "edt" | "edc" | "parfum" | "extrait" | "unknown",
+    "gender": "male" | "female" | "unisex",
+    "year": 2024, // number or null
+    "description": "Short description",
+    "notes": {
+      "top": ["Note1", "Note2"],
+      "middle": ["Note1", "Note2"],
+      "base": ["Note1", "Note2"]
+    },
+    "perfumers": ["Name 1", "Name 2"]
+  }
+  
+  Text to parse:
+  "${text}"`;
+
+  if (settings.provider !== 'mock') {
+    try {
+      if (settings.provider === 'anthropic' && ANTHROPIC_API_KEY) {
+        const response = await callClaudeAPI(prompt, null, "You are a data extraction assistant. Output ONLY valid JSON.");
+        // Clean up response (remove markdown code blocks if any)
+        const cleaned = response.replace(/```json/g, '').replace(/```/g, '').trim();
+        return JSON.parse(cleaned);
+      }
+      // Add OpenAI logic here
+    } catch (error) {
+      console.error('AI parsing error:', error);
+    }
+  }
+
+  // Mock response for testing
+  return {
+    name: "Sample Fragrance",
+    brand: "Sample Brand",
+    concentration: "edp",
+    gender: "unisex",
+    year: 2023,
+    description: "A sample extracted description.",
+    notes: { top: ["Bergamot"], middle: ["Rose"], base: ["Musk"] },
+    perfumers: ["Unknown"]
+  };
 }
 
 // =============================================================================

@@ -27,21 +27,45 @@ export interface User {
   subscription_status?: string | null;
 }
 
-export interface Fragrance {
+export interface Brand {
   id: string;
   name: string;
-  house: string;
-  concentration: string | null;
-  top_notes: string[];
-  mid_notes: string[];
-  base_notes: string[];
-  accords: string[];
-  gender: string | null;
-  release_year: number | null;
-  fragrantica_url: string | null;
+  country: string | null;
+  website: string | null;
+  tier: 'designer' | 'niche' | 'luxury' | 'indie' | 'celebrity' | 'clone' | 'budget' | null;
+}
+
+export interface Perfumer {
+  id: string;
+  name: string;
+  bio: string | null;
+}
+
+export interface Note {
+  id: string;
+  name: string;
+  family_id: string | null;
+  description: string | null;
   image_url: string | null;
-  avg_market_value: number | null;
-  created_at: string;
+}
+
+export interface Fragrance {
+  id: string;
+  brand_id: string | null;
+  name: string;
+  gender: 'male' | 'female' | 'unisex' | null;
+  concentration: 'edc' | 'edt' | 'edp' | 'parfum' | 'extrait' | 'unknown' | null;
+  launch_year: number | null;
+  description: string | null;
+  image_url: string | null;
+  is_discontinued: boolean;
+  brand?: Brand;
+  notes?: {
+    top: Note[];
+    middle: Note[];
+    base: Note[];
+  };
+  perfumers?: Perfumer[];
 }
 
 export interface SwapPreferences {

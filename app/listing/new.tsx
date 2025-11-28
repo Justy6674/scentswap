@@ -19,6 +19,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { db } from '@/lib/database';
+import { calculateTradeValue } from '@/lib/valuation';
 
 const CONDITIONS = [
   { key: 'New', label: 'New', description: 'Sealed, never used' },
@@ -46,7 +47,38 @@ export default function NewListingScreen() {
   const [condition, setCondition] = useState('Like New');
   const [batchCode, setBatchCode] = useState('');
   const [description, setDescription] = useState('');
+  
+  // Provenance & Trust Fields
+  const [purchaseSource, setPurchaseSource] = useState('');
+  const [purchaseYear, setPurchaseYear] = useState('');
+  const [hasBox, setHasBox] = useState(false);
+  const [hasCap, setHasCap] = useState(true);
+  const [storageHistory, setStorageHistory] = useState('cool_dark');
+  const [authenticityDeclared, setAuthenticityDeclaration] = useState(false);
+  
   const [loading, setLoading] = useState(false);
+  const [estimatedValue, setEstimatedValue] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (sizeMl && !isNaN(parseInt(sizeMl)) && fillPercentage && !isNaN(parseInt(fillPercentage))) {
+      const mockListing = {
+        size_ml: parseInt(sizeMl),
+        fill_percentage: parseInt(fillPercentage),
+        condition,
+        has_box: hasBox,
+        has_cap: hasCap,
+        storage_history: storageHistory
+      } as any;
+      
+      // Mock base price logic until we have DB lookups
+      // Defaulting to $2/ml which is average for designer/niche mix
+      const basePrice = parseInt(sizeMl) * 2.0; 
+      const { value } = calculateTradeValue(mockListing, basePrice);
+      setEstimatedValue(value);
+    } else {
+      setEstimatedValue(null);
+    }
+  }, [sizeMl, fillPercentage, condition, hasBox, hasCap, storageHistory]);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -98,6 +130,10 @@ export default function NewListingScreen() {
       Alert.alert('Validation Error', 'Please enter a valid fill percentage');
       return false;
     }
+    if (!authenticityDeclared) {
+      Alert.alert('Required', 'You must verify the authenticity of this item.');
+      return false;
+    }
     return true;
   }
 
@@ -122,6 +158,12 @@ export default function NewListingScreen() {
       estimated_value: null,
       admin_verified: isAdmin,
       admin_verified_at: isAdmin ? new Date().toISOString() : null,
+      purchase_source: purchaseSource || null,
+      purchase_year: purchaseYear ? parseInt(purchaseYear) : null,
+      has_box: hasBox,
+      has_cap: hasCap,
+      storage_history: storageHistory,
+      authenticity_declaration: authenticityDeclared,
     });
     setLoading(false);
 
@@ -298,6 +340,35 @@ export default function NewListingScreen() {
       fontSize: 14,
       color: colors.text,
     },
+    checkboxContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderRadius: 6,
+      borderWidth: 2,
+      borderColor: colors.border,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    checkboxChecked: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    checkboxLabel: {
+      fontSize: 16,
+      color: colors.text,
+      flex: 1,
+    },
+    provenanceRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 16,
+    },
   });
 
   useEffect(() => {
@@ -456,6 +527,55 @@ export default function NewListingScreen() {
           </View>
 
           <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Provenance & Trust</Text>
+            
+            <Input
+              label="Purchase Source"
+              placeholder="e.g. Myer, Duty Free, Grey Market"
+              value={purchaseSource}
+              onChangeText={setPurchaseSource}
+            />
+            
+            <Input
+              label="Year Purchased"
+              placeholder="YYYY"
+              value={purchaseYear}
+              onChangeText={setPurchaseYear}
+              keyboardType="numeric"
+            />
+
+            <TouchableOpacity 
+              style={styles.checkboxContainer} 
+              onPress={() => setHasBox(!hasBox)}
+            >
+              <View style={[styles.checkbox, hasBox && styles.checkboxChecked]}>
+                {hasBox && <Ionicons name="checkmark" size={16} color="#FFF" />}
+              </View>
+              <Text style={styles.checkboxLabel}>Original Box Included</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.checkboxContainer} 
+              onPress={() => setHasCap(!hasCap)}
+            >
+              <View style={[styles.checkbox, hasCap && styles.checkboxChecked]}>
+                {hasCap && <Ionicons name="checkmark" size={16} color="#FFF" />}
+              </View>
+              <Text style={styles.checkboxLabel}>Original Cap Included</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.checkboxContainer} 
+              onPress={() => setAuthenticityDeclaration(!authenticityDeclared)}
+            >
+              <View style={[styles.checkbox, authenticityDeclared && styles.checkboxChecked]}>
+                {authenticityDeclared && <Ionicons name="checkmark" size={16} color="#FFF" />}
+              </View>
+              <Text style={styles.checkboxLabel}>I certify this item is authentic</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.section}>
             <Text style={styles.sectionTitle}>Additional Info (Optional)</Text>
             <Input
               label="Batch Code"
@@ -472,6 +592,17 @@ export default function NewListingScreen() {
               numberOfLines={4}
             />
           </View>
+
+          {estimatedValue !== null && (
+            <View style={{marginBottom: 24, padding: 16, backgroundColor: colors.primary + '10', borderRadius: 12, borderWidth: 1, borderColor: colors.primary}}>
+              <Text style={{color: colors.primary, fontWeight: 'bold', textAlign: 'center', fontSize: 16}}>
+                Estimated Trade Value: ${estimatedValue.toFixed(2)}
+              </Text>
+              <Text style={{color: colors.textSecondary, textAlign: 'center', fontSize: 12, marginTop: 4}}>
+                Based on size, fill level, and condition.
+              </Text>
+            </View>
+          )}
 
           <Button
             title="List Fragrance"

@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import { Head } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -47,6 +48,14 @@ export default function RootLayout() {
     <AuthProvider>
       <SubscriptionProvider>
         <ThemeProvider value={colorScheme === 'dark' ? ScentSwapDarkTheme : ScentSwapLightTheme}>
+          <Head>
+            <title>ScentSwap - AI Powered Fragrance Exchange</title>
+            <meta name="description" content="Australia's first AI-powered fragrance marketplace. Trade scents, not cash. Verify authenticity and swap securely." />
+            <meta property="og:title" content="ScentSwap - Trade Scents, Not Cash" />
+            <meta property="og:description" content="Join Australia's most trusted fragrance trading community. AI-powered fairness, authenticity checks, and secure swaps." />
+            <meta property="og:type" content="website" />
+            <meta name="theme-color" content="#5BBFBA" />
+          </Head>
           <OutsetaScript />
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />

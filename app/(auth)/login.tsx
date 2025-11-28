@@ -243,6 +243,11 @@ export default function LoginScreen() {
               <Text style={styles.footerLink}>Sign Up</Text>
             </TouchableOpacity>
           </Link>
+          <Link href="/faq" asChild>
+            <TouchableOpacity style={{ marginTop: 16 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: 14 }}>Need help? Visit FAQ</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
       </View>
     </SafeAreaView>
