@@ -15,6 +15,82 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+// Deterministic pseudo-random values based on index to prevent hydration mismatch
+const pseudoRandom = (seed: number) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+const SprayParticle = ({ index }: { index: number }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+  
+  React.useEffect(() => {
+    Animated.timing(animValue, {
+      toValue: 1,
+      duration: 800 + pseudoRandom(index) * 400,
+      useNativeDriver: Platform.OS !== 'web',
+      delay: pseudoRandom(index + 100) * 100,
+    }).start();
+  }, []);
+
+  // Trajectory: Spray downwards and outwards
+  const angle = 45 + (index * 15) + (pseudoRandom(index) * 20); 
+  const distance = 40 + pseudoRandom(index + 50) * 60;
+  const radians = (angle * Math.PI) / 180;
+  
+  const translateX = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.cos(radians) * distance], // Move right
+  });
+  
+  const translateY = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, Math.sin(radians) * distance], // Move down
+  });
+  
+  const opacity = animValue.interpolate({
+    inputRange: [0, 0.1, 0.8, 1],
+    outputRange: [0, 0.8, 0.4, 0],
+  });
+  
+  const scale = animValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.2, 1.2, 0],
+  });
+
+  const isTeal = index % 2 === 0;
+
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        top: 15, 
+        left: 15, // Start from top-left of answer area
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: isTeal ? '#5BBFBA' : '#E8927C',
+        opacity,
+        transform: [{ translateX }, { translateY }, { scale }],
+      }}
+    />
+  );
+};
+
+const SprayBurst = ({ active }: { active: boolean }) => {
+  if (!active) return null;
+  // Generate 15 particles
+  const particles = Array.from({ length: 15 }, (_, i) => i);
+  
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      {particles.map((i) => (
+        <SprayParticle key={i} index={i} />
+      ))}
+    </View>
+  );
+};
+
 const FAQ_DATA = [
   {
     category: 'How It Works',
@@ -76,6 +152,7 @@ const FAQ_DATA = [
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [showSpray, setShowSpray] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -83,6 +160,12 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const toggleExpand = () => {
     const initialValue = expanded ? 1 : 0;
     const finalValue = expanded ? 0 : 1;
+
+    if (!expanded) {
+      setShowSpray(true);
+    } else {
+      setShowSpray(false);
+    }
 
     setExpanded(!expanded);
 
@@ -98,6 +181,12 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   const rotateArrow = animation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
+  });
+
+  // Fade text in slightly delayed to let spray clear the air
+  const textOpacity = animation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
   });
 
   return (
@@ -118,16 +207,27 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
           style={[
             styles.answerContainer,
             {
-              opacity: animation,
+              // Use animation for height implicitly via layout animation or keep it simple with transform
               transform: [
                 { translateY: animation.interpolate({ inputRange: [0, 1], outputRange: [-10, 0] }) }
               ]
             }
           ]}
         >
-          {/* Spray Effect Visual (Simple Dot) */}
-          <View style={styles.sprayDot} />
-          <Text style={[styles.answerText, { color: colors.textSecondary }]}>{answer}</Text>
+          {showSpray && (
+            <View style={{position: 'absolute', top: 0, left: 0, zIndex: 10}}>
+              <SprayBurst active={true} />
+            </View>
+          )}
+          
+          <Animated.Text 
+            style={[
+              styles.answerText, 
+              { color: colors.textSecondary, opacity: textOpacity, paddingLeft: 12 } // Add padding for visual balance
+            ]}
+          >
+            {answer}
+          </Animated.Text>
         </Animated.View>
       )}
     </View>
