@@ -21,7 +21,7 @@ import { db } from '@/lib/database';
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, outsetaUser, subscription, openProfile, logout, getPlan, openLogin } = useSubscription();
+  const { isAuthenticated, outsetaUser, subscription, openProfile, logout, getPlan, openLogin, isLoading: authLoading } = useSubscription();
   const [ratings, setRatings] = useState<Rating[]>([]);
 
   useEffect(() => {
@@ -81,6 +81,11 @@ export default function ProfileScreen() {
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     authContainer: {
       flex: 1,
@@ -317,6 +322,18 @@ export default function ProfileScreen() {
       lineHeight: 20,
     },
   });
+
+  // CRITICAL: Show loading state while auth is being checked
+  // This prevents React hydration mismatch (Error #418)
+  if (authLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!isAuthenticated) {
     return (

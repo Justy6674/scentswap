@@ -29,7 +29,7 @@ const STATUS_FILTERS = [
 export default function SwapsScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
+  const { isAuthenticated, outsetaUser, openLogin, isLoading: authLoading } = useSubscription();
   const [swaps, setSwaps] = useState<Swap[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -200,6 +200,18 @@ export default function SwapsScreen() {
       width: '100%',
     },
   });
+
+  // CRITICAL: Show loading state while auth is being checked
+  // This prevents React hydration mismatch (Error #418)
+  if (authLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
