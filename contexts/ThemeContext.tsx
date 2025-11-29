@@ -1,8 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Platform } from 'react-native';
-// Only import useColorScheme on native platforms to avoid SSR issues
-// On web, we'll use window.matchMedia instead
-import * as SecureStore from 'expo-secure-store';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -25,15 +21,10 @@ const THEME_STORAGE_KEY = 'scentswap_theme';
 
 // Web-safe way to get system color scheme
 function getSystemColorScheme(): 'light' | 'dark' | null {
-    if (Platform.OS === 'web') {
-        if (typeof window !== 'undefined' && window.matchMedia) {
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        return null; // SSR
+    if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-    // For native, we'd use useColorScheme hook but that causes SSR issues
-    // Return null and let the component handle it
-    return null;
+    return null; // SSR
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -49,8 +40,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setSystemColorScheme(getSystemColorScheme());
         loadTheme();
         
-        // Listen for system color scheme changes on web
-        if (Platform.OS === 'web' && typeof window !== 'undefined' && window.matchMedia) {
+        // Listen for system color scheme changes
+        if (typeof window !== 'undefined' && window.matchMedia) {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
             const handler = (e: MediaQueryListEvent) => {
                 setSystemColorScheme(e.matches ? 'dark' : 'light');
@@ -62,18 +53,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     async function loadTheme() {
         try {
-            let storedTheme: string | null = null;
-            if (Platform.OS === 'web') {
-                // Only access localStorage on client
-                if (typeof window !== 'undefined') {
-                    storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+            // Only access localStorage on client
+            if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+                const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+                if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+                    setThemeState(storedTheme as Theme);
                 }
-            } else {
-                storedTheme = await SecureStore.getItemAsync(THEME_STORAGE_KEY);
-            }
-
-            if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
-                setThemeState(storedTheme as Theme);
             }
         } catch (error) {
             console.error('Failed to load theme preference:', error);
@@ -83,12 +68,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const saveTheme = async (newTheme: Theme) => {
         setThemeState(newTheme);
         try {
-            if (Platform.OS === 'web') {
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
-                }
-            } else {
-                await SecureStore.setItemAsync(THEME_STORAGE_KEY, newTheme);
+            if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+                localStorage.setItem(THEME_STORAGE_KEY, newTheme);
             }
         } catch (error) {
             console.error('Failed to save theme preference:', error);
