@@ -16,7 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
-import { aiFragranceEnhancer, FragranceData, EnhancedFragranceData } from '@/lib/aiEnhancement';
+// AI Enhancement temporarily disabled due to OpenAI package issues
+// import { aiFragranceEnhancer, FragranceData, EnhancedFragranceData } from '@/lib/aiEnhancement';
 
 interface AdminStats {
   total_users: number;
@@ -514,6 +515,11 @@ export default function AdminScreen() {
   };
 
   const performAIEnhancement = async (fragrance: Fragrance) => {
+    // AI Enhancement temporarily disabled
+    Alert.alert('AI Enhancement Disabled', 'AI enhancement is temporarily disabled due to technical issues. Please try again later.');
+    return;
+
+    /*
     if (!supabase) {
       Alert.alert('Error', 'Database connection not available.');
       return;
@@ -602,6 +608,7 @@ export default function AdminScreen() {
         return newSet;
       });
     }
+    */
   };
 
   useEffect(() => {
