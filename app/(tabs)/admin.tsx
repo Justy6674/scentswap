@@ -11,7 +11,6 @@ import {
   TextInput,
   Switch,
   FlatList,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -26,13 +25,16 @@ import { parseFragranceData } from '@/lib/ai-services';
 import { enhancementService, EnhancementQueueStats } from '@/lib/enhancement-service';
 import { aiEnhancementEngine } from '@/lib/ai-enhancement-engine';
 
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
+
 // Lazy-load expo packages to avoid SSR issues
 let DocumentPicker: typeof import('expo-document-picker') | null = null;
 let FileSystem: typeof import('expo-file-system') | null = null;
 let Clipboard: typeof import('expo-clipboard') | null = null;
 
 const loadExpoPackages = async () => {
-  if (typeof window !== 'undefined') {
+  if (isWeb) {
     if (!DocumentPicker) DocumentPicker = await import('expo-document-picker');
     if (!FileSystem) FileSystem = await import('expo-file-system');
     if (!Clipboard) Clipboard = await import('expo-clipboard');
@@ -210,7 +212,7 @@ export default function AdminScreen() {
       await loadExpoPackages();
       
       // Client-side check for clipboard support
-      if (Platform.OS === 'web' && !navigator.clipboard) {
+      if (isWeb && !navigator.clipboard) {
          Alert.alert('Error', 'Clipboard access not supported in this browser context.');
          return;
       }
@@ -494,7 +496,7 @@ export default function AdminScreen() {
       // Check file size (limit preview for performance)
       const isLargeFile = (asset.size || 0) > 1024 * 1024; // > 1MB
       
-      if (Platform.OS === 'web') {
+      if (isWeb) {
         const response = await fetch(asset.uri);
         content = await response.text();
       } else if (FileSystem) {
@@ -2429,12 +2431,12 @@ export default function AdminScreen() {
                         {/* Diff View */}
                         <View style={{backgroundColor: colors.background, borderRadius: 6, padding: 8, marginBottom: 8}}>
                           <View style={{flexDirection: 'row', marginBottom: 4}}>
-                            <Text style={{color: '#EF4444', fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', flex: 1}}>
+                            <Text style={{color: '#EF4444', fontSize: 12, fontFamily: 'monospace', flex: 1}}>
                               - {JSON.stringify(change.old_value) || '(empty)'}
                             </Text>
                           </View>
                           <View style={{flexDirection: 'row'}}>
-                            <Text style={{color: '#22C55E', fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', flex: 1}}>
+                            <Text style={{color: '#22C55E', fontSize: 12, fontFamily: 'monospace', flex: 1}}>
                               + {JSON.stringify(change.new_value)}
                             </Text>
                           </View>
