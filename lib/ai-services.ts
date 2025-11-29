@@ -9,7 +9,16 @@
  */
 
 import { Listing } from '@/types';
-import { db } from './database';
+
+// Lazy-load database to avoid SSR issues
+let db: typeof import('./database').db | null = null;
+const getDb = async () => {
+  if (!db) {
+    const database = await import('./database');
+    db = database.db;
+  }
+  return db;
+};
 
 // API Configuration
 const ANTHROPIC_API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
@@ -23,7 +32,8 @@ const DEFAULT_PROVIDER = GEMINI_API_KEY ? 'gemini' : (ANTHROPIC_API_KEY ? 'anthr
 // Helper to get active provider from DB config
 async function getActiveModelSettings() {
   try {
-    const configs = await db.getAiConfigs();
+    const database = await getDb();
+    const configs = await database.getAiConfigs();
     const settings = configs.find(c => c.key === 'model_settings');
     return settings?.value || { provider: DEFAULT_PROVIDER, default_model: 'gemini-1.5-flash' };
   } catch (e) {
