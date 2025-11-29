@@ -1080,6 +1080,153 @@ class DatabaseClient {
   }
 
   // =============================================================================
+  // BULK OPERATIONS (FOR CSV IMPORT)
+  // =============================================================================
+
+  async bulkGetBrands(names: string[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || names.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      // Supabase 'in' filter has limits, so might need chunking if names is huge, 
+      // but for typical batch sizes (e.g. 500) it is fine.
+      const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .in('name', names); 
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk fetching brands:', error);
+      return [];
+    }
+  }
+
+  async bulkCreateBrands(brands: {name: string, country?: string}[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || brands.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('brands')
+        .insert(brands)
+        .select();
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk creating brands:', error);
+      return [];
+    }
+  }
+
+  async bulkGetNotes(names: string[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || names.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .in('name', names);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk fetching notes:', error);
+      return [];
+    }
+  }
+
+  async bulkCreateNotes(notes: {name: string}[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || notes.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .insert(notes)
+        .select();
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk creating notes:', error);
+      return [];
+    }
+  }
+
+  async bulkGetPerfumers(names: string[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || names.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('perfumers')
+        .select('*')
+        .in('name', names);
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk fetching perfumers:', error);
+      return [];
+    }
+  }
+
+  async bulkCreatePerfumers(perfumers: {name: string}[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || perfumers.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('perfumers')
+        .insert(perfumers)
+        .select();
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk creating perfumers:', error);
+      return [];
+    }
+  }
+
+  async bulkCreateFragrances(fragrances: any[]): Promise<any[]> {
+    if (!isSupabaseConfigured() || fragrances.length === 0) return [];
+    const supabase = getSupabase()!;
+    try {
+      const { data, error } = await supabase
+        .from('fragrances')
+        .insert(fragrances)
+        .select();
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error bulk creating fragrances:', error);
+      return [];
+    }
+  }
+
+  async bulkCreateFragranceNotes(relations: {fragrance_id: string, note_id: string, type: string}[]): Promise<void> {
+    if (!isSupabaseConfigured() || relations.length === 0) return;
+    const supabase = getSupabase()!;
+    try {
+      const { error } = await supabase.from('fragrance_notes').insert(relations);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error bulk linking notes:', error);
+    }
+  }
+
+  async bulkCreateFragrancePerfumers(relations: {fragrance_id: string, perfumer_id: string}[]): Promise<void> {
+    if (!isSupabaseConfigured() || relations.length === 0) return;
+    const supabase = getSupabase()!;
+    try {
+      const { error } = await supabase.from('fragrance_perfumers').insert(relations);
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error bulk linking perfumers:', error);
+    }
+  }
+
+  // =============================================================================
   // FRAGRANCE DATABASE (CORE)
   // =============================================================================
 

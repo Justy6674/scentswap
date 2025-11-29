@@ -98,12 +98,7 @@ export default function AdminScreen() {
   const [importProgress, setImportProgress] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [fileStats, setFileStats] = useState<{name: string, size: number} | null>(null);
-
-  // Caches to minimize DB lookups during import
-  const brandCache = React.useRef(new Map<string, string>());
-  const noteCache = React.useRef(new Map<string, string>());
-  const perfumerCache = React.useRef(new Map<string, string>());
-
+  
   // AI Review Queue State
   const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
   
@@ -427,216 +422,205 @@ export default function AdminScreen() {
     }
 
     setIsImporting(true);
-    setImportProgress('Initializing import...');
+    setImportProgress('Initializing 4-Phase Bulk Import...');
 
     try {
       const lines = rawData.split('\n').filter(l => l.trim());
-      let successCount = 0;
-      let errorCount = 0;
-
-      // Clear caches
-      brandCache.current.clear();
-      noteCache.current.clear();
-      perfumerCache.current.clear();
-
-      // Process in chunks to keep UI responsive
-      const CHUNK_SIZE = 5; 
       
-      // Fix: Use setTimeout to break the synchronous loop entirely
-      let i = 0;
-      
-      const processChunk = async () => {
-        if (i >= lines.length) {
-          setIsImporting(false);
-          setImportProgress('');
-          Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nSkipped/Failed: ${errorCount}`);
-          setCsvData('');
-          fullCsvContent.current = null;
-          setFileStats(null);
-          return;
-        }
+      // PHASE 1: PARSE & ANALYZE
+      setImportProgress('Phase 1/4: Parsing & Analyzing Data...');
+      await new Promise(r => setTimeout(r, 10)); // Yield UI
 
-        const chunk = lines.slice(i, i + CHUNK_SIZE);
+      const brandsToSync = new Set<string>();
+      const notesToSync = new Set<string>();
+      const perfumersToSync = new Set<string>();
+      const parsedRows: any[] = [];
+
+      // Pre-process lines to extract unique entities
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const cols = line.split(';').map(s => s.trim());
         
-        if (i % 10 === 0) {
-           setImportProgress(`Processing ${i}/${lines.length} (${Math.round(i/lines.length*100)}%)...`);
-        }
+        // Skip header or invalid
+        if ((cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') || !cols[1] || !cols[2]) continue;
 
-        await Promise.all(chunk.map(async (line, idx) => {
-          const lineIndex = i + idx;
-          try {
-            const cols = line.split(';').map(s => s.trim());
-            
-            // Skip header or invalid
-            if ((cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') || !cols[1] || !cols[2]) {
-              if (!cols[1] && !cols[2]) errorCount++; 
-              return;
-            }
+        const brand = cols[2];
+        const top = cols[8] || '';
+        const middle = cols[9] || '';
+        const base = cols[10] || '';
+        const perfumersStr = [cols[11], cols[12]].filter(p => p && p.toLowerCase() !== 'unknown').join(', ');
+        const accords = cols.slice(13, 18).filter(a => a && a.toLowerCase() !== 'unknown');
 
-            // Map columns
-            const url = cols[0] || '';
-            const name = cols[1] || '';
-            const brand = cols[2] || '';
-            const country = cols[3] || '';
-            let gender = cols[4]?.toLowerCase() || 'unisex';
-            if (gender === 'women') gender = 'female';
-            if (gender === 'men') gender = 'male';
-            
-            const year = cols[7] || '';
-            const top = cols[8] || '';
-            const middle = cols[9] || '';
-            const base = cols[10] || '';
-            
-            const perfumer1 = cols[11] || '';
-            const perfumer2 = cols[12] || '';
-            const perfumers = [perfumer1, perfumer2].filter(p => p && p.toLowerCase() !== 'unknown').join(', ');
-            
-            const accords = cols.slice(13, 18).filter(a => a && a.toLowerCase() !== 'unknown');
+        // Collect unique names for bulk sync
+        if (brand) brandsToSync.add(brand);
+        
+        // Helper to split and add notes
+        const addNotes = (str: string) => {
+            str.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown').forEach(n => notesToSync.add(n));
+        };
+        addNotes(top);
+        addNotes(middle);
+        addNotes(base);
 
-            await createSingleFragranceWithCache({
-              name,
-              brand,
-              country,
-              concentration: 'edp',
-              gender,
-              year,
-              description: `Imported from Fragrantica. URL: ${url}`,
-              image_url: '',
-              fragrantica_url: url,
-              topNotes: top,
-              middleNotes: middle,
-              baseNotes: base,
-              perfumers,
-              accords
-            });
-            
-            successCount++;
-          } catch (err) {
-            console.warn(`Error row ${lineIndex}:`, err);
-            errorCount++;
+        perfumersStr.split(',').map(s => s.trim()).filter(s => s).forEach(p => perfumersToSync.add(p));
+
+        parsedRows.push({
+            cols,
+            brand,
+            top,
+            middle,
+            base,
+            perfumersStr,
+            accords
+        });
+      }
+
+      // PHASE 2: SYNC REFERENCES
+      setImportProgress(`Phase 2/4: Syncing References (${brandsToSync.size} brands, ${notesToSync.size} notes)...`);
+      await new Promise(r => setTimeout(r, 10));
+
+      // Sync Brands
+      const brandMap = new Map<string, string>();
+      const brandNames = Array.from(brandsToSync);
+      
+      // Fetch existing
+      const existingBrands = await db.bulkGetBrands(brandNames);
+      existingBrands.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
+
+      // Create missing
+      const newBrands = brandNames.filter(name => !brandMap.has(name.toLowerCase()));
+      if (newBrands.length > 0) {
+          const created = await db.bulkCreateBrands(newBrands.map(name => ({ name })));
+          created.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
+      }
+
+      // Sync Notes
+      const noteMap = new Map<string, string>();
+      const noteNames = Array.from(notesToSync);
+      const existingNotes = await db.bulkGetNotes(noteNames);
+      existingNotes.forEach(n => noteMap.set(n.name.toLowerCase(), n.id));
+
+      const newNotes = noteNames.filter(name => !noteMap.has(name.toLowerCase()));
+      if (newNotes.length > 0) {
+          const created = await db.bulkCreateNotes(newNotes.map(name => ({ name })));
+          created.forEach(n => noteMap.set(n.name.toLowerCase(), n.id));
+      }
+
+      // Sync Perfumers
+      const perfumerMap = new Map<string, string>();
+      const perfumerNames = Array.from(perfumersToSync);
+      const existingPerfumers = await db.bulkGetPerfumers(perfumerNames);
+      existingPerfumers.forEach(p => perfumerMap.set(p.name.toLowerCase(), p.id));
+
+      const newPerfumers = perfumerNames.filter(name => !perfumerMap.has(name.toLowerCase()));
+      if (newPerfumers.length > 0) {
+          const created = await db.bulkCreatePerfumers(newPerfumers.map(name => ({ name })));
+          created.forEach(p => perfumerMap.set(p.name.toLowerCase(), p.id));
+      }
+
+      // PHASE 3: PREPARE & BATCH INSERT FRAGRANCES
+      setImportProgress('Phase 3/4: Uploading Fragrances...');
+      await new Promise(r => setTimeout(r, 10));
+
+      const fragrancesToInsert: any[] = [];
+      const fragranceNoteRelations: any[] = [];
+      const fragrancePerfumerRelations: any[] = [];
+
+      // We need IDs for the new fragrances to link relations.
+      // Strategy: Insert fragrances, get IDs back, then insert relations.
+      // We will do this in batches of 500.
+
+      const BATCH_SIZE = 500;
+      let processedCount = 0;
+
+      for (let i = 0; i < parsedRows.length; i += BATCH_SIZE) {
+          const batch = parsedRows.slice(i, i + BATCH_SIZE);
+          const batchFragrances = [];
+          
+          // Prepare batch
+          for (const row of batch) {
+              const brandId = brandMap.get(row.brand.toLowerCase());
+              if (!brandId) continue; // Should not happen
+
+              const cols = row.cols;
+              const url = cols[0] || '';
+              const name = cols[1] || '';
+              const country = cols[3] || '';
+              let gender = cols[4]?.toLowerCase() || 'unisex';
+              if (gender === 'women') gender = 'female';
+              if (gender === 'men') gender = 'male';
+              const year = cols[7] ? parseInt(cols[7]) : null;
+
+              batchFragrances.push({
+                  name,
+                  brand_id: brandId,
+                  concentration: 'edp', // Default
+                  gender,
+                  launch_year: isNaN(year!) ? null : year,
+                  description: `Imported from Fragrantica. URL: ${url}`,
+                  image_url: '',
+                  fragrantica_url: url,
+                  accords: row.accords
+              });
           }
-        }));
 
-        i += CHUNK_SIZE;
-        setTimeout(processChunk, 0); // Schedule next chunk
-      };
+          // Insert Batch
+          const createdFragrances = await db.bulkCreateFragrances(batchFragrances);
 
-      processChunk(); // Start the loop
+          // Link Relations for this batch
+          const batchNoteRelations = [];
+          const batchPerfumerRelations = [];
+
+          for (let j = 0; j < createdFragrances.length; j++) {
+              const frag = createdFragrances[j];
+              const originalRow = batch[j]; // Maps 1:1 because we pushed sequentially
+
+              // Link Notes
+              const processNotes = (str: string, type: string) => {
+                  str.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown').forEach(n => {
+                      const nid = noteMap.get(n.toLowerCase());
+                      if (nid) batchNoteRelations.push({ fragrance_id: frag.id, note_id: nid, type });
+                  });
+              };
+              processNotes(originalRow.top, 'top');
+              processNotes(originalRow.middle, 'middle');
+              processNotes(originalRow.base, 'base');
+
+              // Link Perfumers
+              originalRow.perfumersStr.split(',').map((s: string) => s.trim()).filter((s: string) => s).forEach((p: string) => {
+                  const pid = perfumerMap.get(p.toLowerCase());
+                  if (pid) batchPerfumerRelations.push({ fragrance_id: frag.id, perfumer_id: pid });
+              });
+          }
+
+          // Insert Relations
+          if (batchNoteRelations.length > 0) await db.bulkCreateFragranceNotes(batchNoteRelations);
+          if (batchPerfumerRelations.length > 0) await db.bulkCreateFragrancePerfumers(batchPerfumerRelations);
+
+          processedCount += batch.length;
+          setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
+          await new Promise(r => setTimeout(r, 0)); // Yield
+      }
+
+      setImportProgress('Phase 4/4: Finalizing...');
+      
+      Alert.alert('Import Complete', `Successfully imported ${processedCount} fragrances.`);
+      setCsvData('');
+      fullCsvContent.current = null;
+      setFileStats(null);
+      setImportProgress('');
 
     } catch (e) {
       Alert.alert('Import Error', 'An unexpected error occurred during import');
       console.error(e);
       setIsImporting(false);
       setImportProgress('');
+    } finally {
+      setIsImporting(false);
     }
   }
 
-  // Optimized version with caching
-  async function createSingleFragranceWithCache(data: {
-    name: string,
-    brand: string,
-    concentration: string,
-    gender: string,
-    year: string,
-    description: string,
-    image_url: string,
-    topNotes: string,
-    middleNotes: string,
-    baseNotes: string,
-    perfumers: string,
-    accords?: string[],
-    fragrantica_url?: string,
-    country?: string
-  }) {
-    // 1. Brand
-    const brandKey = data.brand.toLowerCase();
-    let brandId = brandCache.current.get(brandKey);
-
-    if (!brandId) {
-      const brands = await db.getBrands(data.brand);
-      const existingBrand = brands.find(b => b.name.toLowerCase() === brandKey);
-      if (existingBrand) {
-        brandId = existingBrand.id;
-      } else {
-        const newB = await db.createBrand({ name: data.brand, country: data.country });
-        if (newB) brandId = newB.id;
-      }
-      if (brandId) brandCache.current.set(brandKey, brandId);
-    }
-
-    if (!brandId) throw new Error(`Failed to resolve brand: ${data.brand}`);
-
-    // 2. Notes
-    const processNotesCached = async (input: string) => {
-      const names = input.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
-      const ids = [];
-      
-      for (const name of names) {
-        const noteKey = name.toLowerCase();
-        let noteId = noteCache.current.get(noteKey);
-        
-        if (!noteId) {
-            const existing = await db.getNotes(name);
-            const match = existing.find(n => n.name.toLowerCase() === noteKey);
-            if (match) {
-                noteId = match.id;
-            } else {
-                const newN = await db.createNote({ name });
-                if (newN) noteId = newN.id;
-            }
-            if (noteId) noteCache.current.set(noteKey, noteId);
-        }
-        if (noteId) ids.push(noteId);
-      }
-      return ids;
-    };
-
-    const [topIds, midIds, baseIds] = await Promise.all([
-        processNotesCached(data.topNotes),
-        processNotesCached(data.middleNotes),
-        processNotesCached(data.baseNotes)
-    ]);
-
-    // 3. Perfumers
-    const perfumerIds = [];
-    const pNames = data.perfumers.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
-    
-    for (const name of pNames) {
-        const perfKey = name.toLowerCase();
-        let perfId = perfumerCache.current.get(perfKey);
-        
-        if (!perfId) {
-            const existing = await db.getPerfumers(name);
-            const match = existing.find(p => p.name.toLowerCase() === perfKey);
-            if (match) {
-                perfId = match.id;
-            } else {
-                const newP = await db.createPerfumer({ name });
-                if (newP) perfId = newP.id;
-            }
-            if (perfId) perfumerCache.current.set(perfKey, perfId);
-        }
-        if (perfId) perfumerIds.push(perfId);
-    }
-
-    // 4. Create Fragrance (Always insert new for now, or check existence if needed)
-    // For speed, we assume if it's a bulk import we just append. 
-    // Ideally we'd check if fragrance exists too, but that adds another query.
-    // Let's trust the database unique constraints or allow duplicates for now if names differ slightly.
-    
-    await db.createFragrance({
-      name: data.name,
-      brand_id: brandId,
-      concentration: data.concentration,
-      gender: data.gender,
-      launch_year: data.year ? parseInt(data.year) : null,
-      description: data.description,
-      image_url: data.image_url,
-      accords: data.accords || [],
-      fragrantica_url: data.fragrantica_url
-    }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
-  }
-
+  // Removed outdated single-creation functions
   async function handlePickCsv() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
