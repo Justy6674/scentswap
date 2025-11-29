@@ -8,8 +8,10 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Platform } from 'react-native';
 import { isAdmin as checkIsAdmin } from '@/lib/admin';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 
 // =============================================================================
 // OUTSETA CONFIGURATION - LIVE VALUES
@@ -196,7 +198,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Initialize Outseta on mount (web only)
   // CRITICAL: Keep isLoading=true until auth check completes (like TeleCheck)
   useEffect(() => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    if (isWeb && typeof window !== 'undefined') {
       // Keep loading true until we've checked for existing session
       initializeOutseta().finally(() => {
         setIsLoading(false);
@@ -349,7 +351,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   const syncWithSupabase = async (user: any) => {
     try {
-      if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+      if (!isWeb || typeof window === 'undefined') return;
       
       const Outseta = (window as any).Outseta;
       if (!Outseta) return;
@@ -415,7 +417,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const openSignUp = () => {
     const signUpUrl = OUTSETA_CONFIG.urls.signUp;
     
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       window.location.href = signUpUrl;
     } else {
       // Mobile - use React Native Linking
@@ -432,7 +434,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const openLogin = () => {
     const loginUrl = OUTSETA_CONFIG.urls.login;
     
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       window.location.href = loginUrl;
     } else {
       import('react-native').then(({ Linking }) => {
@@ -448,7 +450,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const openProfile = () => {
     const profileUrl = OUTSETA_CONFIG.urls.profile;
     
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       window.location.href = profileUrl;
     } else {
       import('react-native').then(({ Linking }) => {
@@ -466,7 +468,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     handleLogout();
     
     // Clear Outseta token if available
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    if (isWeb && typeof window !== 'undefined') {
       // Clear localStorage token that Outseta uses
       try {
         localStorage.removeItem('outseta-access-token');
@@ -490,7 +492,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const upgradeToPremium = () => {
     const upgradeUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.PREMIUM}#o-anonymous`;
     
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       window.location.href = upgradeUrl;
     } else {
       import('react-native').then(({ Linking }) => {
@@ -505,7 +507,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const upgradeToElite = () => {
     const upgradeUrl = `https://${OUTSETA_CONFIG.domain}/auth?widgetMode=register&planUid=${OUTSETA_CONFIG.planUids.ELITE}#o-anonymous`;
     
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       window.location.href = upgradeUrl;
     } else {
       import('react-native').then(({ Linking }) => {
@@ -520,7 +522,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
    * - Outseta.getJwtPayload()
    */
   const refreshSubscription = async () => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    if (!isWeb || typeof window === 'undefined') {
       return;
     }
     

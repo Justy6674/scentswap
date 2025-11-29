@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import { User } from '@/types';
 import { db } from '@/lib/database';
 import { isAdmin as checkIsAdmin } from '@/lib/admin';
@@ -19,37 +17,57 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const USER_STORAGE_KEY = 'scentswap_user';
 
+// SSR-safe storage functions
 async function getStorageItem(key: string): Promise<string | null> {
-  if (Platform.OS === 'web') {
+  // Web: use localStorage
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
       return localStorage.getItem(key);
     } catch {
       return null;
     }
   }
-  return SecureStore.getItemAsync(key);
+  // Native: lazy-load SecureStore
+  try {
+    const SecureStore = await import('expo-secure-store');
+    return SecureStore.getItemAsync(key);
+  } catch {
+    return null;
+  }
 }
 
 async function setStorageItem(key: string, value: string): Promise<void> {
-  if (Platform.OS === 'web') {
+  // Web: use localStorage
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(key, value);
     } catch {
     }
     return;
   }
-  return SecureStore.setItemAsync(key, value);
+  // Native: lazy-load SecureStore
+  try {
+    const SecureStore = await import('expo-secure-store');
+    return SecureStore.setItemAsync(key, value);
+  } catch {
+  }
 }
 
 async function deleteStorageItem(key: string): Promise<void> {
-  if (Platform.OS === 'web') {
+  // Web: use localStorage
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
       localStorage.removeItem(key);
     } catch {
     }
     return;
   }
-  return SecureStore.deleteItemAsync(key);
+  // Native: lazy-load SecureStore
+  try {
+    const SecureStore = await import('expo-secure-store');
+    return SecureStore.deleteItemAsync(key);
+  } catch {
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
