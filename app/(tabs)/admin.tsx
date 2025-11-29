@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -39,8 +39,20 @@ interface Fragrance {
   id: string;
   name: string;
   brand: string;
+  house?: string;
   concentration?: string;
   year_released?: number;
+  gender?: string;
+  family?: string;
+  rating_value?: number;
+  rating_count?: number;
+  average_price_aud?: number;
+  market_tier?: string;
+  performance_level?: string;
+  top_notes?: string[];
+  middle_notes?: string[];
+  base_notes?: string[];
+  main_accords?: string[];
   data_quality_score: number;
   verified: boolean;
 }
@@ -52,6 +64,9 @@ export default function AdminScreen() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [fragrances, setFragrances] = useState<Fragrance[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
+  const [sortColumn, setSortColumn] = useState('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [userActivity, setUserActivity] = useState<UserActivity[]>([]);
   const [liveUsers, setLiveUsers] = useState(0);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
@@ -208,21 +223,21 @@ export default function AdminScreen() {
         });
       }
 
-      // Get recent listings
-      const { data: listings } = await supabase
-        .from('listings')
-        .select('id, title, created_at, user_id')
+      // Get recent fragrances as activity
+      const { data: recentFragrances } = await supabase
+        .from('fragrance_master')
+        .select('id, name, brand, created_at')
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (listings) {
-        listings.forEach(listing => {
+      if (recentFragrances) {
+        recentFragrances.forEach(fragrance => {
           activities.push({
-            id: `listing-${listing.id}`,
-            email: `User ${listing.user_id}`,
-            action: 'New Listing',
-            timestamp: listing.created_at,
-            details: listing.title
+            id: `fragrance-${fragrance.id}`,
+            email: 'System',
+            action: 'New Fragrance',
+            timestamp: fragrance.created_at,
+            details: `${fragrance.name} by ${fragrance.brand}`
           });
         });
       }
@@ -284,7 +299,9 @@ export default function AdminScreen() {
         console.log('RPC functions not available, using direct queries...');
         const { count: users, error: usersError } = await supabase.from('users').select('*', { count: 'exact', head: true });
         const { count: fragrances, error: fragrancesError } = await supabase.from('fragrance_master').select('*', { count: 'exact', head: true });
-        const { count: listings, error: listingsError } = await supabase.from('listings').select('*', { count: 'exact', head: true }).eq('is_active', true);
+        // Remove listings table query - table doesn't exist
+        const listings = 0;
+        const listingsError = null;
         const { data: swaps, error: swapsError } = await supabase.from('swaps').select('status');
 
         console.log('Direct query results:', {
@@ -330,7 +347,7 @@ export default function AdminScreen() {
     }
   };
 
-  const loadFragrances = async () => {
+  const loadFragrances = useCallback(async () => {
     if (!supabase) {
       console.error('Supabase client not available');
       Alert.alert('Database Error', 'Supabase client not initialized');
@@ -356,15 +373,24 @@ export default function AdminScreen() {
 
       console.log(`Database connectivity OK. Found ${testCount} total fragrances.`);
 
-      // Now try to load actual data
+      // Now try to load actual data with ALL columns
       let query = supabase
         .from('fragrance_master')
-        .select('id, name, brand, concentration, year_released, data_quality_score, verified, created_at')
-        .order('id', { ascending: false })
+        .select(`
+          id, name, brand, house, concentration, year_released, gender, family,
+          rating_value, rating_count, average_price_aud, market_tier, performance_level,
+          top_notes, middle_notes, base_notes, main_accords,
+          data_quality_score, verified, created_at
+        `)
+        .order(sortColumn, { ascending: sortDirection === 'asc' })
         .limit(100);
 
       if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
+        query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%,house.ilike.%${searchQuery}%`);
+      }
+
+      if (brandFilter) {
+        query = query.ilike('brand', `%${brandFilter}%`);
       }
 
       console.log('Executing fragrance query...');
@@ -377,7 +403,12 @@ export default function AdminScreen() {
         console.log('Trying alternative query without ordering...');
         const { data: altData, error: altError } = await supabase
           .from('fragrance_master')
-          .select('id, name, brand, concentration, year_released, data_quality_score, verified')
+          .select(`
+            id, name, brand, house, concentration, year_released, gender, family,
+            rating_value, rating_count, average_price_aud, market_tier, performance_level,
+            top_notes, middle_notes, base_notes, main_accords,
+            data_quality_score, verified
+          `)
           .limit(100);
 
         if (altError) {
@@ -399,7 +430,7 @@ export default function AdminScreen() {
       console.error('Unexpected error loading fragrances:', error);
       Alert.alert('Connection Error', `Failed to load fragrances: ${error}\n\nCheck your internet connection and Supabase configuration.`);
     }
-  };
+  }, [supabase, searchQuery, brandFilter, sortColumn, sortDirection]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -646,13 +677,19 @@ export default function AdminScreen() {
   };
 
   useEffect(() => {
-    if (searchQuery.length > 0 || searchQuery === '') {
+    if (supabase && (searchQuery.length > 0 || searchQuery === '')) {
       const delayedSearch = setTimeout(() => {
         loadFragrances();
       }, 300);
       return () => clearTimeout(delayedSearch);
     }
-  }, [searchQuery]);
+  }, [searchQuery, supabase, loadFragrances]);
+
+  useEffect(() => {
+    if (supabase) {
+      loadFragrances();
+    }
+  }, [brandFilter, sortColumn, sortDirection, supabase, loadFragrances]);
 
   if (loading) {
     return (
@@ -832,13 +869,80 @@ export default function AdminScreen() {
             fontSize: 16,
             color: '#ffffff',
             borderWidth: 1,
-            borderColor: '#3a3a3a'
+            borderColor: '#3a3a3a',
+            marginBottom: 12
           }}
           placeholder="Search fragrances by name or brand..."
           placeholderTextColor="#666666"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+          <TextInput
+            style={{
+              backgroundColor: '#2a2a2a',
+              borderRadius: 8,
+              padding: 12,
+              fontSize: 14,
+              color: '#ffffff',
+              borderWidth: 1,
+              borderColor: '#3a3a3a',
+              flex: 1
+            }}
+            placeholder="Filter by brand..."
+            placeholderTextColor="#666666"
+            value={brandFilter}
+            onChangeText={setBrandFilter}
+          />
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#8B5CF6',
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 8,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6
+            }}
+            onPress={() => {
+              const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+              setSortDirection(newDirection);
+            }}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>
+              Sort: {sortColumn} {sortDirection === 'asc' ? '↑' : '↓'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {['name', 'brand', 'year_released', 'rating_value', 'average_price_aud', 'data_quality_score'].map(column => (
+              <TouchableOpacity
+                key={column}
+                style={{
+                  backgroundColor: sortColumn === column ? '#8B5CF6' : '#2a2a2a',
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: sortColumn === column ? '#8B5CF6' : '#3a3a3a'
+                }}
+                onPress={() => setSortColumn(column)}
+              >
+                <Text style={{
+                  color: sortColumn === column ? '#FFFFFF' : '#999999',
+                  fontSize: 12,
+                  fontWeight: '600'
+                }}>
+                  {column.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
       </View>
 
       <FlatList
@@ -853,17 +957,127 @@ export default function AdminScreen() {
             borderWidth: 1,
             borderColor: '#3a3a3a'
           }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', marginBottom: 4 }}>
-              {item.name}
-            </Text>
-            <Text style={{ fontSize: 14, color: '#999999', marginBottom: 8 }}>
-              {item.brand}
-              {item.concentration && ` • ${item.concentration}`}
-              {item.year_released && ` • ${item.year_released}`}
-            </Text>
+            {/* Header Row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', marginBottom: 4 }}>
+                  {item.name}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <Text style={{ fontSize: 16, color: '#8B5CF6', fontWeight: '600' }}>
+                    {item.brand}
+                  </Text>
+                  {item.house && item.house !== item.brand && (
+                    <Text style={{ fontSize: 14, color: '#999999' }}>
+                      • {item.house}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#3B82F6',
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                  onPress={() => openEditModal(item)}
+                >
+                  <Ionicons name="create" size={12} color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#EF4444',
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 6
+                  }}
+                  onPress={() => handleDeleteFragrance(item)}
+                >
+                  <Ionicons name="trash" size={12} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-              <View>
+            {/* Basic Info Grid */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+              {item.concentration && (
+                <View style={{ backgroundColor: '#1f2937', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#60a5fa', fontWeight: '600' }}>
+                    {item.concentration}
+                  </Text>
+                </View>
+              )}
+              {item.year_released && (
+                <View style={{ backgroundColor: '#1f2937', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#fbbf24', fontWeight: '600' }}>
+                    {item.year_released}
+                  </Text>
+                </View>
+              )}
+              {item.gender && (
+                <View style={{ backgroundColor: '#1f2937', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#a78bfa', fontWeight: '600' }}>
+                    {item.gender}
+                  </Text>
+                </View>
+              )}
+              {item.family && (
+                <View style={{ backgroundColor: '#1f2937', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#34d399', fontWeight: '600' }}>
+                    {item.family}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Ratings & Performance Row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', gap: 16 }}>
+                  {item.rating_value && (
+                    <View>
+                      <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Rating</Text>
+                      <Text style={{ fontSize: 14, color: '#fbbf24', fontWeight: '600' }}>
+                        ⭐ {item.rating_value?.toFixed(1)}
+                        {item.rating_count && (
+                          <Text style={{ fontSize: 12, color: '#999999' }}> ({item.rating_count})</Text>
+                        )}
+                      </Text>
+                    </View>
+                  )}
+                  {item.average_price_aud && (
+                    <View>
+                      <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Price</Text>
+                      <Text style={{ fontSize: 14, color: '#10b981', fontWeight: '600' }}>
+                        ${item.average_price_aud?.toFixed(0)} AUD
+                      </Text>
+                    </View>
+                  )}
+                  {item.market_tier && (
+                    <View>
+                      <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Tier</Text>
+                      <Text style={{ fontSize: 12, color: '#8b5cf6', fontWeight: '600' }}>
+                        {item.market_tier}
+                      </Text>
+                    </View>
+                  )}
+                  {item.performance_level && (
+                    <View>
+                      <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Performance</Text>
+                      <Text style={{ fontSize: 12, color: '#f59e0b', fontWeight: '600' }}>
+                        {item.performance_level}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
                 <Text style={{
                   fontSize: 14,
                   fontWeight: '600',
@@ -878,64 +1092,51 @@ export default function AdminScreen() {
                   </Text>
                 )}
               </View>
+            </View>
 
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#3B82F6',
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    borderRadius: 6,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4
-                  }}
-                  onPress={() => openEditModal(item)}
-                >
-                  <Ionicons name="create" size={12} color="#FFFFFF" />
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Edit</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#EF4444',
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    borderRadius: 6,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4
-                  }}
-                  onPress={() => handleDeleteFragrance(item)}
-                >
-                  <Ionicons name="trash" size={12} color="#FFFFFF" />
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Delete</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: enhancingIds.has(item.id) ? '#6B7280' : '#8B5CF6',
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    borderRadius: 6,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    opacity: enhancingIds.has(item.id) ? 0.7 : 1
-                  }}
-                  onPress={() => handleAIEnhancement(item)}
-                  disabled={enhancingIds.has(item.id)}
-                >
-                  <Ionicons
-                    name={enhancingIds.has(item.id) ? "hourglass" : "sparkles"}
-                    size={12}
-                    color="#FFFFFF"
-                  />
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
-                    {enhancingIds.has(item.id) ? 'Enhancing...' : 'Enhance'}
+            {/* Notes Section */}
+            <View style={{ marginBottom: 8 }}>
+              {item.top_notes && item.top_notes.length > 0 && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Top Notes</Text>
+                  <Text style={{ fontSize: 12, color: '#ffffff' }}>
+                    {item.top_notes.slice(0, 5).join(', ')}{item.top_notes.length > 5 ? ` +${item.top_notes.length - 5} more` : ''}
                   </Text>
-                </TouchableOpacity>
-              </View>
+                </View>
+              )}
+              {item.middle_notes && item.middle_notes.length > 0 && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Middle Notes</Text>
+                  <Text style={{ fontSize: 12, color: '#ffffff' }}>
+                    {item.middle_notes.slice(0, 5).join(', ')}{item.middle_notes.length > 5 ? ` +${item.middle_notes.length - 5} more` : ''}
+                  </Text>
+                </View>
+              )}
+              {item.base_notes && item.base_notes.length > 0 && (
+                <View style={{ marginBottom: 6 }}>
+                  <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Base Notes</Text>
+                  <Text style={{ fontSize: 12, color: '#ffffff' }}>
+                    {item.base_notes.slice(0, 5).join(', ')}{item.base_notes.length > 5 ? ` +${item.base_notes.length - 5} more` : ''}
+                  </Text>
+                </View>
+              )}
+              {item.main_accords && item.main_accords.length > 0 && (
+                <View>
+                  <Text style={{ fontSize: 11, color: '#666666', marginBottom: 2 }}>Main Accords</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+                    {item.main_accords.slice(0, 6).map((accord, index) => (
+                      <View key={index} style={{ backgroundColor: '#374151', paddingVertical: 2, paddingHorizontal: 6, borderRadius: 3 }}>
+                        <Text style={{ fontSize: 10, color: '#d1d5db' }}>{accord}</Text>
+                      </View>
+                    ))}
+                    {item.main_accords.length > 6 && (
+                      <Text style={{ fontSize: 10, color: '#666666', alignSelf: 'center' }}>
+                        +{item.main_accords.length - 6} more
+                      </Text>
+                    )}
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         )}
