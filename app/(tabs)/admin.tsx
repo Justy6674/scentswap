@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -1336,20 +1337,31 @@ export default function AdminScreen() {
                     Format: url;Perfume;Brand;Country;Gender;...
                   </Text>
                   
-                  <TouchableOpacity 
-                    style={[styles.actionButton, {marginBottom: 12, borderColor: colors.primary}]}
-                    onPress={handlePickCsv}
-                    disabled={isImporting}
-                  >
-                    <Ionicons name="document-text-outline" size={20} color={colors.primary} />
-                    <Text style={[styles.actionButtonText, {color: colors.primary}]}>Load from CSV File</Text>
-                  </TouchableOpacity>
+                  <View style={{flexDirection: 'row', gap: 8, marginBottom: 12}}>
+                    <TouchableOpacity 
+                        style={[styles.actionButton, {borderColor: colors.primary, flex: 1}]}
+                        onPress={handlePickCsv}
+                        disabled={isImporting}
+                    >
+                        <Ionicons name="document-text-outline" size={20} color={colors.primary} />
+                        <Text style={[styles.actionButtonText, {color: colors.primary}]}>Load File</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                        style={[styles.actionButton, {borderColor: colors.primary, flex: 1}]}
+                        onPress={handlePasteFromClipboard}
+                        disabled={isImporting}
+                    >
+                        <Ionicons name="clipboard-outline" size={20} color={colors.primary} />
+                        <Text style={[styles.actionButtonText, {color: colors.primary}]}>Paste Clipboard</Text>
+                    </TouchableOpacity>
+                  </View>
 
                   <TextInput 
                     style={[styles.configInput, {marginBottom: 12}]} 
                     multiline
                     numberOfLines={10}
-                    placeholder="Paste CSV data here..."
+                    placeholder="Paste CSV data here (Use buttons above for large files > 1MB to avoid freezing)"
                     value={csvData}
                     onChangeText={(text) => {
                         // If content is massive, don't render it all to prevent UI freeze
