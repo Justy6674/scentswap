@@ -400,15 +400,15 @@ export default function AdminScreen() {
       perfumerCache.current.clear();
 
       // Process in chunks to keep UI responsive
-      const CHUNK_SIZE = 10; 
+      const CHUNK_SIZE = 5; 
       
       for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
         const chunk = lines.slice(i, i + CHUNK_SIZE);
         
         // Update progress periodically (every chunk)
-        if (i % 50 === 0) {
+        if (i % 10 === 0) {
            setImportProgress(`Processing ${i}/${lines.length} (${Math.round(i/lines.length*100)}%)...`);
-           // Yield to event loop
+           // Yield to event loop aggressively
            await new Promise(resolve => setTimeout(resolve, 0));
         }
 
@@ -1352,10 +1352,18 @@ export default function AdminScreen() {
                     placeholder="Paste CSV data here..."
                     value={csvData}
                     onChangeText={(text) => {
-                        setCsvData(text);
-                        fullCsvContent.current = text; // Update ref manually if typing
+                        // If content is massive, don't render it all to prevent UI freeze
+                        const MAX_DISPLAY_LENGTH = 5000;
+                        if (text.length > 100000) { // > 100KB
+                            fullCsvContent.current = text;
+                            setCsvData(text.slice(0, MAX_DISPLAY_LENGTH) + `\n\n... [Content truncated for performance. Total size: ${(text.length / 1024 / 1024).toFixed(2)} MB. Ready for import.]`);
+                            Alert.alert('Large Data Detected', 'To prevent browser freezing, the text box is showing a preview only. The full data has been captured and is ready for import.');
+                        } else {
+                            setCsvData(text);
+                            fullCsvContent.current = text;
+                        }
                     }}
-                    editable={!isImporting && !fileStats} // Disable manual edit if file loaded
+                    editable={!isImporting && !fileStats} 
                   />
                   {fileStats && (
                      <View style={{marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between'}}>
