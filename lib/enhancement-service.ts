@@ -610,6 +610,165 @@ class EnhancementService {
     return await this.updateRequestStatus(requestId, 'cancelled', undefined, `Cancelled by admin ${adminId}`);
   }
 
+  /**
+   * Process enhancement requests with concurrency control
+   * @param maxConcurrent Maximum concurrent requests (default: 3)
+   * @param onProgress Progress callback
+   */
+  async processBatchEnhancements(
+    requestIds: string[],
+    processor: (requestId: string) => Promise<boolean>,
+    options: {
+      maxConcurrent?: number;
+      delayBetweenMs?: number;
+      onProgress?: (completed: number, total: number, current: string) => void;
+      onError?: (requestId: string, error: Error) => void;
+    } = {}
+  ): Promise<{ completed: number; failed: number; errors: string[] }> {
+    const { 
+      maxConcurrent = 3, 
+      delayBetweenMs = 1000,
+      onProgress,
+      onError
+    } = options;
+
+    const results = { completed: 0, failed: 0, errors: [] as string[] };
+    const queue = [...requestIds];
+    const inProgress = new Set<string>();
+
+    const processNext = async (): Promise<void> => {
+      if (queue.length === 0) return;
+      
+      const requestId = queue.shift()!;
+      inProgress.add(requestId);
+      
+      try {
+        onProgress?.(results.completed + results.failed, requestIds.length, requestId);
+        
+        const success = await processor(requestId);
+        
+        if (success) {
+          results.completed++;
+        } else {
+          results.failed++;
+          results.errors.push(`Request ${requestId} returned false`);
+        }
+      } catch (error) {
+        results.failed++;
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        results.errors.push(`Request ${requestId}: ${errorMsg}`);
+        onError?.(requestId, error instanceof Error ? error : new Error(errorMsg));
+      } finally {
+        inProgress.delete(requestId);
+        
+        // Delay between requests to avoid rate limiting
+        if (queue.length > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayBetweenMs));
+        }
+      }
+    };
+
+    // Start initial batch
+    const workers = Array(Math.min(maxConcurrent, queue.length))
+      .fill(null)
+      .map(async () => {
+        while (queue.length > 0 || inProgress.size > 0) {
+          if (queue.length > 0 && inProgress.size < maxConcurrent) {
+            await processNext();
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+      });
+
+    await Promise.all(workers);
+    return results;
+  }
+
+  /**
+   * Get fragrances prioritized by data completeness
+   * Returns fragrances most in need of enhancement first
+   */
+  async getFragrancesByPriority(
+    limit: number = 100,
+    options: {
+      missingImages?: boolean;
+      missingDescription?: boolean;
+      missingNotes?: boolean;
+      brandFilter?: string;
+    } = {}
+  ): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+
+    try {
+      let query = supabase
+        .from('fragrance_master')
+        .select('id, name, brand, fragrantica_url, image_url, description, top_notes, concentration, family')
+        .not('fragrantica_url', 'is', null);
+
+      // Apply filters
+      if (options.missingImages) {
+        query = query.is('image_url', null);
+      }
+      if (options.missingDescription) {
+        query = query.is('description', null);
+      }
+      if (options.brandFilter) {
+        query = query.ilike('brand', `%${options.brandFilter}%`);
+      }
+
+      // Order by completeness (nulls first = least complete)
+      query = query
+        .order('image_url', { ascending: true, nullsFirst: true })
+        .order('description', { ascending: true, nullsFirst: true })
+        .limit(limit);
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Calculate completeness score for each
+      return (data || []).map(f => ({
+        ...f,
+        completeness_score: this.calculateCompletenessScore(f),
+        missing_fields: this.getMissingFields(f)
+      }));
+    } catch (error) {
+      console.error('Error getting fragrances by priority:', error);
+      return [];
+    }
+  }
+
+  private calculateCompletenessScore(fragrance: any): number {
+    const fields = [
+      'name', 'brand', 'description', 'concentration', 'family',
+      'top_notes', 'image_url'
+    ];
+    const filled = fields.filter(f => {
+      const val = fragrance[f];
+      if (Array.isArray(val)) return val.length > 0;
+      return val !== null && val !== undefined && val !== '';
+    }).length;
+    return filled / fields.length;
+  }
+
+  private getMissingFields(fragrance: any): string[] {
+    const fields = [
+      { key: 'description', label: 'description' },
+      { key: 'concentration', label: 'concentration' },
+      { key: 'family', label: 'family' },
+      { key: 'top_notes', label: 'notes' },
+      { key: 'image_url', label: 'image' }
+    ];
+    return fields
+      .filter(f => {
+        const val = fragrance[f.key];
+        if (Array.isArray(val)) return val.length === 0;
+        return val === null || val === undefined || val === '';
+      })
+      .map(f => f.label);
+  }
+
   // ===========================================================================
   // ANALYTICS & REPORTING
   // ===========================================================================

@@ -2120,33 +2120,70 @@ export default function AdminScreen() {
                   <Text style={styles.saveButtonText}>Refresh Stats</Text>
                 </TouchableOpacity>
 
+                {/* Quick Priority Filters */}
+                <View style={{flexDirection: 'row', gap: 8, marginBottom: 16}}>
+                  <TouchableOpacity 
+                    style={[styles.actionButton, {flex: 1, borderColor: '#EF4444', backgroundColor: '#EF444410'}]}
+                    onPress={async () => {
+                      setEnhancementProgress('Finding fragrances missing images...');
+                      const fragrances = await enhancementService.getFragrancesByPriority(20, { missingImages: true });
+                      setFragrancesToEnhance(fragrances);
+                      setEnhancementProgress(`Found ${fragrances.length} fragrances missing images`);
+                    }}
+                  >
+                    <Text style={{color: '#EF4444', fontWeight: '600', fontSize: 12}}>🖼️ No Image</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.actionButton, {flex: 1, borderColor: '#F59E0B', backgroundColor: '#F59E0B10'}]}
+                    onPress={async () => {
+                      setEnhancementProgress('Finding fragrances missing description...');
+                      const fragrances = await enhancementService.getFragrancesByPriority(20, { missingDescription: true });
+                      setFragrancesToEnhance(fragrances);
+                      setEnhancementProgress(`Found ${fragrances.length} fragrances missing description`);
+                    }}
+                  >
+                    <Text style={{color: '#F59E0B', fontWeight: '600', fontSize: 12}}>📝 No Desc</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.actionButton, {flex: 1, borderColor: '#8B5CF6', backgroundColor: '#8B5CF610'}]}
+                    onPress={async () => {
+                      setEnhancementProgress('Finding least complete fragrances...');
+                      const fragrances = await enhancementService.getFragrancesNeedingEnhancement(20);
+                      setFragrancesToEnhance(fragrances);
+                      setEnhancementProgress(`Found ${fragrances.length} fragrances needing enhancement`);
+                    }}
+                  >
+                    <Text style={{color: '#8B5CF6', fontWeight: '600', fontSize: 12}}>⚡ Priority</Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* Filter & Find Fragrances */}
                 <View style={styles.configCard}>
                   <Text style={styles.configTitle}>Find Fragrances to Enhance</Text>
-              <Text style={styles.configDescription}>
-                Search for fragrances with incomplete data that need AI enhancement.
-              </Text>
-              <TextInput 
-                style={[styles.configInput, {marginBottom: 12, minHeight: 40}]} 
-                placeholder="Filter by brand (e.g., Chanel, Dior)..." 
-                value={enhancementBrandFilter}
-                onChangeText={setEnhancementBrandFilter}
-              />
-              <TouchableOpacity 
-                style={styles.saveButton}
-                onPress={async () => {
-                  setEnhancementProgress('Searching for fragrances needing enhancement...');
-                  const fragrances = await enhancementService.getFragrancesNeedingEnhancement(
-                    20,
-                    enhancementBrandFilter || undefined
-                  );
-                  setFragrancesToEnhance(fragrances);
-                  setEnhancementProgress(`Found ${fragrances.length} fragrances needing enhancement`);
-                }}
-              >
-                <Text style={styles.saveButtonText}>Search</Text>
-              </TouchableOpacity>
-            </View>
+                  <Text style={styles.configDescription}>
+                    Search for fragrances with incomplete data that need AI enhancement.
+                  </Text>
+                  <TextInput 
+                    style={[styles.configInput, {marginBottom: 12, minHeight: 40}]} 
+                    placeholder="Filter by brand (e.g., Chanel, Dior)..." 
+                    value={enhancementBrandFilter}
+                    onChangeText={setEnhancementBrandFilter}
+                  />
+                  <TouchableOpacity 
+                    style={styles.saveButton}
+                    onPress={async () => {
+                      setEnhancementProgress('Searching for fragrances needing enhancement...');
+                      const fragrances = await enhancementService.getFragrancesNeedingEnhancement(
+                        20,
+                        enhancementBrandFilter || undefined
+                      );
+                      setFragrancesToEnhance(fragrances);
+                      setEnhancementProgress(`Found ${fragrances.length} fragrances needing enhancement`);
+                    }}
+                  >
+                    <Text style={styles.saveButtonText}>Search</Text>
+                  </TouchableOpacity>
+                </View>
 
             {/* Progress Display */}
             {enhancementProgress ? (

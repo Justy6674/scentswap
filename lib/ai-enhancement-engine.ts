@@ -383,10 +383,96 @@ class FragranceWebScraper {
         data.description = descMatch[1].trim();
       }
 
-      // Extract main image
-      const imageMatch = html.match(/itemprop="image"[^>]*content="([^"]+)"/i);
-      if (imageMatch) {
-        data.images = [imageMatch[1]];
+      // Extract main image - multiple patterns for Fragrantica
+      const imagePatterns = [
+        /itemprop="image"[^>]*content="([^"]+)"/i,
+        /<img[^>]*class="[^"]*mainpic[^"]*"[^>]*src="([^"]+)"/i,
+        /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i,
+        /data-src="(https:\/\/fimgs\.net\/[^"]+)"/i,
+        /<img[^>]*src="(https:\/\/fimgs\.net\/images\/perfume\/[^"]+)"/i
+      ];
+      
+      for (const pattern of imagePatterns) {
+        const imageMatch = html.match(pattern);
+        if (imageMatch && imageMatch[1]) {
+          // Ensure we get the full-size image, not thumbnail
+          let imageUrl = imageMatch[1];
+          // Convert thumbnail to full size if needed
+          imageUrl = imageUrl.replace(/\/nd\.\d+\./i, '/o.').replace(/\/m\.\d+\./i, '/o.');
+          data.images = [imageUrl];
+          break;
+        }
+      }
+
+      // Extract description from meta or dedicated section
+      const descPatterns = [
+        /<meta[^>]*name="description"[^>]*content="([^"]+)"/i,
+        /<div[^>]*class="[^"]*fragrance-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /itemprop="description"[^>]*>([^<]+)</i
+      ];
+      
+      for (const pattern of descPatterns) {
+        const descMatch = html.match(pattern);
+        if (descMatch && descMatch[1]) {
+          // Clean HTML tags and decode entities
+          let desc = descMatch[1]
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (desc.length > 50) { // Only use if substantial
+            data.description = desc;
+            break;
+          }
+        }
+      }
+
+      // Extract concentration/type
+      const concentrationPatterns = [
+        /Eau de Parfum/i,
+        /Eau de Toilette/i,
+        /Parfum/i,
+        /Extrait/i,
+        /Eau de Cologne/i,
+        /Cologne/i
+      ];
+      
+      for (const pattern of concentrationPatterns) {
+        if (html.match(pattern)) {
+          const match = html.match(pattern);
+          if (match) {
+            data.concentration = match[0];
+            break;
+          }
+        }
+      }
+
+      // Extract gender
+      const genderMatch = html.match(/for (women|men|women and men|unisex)/i);
+      if (genderMatch) {
+        const genderMap: Record<string, string> = {
+          'women': 'female',
+          'men': 'male',
+          'women and men': 'unisex',
+          'unisex': 'unisex'
+        };
+        data.gender = genderMap[genderMatch[1].toLowerCase()] || 'unisex';
+      }
+
+      // Extract family/category
+      const familyMatch = html.match(/Main accords.*?<div[^>]*>(.*?)<\/div>/is);
+      if (familyMatch) {
+        const accordLinks = familyMatch[1].match(/<a[^>]*>([^<]+)<\/a>/gi) || [];
+        const accords = accordLinks.map(link => {
+          const match = link.match(/>([^<]+)</);
+          return match ? match[1].trim() : '';
+        }).filter(n => n);
+        if (accords.length > 0) {
+          data.family = accords[0]; // First accord is usually the main family
+        }
       }
 
       // Extract longevity/sillage from voting bars if available
