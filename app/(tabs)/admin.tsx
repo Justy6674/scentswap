@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
+import { aiFragranceEnhancer, FragranceData, EnhancedFragranceData } from '@/lib/aiEnhancement';
 
 interface AdminStats {
   total_users: number;
@@ -156,6 +157,7 @@ export default function AdminScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingFragrance, setEditingFragrance] = useState<Fragrance | null>(null);
+  const [enhancingIds, setEnhancingIds] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
@@ -280,20 +282,114 @@ export default function AdminScreen() {
     setFormData({ name: '', brand: '', concentration: '', year_released: '' });
   };
 
-  const handleAIEnhancement = async (fragranceId: string) => {
+  const handleAIEnhancement = async (fragrance: Fragrance) => {
+    if (enhancingIds.has(fragrance.id)) {
+      Alert.alert('Enhancement in Progress', 'This fragrance is already being enhanced. Please wait.');
+      return;
+    }
+
     Alert.alert(
       'AI Enhancement',
-      'This would start the AI enhancement workflow for this fragrance. The system will analyze and improve the fragrance data using your configured AI providers.',
+      `Enhance "${fragrance.name}" by ${fragrance.brand} using AI?\n\nThis will research and update:\n• Description and notes\n• Longevity and performance\n• Occasions and seasons\n• Verify accuracy\n\nThis may take 10-30 seconds.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Start Enhancement',
-          onPress: async () => {
-            Alert.alert('Success', 'AI enhancement started! You can monitor progress in the AI Enhancement tab.');
-          }
+          text: 'Enhance Now',
+          onPress: () => performAIEnhancement(fragrance)
         },
       ]
     );
+  };
+
+  const performAIEnhancement = async (fragrance: Fragrance) => {
+    if (!supabase) {
+      Alert.alert('Error', 'Database connection not available.');
+      return;
+    }
+
+    // Add to enhancing set
+    setEnhancingIds(prev => new Set(prev).add(fragrance.id));
+
+    try {
+      // Convert to FragranceData format for AI
+      const fragranceData: FragranceData = {
+        id: fragrance.id,
+        name: fragrance.name,
+        brand: fragrance.brand,
+        concentration: fragrance.concentration,
+        year_released: fragrance.year_released,
+        data_quality_score: fragrance.data_quality_score,
+        verified: fragrance.verified
+      };
+
+      // Call AI enhancement
+      const enhancedData = await aiFragranceEnhancer.enhanceFragrance(fragranceData);
+
+      // Prepare update data - only include fields that exist in your schema
+      const updateData: any = {
+        name: enhancedData.name,
+        brand: enhancedData.brand,
+        concentration: enhancedData.concentration,
+        year_released: enhancedData.year_released,
+        data_quality_score: enhancedData.data_quality_score,
+        verified: enhancedData.verified
+      };
+
+      // Add enhanced data to a JSON column if it exists, or skip if schema doesn't support
+      if (enhancedData.description || enhancedData.notes) {
+        updateData.enhanced_data = {
+          description: enhancedData.description,
+          notes: enhancedData.notes,
+          longevity: enhancedData.longevity,
+          sillage: enhancedData.sillage,
+          occasions: enhancedData.occasions,
+          seasons: enhancedData.seasons,
+          gender: enhancedData.gender
+        };
+      }
+
+      // Update database
+      const { error } = await supabase
+        .from('fragrance_master')
+        .update(updateData)
+        .eq('id', fragrance.id);
+
+      if (error) {
+        console.error('Database update error:', error);
+        Alert.alert('Error', 'Failed to save enhanced data. Please try again.');
+        return;
+      }
+
+      // Success feedback
+      Alert.alert(
+        'Enhancement Complete!',
+        `"${enhancedData.name}" has been enhanced with:\n\n• Quality Score: ${enhancedData.data_quality_score}%\n• ${enhancedData.verified ? 'Verified data' : 'Research-based data'}\n• ${enhancedData.description ? 'Added description' : ''}\n• ${enhancedData.notes ? 'Added fragrance notes' : ''}\n\nThe enhanced data is now available in your database.`
+      );
+
+      // Reload fragrances to show updated data
+      loadFragrances();
+
+    } catch (error: any) {
+      console.error('AI Enhancement error:', error);
+
+      let errorMessage = 'Failed to enhance fragrance data.';
+      if (error.message?.includes('API key')) {
+        errorMessage = 'OpenAI API key not configured. Please set EXPO_PUBLIC_OPENAI_API_KEY in your environment.';
+      } else if (error.message?.includes('rate limit')) {
+        errorMessage = 'API rate limit reached. Please try again in a few minutes.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert('Enhancement Failed', errorMessage);
+    } finally {
+      // Remove from enhancing set
+      setEnhancingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(fragrance.id);
+        return newSet;
+      });
+    }
   };
 
   useEffect(() => {
@@ -485,18 +581,26 @@ export default function AdminScreen() {
 
                 <TouchableOpacity
                   style={{
-                    backgroundColor: '#8B5CF6',
+                    backgroundColor: enhancingIds.has(item.id) ? '#6B7280' : '#8B5CF6',
                     paddingVertical: 8,
                     paddingHorizontal: 12,
                     borderRadius: 6,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 4
+                    gap: 4,
+                    opacity: enhancingIds.has(item.id) ? 0.7 : 1
                   }}
-                  onPress={() => handleAIEnhancement(item.id)}
+                  onPress={() => handleAIEnhancement(item)}
+                  disabled={enhancingIds.has(item.id)}
                 >
-                  <Ionicons name="sparkles" size={12} color="#FFFFFF" />
-                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Enhance</Text>
+                  <Ionicons
+                    name={enhancingIds.has(item.id) ? "hourglass" : "sparkles"}
+                    size={12}
+                    color="#FFFFFF"
+                  />
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>
+                    {enhancingIds.has(item.id) ? 'Enhancing...' : 'Enhance'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
