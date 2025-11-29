@@ -74,7 +74,6 @@ type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-c
 
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
-  const colors = Colors[colorScheme];
   const { user, isAdmin: authIsAdmin, isLoading: legacyAuthLoading } = useAuth();
   const { isAdmin: subscriptionIsAdmin, outsetaUser, isLoading: subscriptionLoading } = useSubscription();
   
@@ -104,7 +103,7 @@ export default function AdminScreen() {
     with_perfumers: number;
   } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-
+  
   // Manual Entry Form State
   const [newFragrance, setNewFragrance] = useState({
     name: '',
@@ -126,7 +125,7 @@ export default function AdminScreen() {
   const [importProgress, setImportProgress] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [fileStats, setFileStats] = useState<{name: string, size: number} | null>(null);
-  
+
   // AI Review Queue State
   const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
   
@@ -148,11 +147,11 @@ export default function AdminScreen() {
   
   // Hydration fix: Ensure component only renders on client
   const [isMounted, setIsMounted] = useState(false);
-
+  
   useEffect(() => {
     setIsMounted(true);
     if (user || outsetaUser) {
-      checkAdminAccess();
+    checkAdminAccess();
     }
   }, [user, isAdmin, outsetaUser]);
 
@@ -390,61 +389,61 @@ export default function AdminScreen() {
     fragrantica_url?: string,
     country?: string
   }) {
-    // Brand: Find or Create
-    let brandId;
+      // Brand: Find or Create
+      let brandId;
     const brands = await db.getBrands(data.brand);
     const existingBrand = brands.find(b => b.name.toLowerCase() === data.brand.toLowerCase());
-    if (existingBrand) {
-      brandId = existingBrand.id;
-    } else {
+      if (existingBrand) {
+        brandId = existingBrand.id;
+      } else {
       const newB = await db.createBrand({ name: data.brand, country: data.country });
-      if (newB) brandId = newB.id;
-    }
+        if (newB) brandId = newB.id;
+      }
 
     if (!brandId) {
       console.warn(`Failed to resolve brand: ${data.brand} - skipping fragrance`);
       return; // Skip this fragrance if brand can't be created
     }
 
-    // Notes: Find or Create
-    const processNotes = async (input: string) => {
+      // Notes: Find or Create
+      const processNotes = async (input: string) => {
       const names = input.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
-      const ids = [];
-      for (const name of names) {
-        const existing = await db.getNotes(name);
-        const match = existing.find(n => n.name.toLowerCase() === name.toLowerCase());
-        if (match) {
-          ids.push(match.id);
-        } else {
-          const newN = await db.createNote({ name });
-          if (newN) ids.push(newN.id);
+        const ids = [];
+        for (const name of names) {
+          const existing = await db.getNotes(name);
+          const match = existing.find(n => n.name.toLowerCase() === name.toLowerCase());
+          if (match) {
+            ids.push(match.id);
+          } else {
+            const newN = await db.createNote({ name });
+            if (newN) ids.push(newN.id);
+          }
         }
-      }
-      return ids;
-    };
+        return ids;
+      };
 
     const topIds = await processNotes(data.topNotes);
     const midIds = await processNotes(data.middleNotes);
     const baseIds = await processNotes(data.baseNotes);
 
-    // Perfumers: Find or Create
-    const perfumerIds = [];
+      // Perfumers: Find or Create
+      const perfumerIds = [];
     const pNames = data.perfumers.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
-    for (const name of pNames) {
-      const existing = await db.getPerfumers(name);
-      const match = existing.find(p => p.name.toLowerCase() === name.toLowerCase());
-      if (match) {
-        perfumerIds.push(match.id);
-      } else {
-        const newP = await db.createPerfumer({ name });
-        if (newP) perfumerIds.push(newP.id);
+      for (const name of pNames) {
+        const existing = await db.getPerfumers(name);
+        const match = existing.find(p => p.name.toLowerCase() === name.toLowerCase());
+        if (match) {
+          perfumerIds.push(match.id);
+        } else {
+          const newP = await db.createPerfumer({ name });
+          if (newP) perfumerIds.push(newP.id);
+        }
       }
-    }
 
-    // Create Fragrance
-    await db.createFragrance({
+      // Create Fragrance
+      await db.createFragrance({
       name: data.name,
-      brand_id: brandId,
+        brand_id: brandId,
       concentration: data.concentration,
       gender: data.gender,
       launch_year: data.year ? parseInt(data.year) : null,
@@ -452,7 +451,7 @@ export default function AdminScreen() {
       image_url: data.image_url,
       accords: data.accords || [],
       fragrantica_url: data.fragrantica_url
-    }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
+      }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
   }
 
   async function handlePickCsv() {
@@ -601,7 +600,7 @@ export default function AdminScreen() {
                 if (single) {
                   brandMap.set(single.name.toLowerCase(), single.id);
                 }
-              } catch (e) {
+    } catch (e) {
                 console.warn(`Could not create brand ${brand.name}:`, e);
               }
             }
@@ -1140,6 +1139,10 @@ export default function AdminScreen() {
     );
   }
 
+  // Initialize colors AFTER isMounted check to prevent hydration mismatch
+  // colorScheme can differ between server and client, so we only use it after mounting
+  const colors = Colors[colorScheme];
+
   const isAuthenticated = user || outsetaUser;
   
   if (!isAuthenticated || !isAdmin) {
@@ -1210,16 +1213,16 @@ export default function AdminScreen() {
                 <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
                   <View>
                     <Text style={styles.statValue}>{stats.total_users?.toLocaleString() || 0}</Text>
-                    <Text style={styles.statLabel}>Total Users</Text>
+                <Text style={styles.statLabel}>Total Users</Text>
                   </View>
                   <View style={{alignItems: 'flex-end'}}>
-                    <Text style={[styles.statChange, styles.statChangePositive]}>
+                <Text style={[styles.statChange, styles.statChangePositive]}>
                       +{stats.new_users_7d || 0} this week
                     </Text>
                     <Text style={{fontSize: 10, color: colors.textSecondary}}>
                       +{stats.new_users_30d || 0} this month
-                    </Text>
-                  </View>
+                </Text>
+              </View>
                 </View>
                 <View style={{flexDirection: 'row', gap: 12, marginTop: 12}}>
                   <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
@@ -1282,11 +1285,11 @@ export default function AdminScreen() {
                   <Text style={{fontSize: 12, color: '#22C55E'}}>
                     {stats.active_listings || 0} active
                   </Text>
-                  <Text style={[styles.statChange, styles.statChangePositive]}>
+                <Text style={[styles.statChange, styles.statChangePositive]}>
                     +{stats.new_listings_7d || 0} this week
-                  </Text>
-                </View>
+                </Text>
               </View>
+            </View>
 
               {/* Swaps */}
               <View style={styles.statCard}>
@@ -1326,10 +1329,10 @@ export default function AdminScreen() {
             </View>
             {/* Disputes Section */}
             {disputedSwaps && disputedSwaps.length > 0 && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>⚠️ Disputes Requiring Attention</Text>
-                {disputedSwaps.map(swap => (
-                  <View key={swap.id} style={styles.disputeCard}>
+               <View style={styles.section}>
+                 <Text style={styles.sectionTitle}>⚠️ Disputes Requiring Attention</Text>
+                 {disputedSwaps.map(swap => (
+                    <View key={swap.id} style={styles.disputeCard}>
                     <View style={styles.disputeHeader}>
                       <Text style={styles.disputeTitle}>Swap #{swap.id.slice(0, 8)}</Text>
                       <Text style={{fontSize: 12, color: colors.textSecondary}}>
@@ -1413,9 +1416,9 @@ export default function AdminScreen() {
                         <Text style={[styles.actionButtonText, {color: '#EF4444'}]}>Suspend</Text>
                       </TouchableOpacity>
                     </View>
-                  </View>
-                ))}
-              </View>
+                    </View>
+                 ))}
+               </View>
             )}
           </>
         )}
@@ -1500,8 +1503,8 @@ export default function AdminScreen() {
                   </View>
                 )}
 
-                <TextInput
-                  style={[styles.configInput, {marginBottom: 16, minHeight: 40}]}
+                <TextInput 
+                  style={[styles.configInput, {marginBottom: 16, minHeight: 40}]} 
                   placeholder="Search fragrances by name or brand..."
                   value={dbSearch}
                   onChangeText={setDbSearch}
@@ -1596,12 +1599,12 @@ export default function AdminScreen() {
                 )}
 
                 {dbSearch.length < 2 && !isSearching && fragranceStats && (
-                  <View style={styles.emptyState}>
-                    <Ionicons name="search" size={48} color={colors.textSecondary} />
+                <View style={styles.emptyState}>
+                  <Ionicons name="search" size={48} color={colors.textSecondary} />
                     <Text style={styles.emptyStateText}>
                       Enter 2+ characters to search {fragranceStats.total_count.toLocaleString()} fragrances
                     </Text>
-                  </View>
+                </View>
                 )}
               </View>
             )}
