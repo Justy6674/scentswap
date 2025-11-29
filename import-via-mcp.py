@@ -6,9 +6,21 @@ import requests
 import os
 from urllib.parse import quote
 
-# Supabase configuration
-SUPABASE_URL = 'https://vdcgbaxjfllprhknwwyd.supabase.co'
-SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkY2diYXhqZmxscHJoa253d3lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxMTk0OTAsImV4cCI6MjA3OTY5NTQ5MH0.CawIFYm5abxyLqeoQwSLRYZRAOdlGHfjDHqjNOvHoVk'
+# Load environment variables from .env file if available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not installed, continue without it
+    pass
+
+# Supabase configuration - Load from environment variables
+SUPABASE_URL = os.getenv('SUPABASE_URL') or os.getenv('EXPO_PUBLIC_SUPABASE_URL')
+SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY') or os.getenv('EXPO_PUBLIC_SUPABASE_ANON_KEY')
+
+if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+    print('❌ ERROR: Missing Supabase credentials. Please set SUPABASE_URL and SUPABASE_ANON_KEY in your .env file.')
+    exit(1)
 
 def execute_sql(sql):
     """Execute SQL via REST API"""

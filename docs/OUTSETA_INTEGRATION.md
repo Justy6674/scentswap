@@ -260,16 +260,16 @@ function verifyWebhookSignature(payload, signature, secret) {
 
 ```env
 # Supabase
-SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  # Server-side only
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key  # Server-side only
 
 # Outseta
 OUTSETA_WEBHOOK_SECRET=your-32-byte-hex-key  # From Outseta Settings > Notifications
 
 # Public (exposed to client)
-EXPO_PUBLIC_SUPABASE_URL=https://vdcgbaxjfllprhknwwyd.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_project_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ---
