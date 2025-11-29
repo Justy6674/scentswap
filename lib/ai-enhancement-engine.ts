@@ -1,6 +1,13 @@
 import { enhancementService, CreateChangeInput } from './enhancement-service';
 
 // =============================================================================
+// API CONFIGURATION
+// =============================================================================
+
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+
+// =============================================================================
 // TYPES & INTERFACES
 // =============================================================================
 
@@ -248,69 +255,156 @@ class FragranceWebScraper {
   }
 
   private async callBrowserAutomation(action: string, params: any): Promise<any> {
-    // This would integrate with the browser_eval MCP tool
-    // For now, we'll simulate the browser automation call
+    // Fetch-based scraping for Fragrantica pages
+    // Uses regex parsing since we can't execute JS in a fetch context
 
     try {
-      // Simulate browser automation for Fragrantica scraping
-      const script = `
-        return {
-          success: true,
-          data: {
-            notes: {
-              top: [...document.querySelectorAll('.pyramid .top-notes .note')].map(el => el.textContent?.trim()),
-              middle: [...document.querySelectorAll('.pyramid .middle-notes .note')].map(el => el.textContent?.trim()),
-              base: [...document.querySelectorAll('.pyramid .base-notes .note')].map(el => el.textContent?.trim())
-            },
-            performance: {
-              longevity: document.querySelector('[data-longevity]')?.getAttribute('data-longevity'),
-              sillage: document.querySelector('[data-sillage]')?.getAttribute('data-sillage'),
-              projection: document.querySelector('[data-projection]')?.getAttribute('data-projection')
-            },
-            rating: {
-              overall: document.querySelector('.rating-overall')?.textContent,
-              count: document.querySelector('.rating-count')?.textContent
-            },
-            perfumers: [...document.querySelectorAll('.perfumer-link')].map(el => el.textContent?.trim()),
-            images: [...document.querySelectorAll('.perfume-images img')].map(img => img.src),
-            description: document.querySelector('.perfume-description')?.textContent,
-            accords: [...document.querySelectorAll('.accord-bar')].map(el => el.getAttribute('data-accord')),
-            year: document.querySelector('.launch-year')?.textContent
-          }
-        };
-      `;
+      const url = params.url;
+      if (!url || !url.includes('fragrantica.com')) {
+        return { success: false, error: 'Invalid Fragrantica URL' };
+      }
 
-      // TODO: Replace with actual browser_eval MCP call
-      // const result = await browser_eval({
-      //   action: 'navigate',
-      //   url: params.url
-      // });
-      // const extractResult = await browser_eval({
-      //   action: 'evaluate',
-      //   script: script
-      // });
+      // Rate limiting - wait 2 seconds before scraping
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // For now, return simulated data
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      if (!response.ok) {
+        return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+      }
+
+      const html = await response.text();
+      
+      // Parse HTML using regex patterns (Fragrantica-specific selectors)
+      const extractedData = this.parseFragranticaHTML(html);
+
       return {
         success: true,
-        data: {
-          notes: { top: [], middle: [], base: [] },
-          performance: {},
-          rating: {},
-          perfumers: [],
-          images: [],
-          description: null,
-          accords: [],
-          year: null
-        }
+        data: extractedData
       };
 
     } catch (error) {
+      console.error('Scraping error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
+  }
+
+  private parseFragranticaHTML(html: string): any {
+    const data: any = {
+      notes: { top: [], middle: [], base: [] },
+      performance: {},
+      rating: {},
+      perfumers: [],
+      images: [],
+      description: null,
+      accords: [],
+      year: null
+    };
+
+    try {
+      // Extract notes pyramid - Fragrantica uses specific class patterns
+      // Top notes
+      const topNotesMatch = html.match(/pyramid-level.*?top.*?<div[^>]*>(.*?)<\/div>/is);
+      if (topNotesMatch) {
+        const noteLinks = topNotesMatch[1].match(/<a[^>]*>([^<]+)<\/a>/gi) || [];
+        data.notes.top = noteLinks.map(link => {
+          const match = link.match(/>([^<]+)</);
+          return match ? match[1].trim() : '';
+        }).filter(n => n);
+      }
+
+      // Middle notes
+      const middleNotesMatch = html.match(/pyramid-level.*?middle.*?<div[^>]*>(.*?)<\/div>/is);
+      if (middleNotesMatch) {
+        const noteLinks = middleNotesMatch[1].match(/<a[^>]*>([^<]+)<\/a>/gi) || [];
+        data.notes.middle = noteLinks.map(link => {
+          const match = link.match(/>([^<]+)</);
+          return match ? match[1].trim() : '';
+        }).filter(n => n);
+      }
+
+      // Base notes
+      const baseNotesMatch = html.match(/pyramid-level.*?base.*?<div[^>]*>(.*?)<\/div>/is);
+      if (baseNotesMatch) {
+        const noteLinks = baseNotesMatch[1].match(/<a[^>]*>([^<]+)<\/a>/gi) || [];
+        data.notes.base = noteLinks.map(link => {
+          const match = link.match(/>([^<]+)</);
+          return match ? match[1].trim() : '';
+        }).filter(n => n);
+      }
+
+      // Extract rating
+      const ratingMatch = html.match(/itemprop="ratingValue"[^>]*content="([^"]+)"/i);
+      if (ratingMatch) {
+        data.rating.overall = parseFloat(ratingMatch[1]);
+      }
+
+      const ratingCountMatch = html.match(/itemprop="ratingCount"[^>]*content="([^"]+)"/i);
+      if (ratingCountMatch) {
+        data.rating.count = parseInt(ratingCountMatch[1]);
+      }
+
+      // Extract perfumers
+      const perfumerMatches = html.match(/perfumer[^>]*href="[^"]*"[^>]*>([^<]+)<\/a>/gi) || [];
+      data.perfumers = perfumerMatches.map(match => {
+        const nameMatch = match.match(/>([^<]+)</);
+        return nameMatch ? nameMatch[1].trim() : '';
+      }).filter(n => n && n.toLowerCase() !== 'unknown');
+
+      // Extract main accords
+      const accordMatches = html.match(/accord-bar[^>]*style="[^"]*width:\s*(\d+)[^"]*"[^>]*>([^<]+)</gi) || [];
+      data.accords = accordMatches.map(match => {
+        const nameMatch = match.match(/>([^<]+)</);
+        return nameMatch ? nameMatch[1].trim() : '';
+      }).filter(n => n).slice(0, 5); // Top 5 accords
+
+      // Extract year
+      const yearMatch = html.match(/launched in (\d{4})/i) || html.match(/<span[^>]*>(\d{4})<\/span>/);
+      if (yearMatch) {
+        const year = parseInt(yearMatch[1]);
+        if (year > 1800 && year <= new Date().getFullYear()) {
+          data.year = year;
+        }
+      }
+
+      // Extract description
+      const descMatch = html.match(/itemprop="description"[^>]*>([^<]+)</i);
+      if (descMatch) {
+        data.description = descMatch[1].trim();
+      }
+
+      // Extract main image
+      const imageMatch = html.match(/itemprop="image"[^>]*content="([^"]+)"/i);
+      if (imageMatch) {
+        data.images = [imageMatch[1]];
+      }
+
+      // Extract longevity/sillage from voting bars if available
+      const longevityMatch = html.match(/longevity[^>]*style="[^"]*width:\s*(\d+)/i);
+      if (longevityMatch) {
+        data.performance.longevity = Math.round(parseFloat(longevityMatch[1]) / 20 * 10) / 10; // Convert percentage to 0-5
+      }
+
+      const sillageMatch = html.match(/sillage[^>]*style="[^"]*width:\s*(\d+)/i);
+      if (sillageMatch) {
+        data.performance.sillage = Math.round(parseFloat(sillageMatch[1]) / 20 * 10) / 10;
+      }
+
+    } catch (parseError) {
+      console.error('HTML parsing error:', parseError);
+    }
+
+    return data;
   }
 
   private parseRating(ratingString: any): number | undefined {
@@ -332,26 +426,44 @@ class FragranceAIAnalyzer {
   async analyzeWithGemini(fragranceData: FragranceData): Promise<AIAnalysisResult> {
     const prompt = this.buildAnalysisPrompt(fragranceData);
 
+    if (!GEMINI_API_KEY) {
+      console.warn('Gemini API key not configured, returning empty result');
+      return this.getEmptyResult('ai_gemini');
+    }
+
     try {
-      // TODO: Replace with actual Gemini API call
-      // const response = await callGeminiAPI({
-      //   model: 'gemini-pro',
-      //   prompt: prompt,
-      //   temperature: 0.3,
-      //   maxTokens: 2000
-      // });
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 2000,
+            responseMimeType: 'application/json'
+          }
+        })
+      });
 
-      // Simulated response for now
-      const response = {
-        enhanced_data: {},
-        confidence_scores: {},
-        reasoning: {},
-        sources: {},
-        quality_score: 0.85,
-        recommendations: []
-      };
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      }
 
-      return this.parseAIResponse(response, 'ai_gemini');
+      const data = await response.json();
+      const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!textContent) {
+        throw new Error('No content in Gemini response');
+      }
+
+      // Parse JSON response (remove markdown code blocks if present)
+      const cleanedContent = textContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsedResponse = JSON.parse(cleanedContent);
+
+      return this.parseAIResponse(parsedResponse, 'ai_gemini');
 
     } catch (error) {
       console.error('Error analyzing with Gemini:', error);
@@ -362,31 +474,63 @@ class FragranceAIAnalyzer {
   async analyzeWithOpenAI(fragranceData: FragranceData): Promise<AIAnalysisResult> {
     const prompt = this.buildAnalysisPrompt(fragranceData);
 
+    if (!OPENAI_API_KEY) {
+      console.warn('OpenAI API key not configured, returning empty result');
+      return this.getEmptyResult('ai_openai');
+    }
+
     try {
-      // TODO: Replace with actual OpenAI API call
-      // const response = await callOpenAIAPI({
-      //   model: 'gpt-4',
-      //   messages: [{ role: 'user', content: prompt }],
-      //   temperature: 0.3,
-      //   max_tokens: 2000
-      // });
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a fragrance data expert. Respond only with valid JSON matching the requested schema. Use Australian English spelling.'
+            },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.3,
+          max_tokens: 2000,
+          response_format: { type: 'json_object' }
+        })
+      });
 
-      // Simulated response for now
-      const response = {
-        enhanced_data: {},
-        confidence_scores: {},
-        reasoning: {},
-        sources: {},
-        quality_score: 0.83,
-        recommendations: []
-      };
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      }
 
-      return this.parseAIResponse(response, 'ai_openai');
+      const data = await response.json();
+      const textContent = data.choices?.[0]?.message?.content;
+      
+      if (!textContent) {
+        throw new Error('No content in OpenAI response');
+      }
+
+      const parsedResponse = JSON.parse(textContent);
+      return this.parseAIResponse(parsedResponse, 'ai_openai');
 
     } catch (error) {
       console.error('Error analyzing with OpenAI:', error);
       throw error;
     }
+  }
+
+  private getEmptyResult(source: string): AIAnalysisResult {
+    return {
+      enhanced_data: {},
+      confidence_scores: {},
+      reasoning: {},
+      sources: {},
+      quality_score: 0,
+      recommendations: [`${source} API key not configured`]
+    };
   }
 
   async hybridAnalysis(fragranceData: FragranceData): Promise<AIAnalysisResult> {

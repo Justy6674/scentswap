@@ -26,6 +26,8 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { db } from '@/lib/database';
 import { User, Listing, Swap } from '@/types';
 import { parseFragranceData } from '@/lib/ai-services';
+import { enhancementService, EnhancementQueueStats } from '@/lib/enhancement-service';
+import { aiEnhancementEngine } from '@/lib/ai-enhancement-engine';
 
 // ... (Previous Interfaces)
 interface AdminStats {
@@ -68,7 +70,7 @@ interface AIConfig {
   description: string;
 }
 
-type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market';
+type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market' | 'ai-enhance';
 
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -127,6 +129,13 @@ export default function AdminScreen() {
   
   // AI Review Queue State
   const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
+  
+  // AI Enhancement State
+  const [enhancementStats, setEnhancementStats] = useState<EnhancementQueueStats | null>(null);
+  const [fragrancesToEnhance, setFragrancesToEnhance] = useState<any[]>([]);
+  const [enhancingFragranceId, setEnhancingFragranceId] = useState<string | null>(null);
+  const [enhancementProgress, setEnhancementProgress] = useState('');
+  const [enhancementBrandFilter, setEnhancementBrandFilter] = useState('');
   
   // Hydration fix: Ensure component only renders on client
   const [isMounted, setIsMounted] = useState(false);
@@ -1157,6 +1166,7 @@ export default function AdminScreen() {
   const tabs = [
     { id: 'overview', label: 'Overview' },
     { id: 'database', label: 'Database' },
+    { id: 'ai-enhance', label: '🤖 AI Enhance' },
     { id: 'users', label: 'Users' },
     { id: 'listings', label: 'Listings' },
     { id: 'swaps', label: 'Swaps' },
@@ -1980,6 +1990,212 @@ export default function AdminScreen() {
                   <Text style={{color: colors.text}}>Gemini</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </View>
+        )}
+
+        {activeTab === 'ai-enhance' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🤖 AI Database Enhancement</Text>
+            <Text style={{color: colors.textSecondary, marginBottom: 16}}>
+              Use AI (Gemini + OpenAI hybrid) and web scraping to automatically enhance fragrance data.
+            </Text>
+
+            {/* Enhancement Stats */}
+            {enhancementStats && (
+              <View style={[styles.statsGrid, {marginBottom: 16}]}>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{enhancementStats.pending_requests}</Text>
+                  <Text style={styles.statLabel}>Pending</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{enhancementStats.processing_requests}</Text>
+                  <Text style={styles.statLabel}>Processing</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{enhancementStats.pending_approvals}</Text>
+                  <Text style={styles.statLabel}>Awaiting Approval</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statValue}>{enhancementStats.total_completed_today}</Text>
+                  <Text style={styles.statLabel}>Completed Today</Text>
+                </View>
+              </View>
+            )}
+
+            {/* Load Stats Button */}
+            <TouchableOpacity 
+              style={[styles.saveButton, {marginBottom: 16}]}
+              onPress={async () => {
+                setEnhancementProgress('Loading enhancement stats...');
+                const stats = await enhancementService.getQueueStats();
+                setEnhancementStats(stats);
+                setEnhancementProgress('');
+              }}
+            >
+              <Text style={styles.saveButtonText}>Refresh Stats</Text>
+            </TouchableOpacity>
+
+            {/* Filter & Find Fragrances */}
+            <View style={styles.configCard}>
+              <Text style={styles.configTitle}>Find Fragrances to Enhance</Text>
+              <Text style={styles.configDescription}>
+                Search for fragrances with incomplete data that need AI enhancement.
+              </Text>
+              <TextInput 
+                style={[styles.configInput, {marginBottom: 12, minHeight: 40}]} 
+                placeholder="Filter by brand (e.g., Chanel, Dior)..." 
+                value={enhancementBrandFilter}
+                onChangeText={setEnhancementBrandFilter}
+              />
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={async () => {
+                  setEnhancementProgress('Searching for fragrances needing enhancement...');
+                  const fragrances = await enhancementService.getFragrancesNeedingEnhancement(
+                    20,
+                    enhancementBrandFilter || undefined
+                  );
+                  setFragrancesToEnhance(fragrances);
+                  setEnhancementProgress(`Found ${fragrances.length} fragrances needing enhancement`);
+                }}
+              >
+                <Text style={styles.saveButtonText}>Search</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Progress Display */}
+            {enhancementProgress ? (
+              <View style={{marginVertical: 12, padding: 12, backgroundColor: colors.card, borderRadius: 8}}>
+                <Text style={{color: colors.primary, textAlign: 'center'}}>{enhancementProgress}</Text>
+                {enhancingFragranceId && <ActivityIndicator style={{marginTop: 8}} color={colors.primary} />}
+              </View>
+            ) : null}
+
+            {/* Fragrances List */}
+            {fragrancesToEnhance.length > 0 && (
+              <View style={styles.configCard}>
+                <Text style={styles.configTitle}>Fragrances Needing Enhancement ({fragrancesToEnhance.length})</Text>
+                {fragrancesToEnhance.map((frag) => (
+                  <View key={frag.id} style={{
+                    borderBottomWidth: 1, 
+                    borderBottomColor: colors.border, 
+                    paddingVertical: 12,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <View style={{flex: 1}}>
+                      <Text style={{color: colors.text, fontWeight: '600'}}>{frag.name}</Text>
+                      <Text style={{color: colors.textSecondary, fontSize: 12}}>{frag.brand}</Text>
+                      <Text style={{color: colors.textSecondary, fontSize: 10}}>
+                        Completeness: {Math.round((frag.completeness_score || 0) * 100)}% | 
+                        Missing: {(frag.missing_fields || []).slice(0, 3).join(', ')}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[styles.actionButton, {
+                        borderColor: colors.primary, 
+                        paddingHorizontal: 12,
+                        opacity: enhancingFragranceId === frag.id ? 0.5 : 1
+                      }]}
+                      disabled={enhancingFragranceId === frag.id}
+                      onPress={async () => {
+                        const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+                        setEnhancingFragranceId(frag.id);
+                        setEnhancementProgress(`Enhancing ${frag.name}...`);
+                        
+                        try {
+                          // Create enhancement request
+                          const requestId = await enhancementService.createEnhancementRequest(
+                            frag.id,
+                            adminId,
+                            'hybrid',
+                            5,
+                            0.7
+                          );
+                          
+                          if (requestId) {
+                            setEnhancementProgress(`Request created. Running AI analysis...`);
+                            
+                            // Run the actual enhancement
+                            const result = await aiEnhancementEngine.enhanceFragrance(
+                              frag,
+                              'hybrid'
+                            );
+                            
+                            if (result.success && result.changes.length > 0) {
+                              // Save changes to database
+                              const savedCount = await enhancementService.createEnhancementChanges(
+                                requestId,
+                                result.changes
+                              );
+                              
+                              await enhancementService.updateRequestStatus(requestId, 'completed');
+                              setEnhancementProgress(`✅ ${frag.name}: ${savedCount} changes ready for approval`);
+                              
+                              // Refresh stats
+                              const stats = await enhancementService.getQueueStats();
+                              setEnhancementStats(stats);
+                            } else {
+                              await enhancementService.updateRequestStatus(requestId, 'failed', result.errors.join(', '));
+                              setEnhancementProgress(`⚠️ ${frag.name}: ${result.errors.join(', ') || 'No changes detected'}`);
+                            }
+                          }
+                        } catch (err) {
+                          setEnhancementProgress(`❌ Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+                        } finally {
+                          setEnhancingFragranceId(null);
+                        }
+                      }}
+                    >
+                      {enhancingFragranceId === frag.id ? (
+                        <ActivityIndicator size="small" color={colors.primary} />
+                      ) : (
+                        <Text style={[styles.actionButtonText, {color: colors.primary}]}>Enhance</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Bulk Enhancement */}
+            <View style={[styles.configCard, {marginTop: 16}]}>
+              <Text style={styles.configTitle}>Bulk Enhancement</Text>
+              <Text style={styles.configDescription}>
+                Enhance all fragrances in the current list automatically.
+              </Text>
+              <TouchableOpacity 
+                style={[styles.saveButton, {
+                  backgroundColor: fragrancesToEnhance.length === 0 ? colors.border : colors.primary,
+                  opacity: fragrancesToEnhance.length === 0 || enhancingFragranceId ? 0.5 : 1
+                }]}
+                disabled={fragrancesToEnhance.length === 0 || !!enhancingFragranceId}
+                onPress={async () => {
+                  const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+                  const ids = fragrancesToEnhance.map(f => f.id);
+                  
+                  setEnhancementProgress(`Creating ${ids.length} enhancement requests...`);
+                  
+                  const requestIds = await enhancementService.createBulkEnhancementRequests(
+                    ids,
+                    adminId,
+                    'hybrid',
+                    5
+                  );
+                  
+                  setEnhancementProgress(`✅ Created ${requestIds.length} enhancement requests. Processing in background...`);
+                  
+                  // Refresh stats
+                  const stats = await enhancementService.getQueueStats();
+                  setEnhancementStats(stats);
+                }}
+              >
+                <Text style={styles.saveButtonText}>
+                  Enhance All ({fragrancesToEnhance.length})
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
