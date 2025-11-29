@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -20,6 +22,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { User, Listing, Swap } from '@/types';
+
 // SSR-safe platform check - must be defined before any conditional imports
 const isWeb = typeof window !== 'undefined';
 
