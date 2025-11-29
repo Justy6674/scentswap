@@ -1,7 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
-import { db } from '@/lib/database';
 import { isAdmin as checkIsAdmin } from '@/lib/admin';
+
+// Lazy-load database to avoid SSR issues
+let db: typeof import('@/lib/database').db | null = null;
+const getDb = async () => {
+  if (!db) {
+    const database = await import('@/lib/database');
+    db = database.db;
+  }
+  return db;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -86,7 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setIsAdmin(checkIsAdmin(parsedUser.email));
-        db.setCurrentUser(parsedUser);
+        const database = await getDb();
+        database.setCurrentUser(parsedUser);
       }
     } catch (error) {
       console.error('Error loading stored user:', error);
@@ -96,7 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signIn(email: string, password: string): Promise<{ error: string | null }> {
-    const { user: signedInUser, error } = await db.signIn(email, password);
+    const database = await getDb();
+    const { user: signedInUser, error } = await database.signIn(email, password);
     if (error) {
       return { error };
     }
@@ -109,7 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signUp(email: string, password: string, fullName: string): Promise<{ error: string | null }> {
-    const { user: newUser, error } = await db.signUp(email, password, fullName);
+    const database = await getDb();
+    const { user: newUser, error } = await database.signUp(email, password, fullName);
     if (error) {
       return { error };
     }
@@ -122,7 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut(): Promise<void> {
-    await db.signOut();
+    const database = await getDb();
+    await database.signOut();
     setUser(null);
     setIsAdmin(false);
     await deleteStorageItem(USER_STORAGE_KEY);
@@ -130,7 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function updateUser(updates: Partial<User>): Promise<{ error: string | null }> {
     if (!user) return { error: 'No user logged in' };
-    const updatedUser = await db.updateUser(user.id, updates);
+    const database = await getDb();
+    const updatedUser = await database.updateUser(user.id, updates);
     if (!updatedUser) {
       return { error: 'Failed to update user' };
     }
