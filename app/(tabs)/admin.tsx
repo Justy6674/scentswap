@@ -638,11 +638,9 @@ export default function AdminScreen() {
 
   if (legacyAuthLoading || subscriptionLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#FBF9F7' }]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#000000' }}>Loading...</Text>
+      </View>
     );
   }
 

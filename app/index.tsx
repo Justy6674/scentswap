@@ -194,8 +194,8 @@ export default function LandingPage() {
   // Guard against hydration mismatch
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={COLORS.teal} />
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#000000' }}>Loading...</Text>
       </View>
     );
   }

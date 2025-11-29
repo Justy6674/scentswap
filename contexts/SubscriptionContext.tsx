@@ -341,6 +341,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage?.getItem(storageKey) || window.sessionStorage?.getItem(storageKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
+      console.log('DEBUG: Settings keys:', Object.keys(parsed));
+      if (parsed.auth) console.log('DEBUG: parsed.auth keys:', Object.keys(parsed.auth));
+      if (parsed.accessToken) console.log('DEBUG: Found accessToken at root');
       return (
         parsed?.accessToken ||
         parsed?.AccessToken ||

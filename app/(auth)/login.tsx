@@ -45,11 +45,9 @@ export default function LoginScreen() {
 
   if (authLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#FBF9F7' }]}>
-        <View style={[styles.content, { justifyContent: 'center', alignItems: 'center' }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#000000' }}>Loading...</Text>
+      </View>
     );
   }
 
