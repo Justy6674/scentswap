@@ -11,9 +11,12 @@ import {
   TextInput,
   Switch,
   FlatList,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -59,8 +62,6 @@ export default function AdminScreen() {
   const isAdmin = authIsAdmin || subscriptionIsAdmin;
   
   const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
@@ -88,6 +89,19 @@ export default function AdminScreen() {
   const [pyramid, setPyramid] = useState({ top: '', middle: '', base: '' }); // Comma separated strings for now
   const [perfumersInput, setPerfumersInput] = useState(''); // Comma separated
   const [magicText, setMagicText] = useState(''); // AI Text Extraction Input
+  
+  // CSV Import State
+  const [csvData, setCsvData] = useState('');
+  // Use a ref to hold the full content if it's too large to display
+  const fullCsvContent = React.useRef<string | null>(null);
+  const [importProgress, setImportProgress] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [fileStats, setFileStats] = useState<{name: string, size: number} | null>(null);
+
+  // Caches to minimize DB lookups during import
+  const brandCache = React.useRef(new Map<string, string>());
+  const noteCache = React.useRef(new Map<string, string>());
+  const perfumerCache = React.useRef(new Map<string, string>());
 
   // AI Review Queue State
   const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
@@ -215,65 +229,19 @@ export default function AdminScreen() {
     
     try {
       setIsLoading(true);
-      
-      // Brand: Find or Create
-      let brandId;
-      const brands = await db.getBrands(newFragrance.brand);
-      const existingBrand = brands.find(b => b.name.toLowerCase() === newFragrance.brand.toLowerCase());
-      if (existingBrand) {
-        brandId = existingBrand.id;
-      } else {
-        const newB = await db.createBrand({ name: newFragrance.brand });
-        if (newB) brandId = newB.id;
-      }
-
-      if (!brandId) throw new Error('Failed to resolve brand');
-
-      // Notes: Find or Create
-      const processNotes = async (input: string) => {
-        const names = input.split(',').map(s => s.trim()).filter(s => s);
-        const ids = [];
-        for (const name of names) {
-          const existing = await db.getNotes(name);
-          const match = existing.find(n => n.name.toLowerCase() === name.toLowerCase());
-          if (match) {
-            ids.push(match.id);
-          } else {
-            const newN = await db.createNote({ name });
-            if (newN) ids.push(newN.id);
-          }
-        }
-        return ids;
-      };
-
-      const topIds = await processNotes(pyramid.top);
-      const midIds = await processNotes(pyramid.middle);
-      const baseIds = await processNotes(pyramid.base);
-
-      // Perfumers: Find or Create
-      const perfumerIds = [];
-      const pNames = perfumersInput.split(',').map(s => s.trim()).filter(s => s);
-      for (const name of pNames) {
-        const existing = await db.getPerfumers(name);
-        const match = existing.find(p => p.name.toLowerCase() === name.toLowerCase());
-        if (match) {
-          perfumerIds.push(match.id);
-        } else {
-          const newP = await db.createPerfumer({ name });
-          if (newP) perfumerIds.push(newP.id);
-        }
-      }
-
-      // Create Fragrance
-      await db.createFragrance({
+      await createSingleFragrance({
         name: newFragrance.name,
-        brand_id: brandId,
+        brand: newFragrance.brand,
         concentration: newFragrance.concentration,
         gender: newFragrance.gender,
-        launch_year: newFragrance.year ? parseInt(newFragrance.year) : null,
+        year: newFragrance.year,
         description: newFragrance.description,
-        image_url: newFragrance.image_url
-      }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
+        image_url: newFragrance.image_url,
+        topNotes: pyramid.top,
+        middleNotes: pyramid.middle,
+        baseNotes: pyramid.base,
+        perfumers: perfumersInput
+      });
 
       Alert.alert('Success', 'Fragrance added to database');
       setNewFragrance({ name: '', brand: '', concentration: 'edp', gender: 'unisex', year: '', description: '', image_url: '' });
@@ -285,6 +253,464 @@ export default function AdminScreen() {
       console.error(e);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  // Reusable helper for creating a fragrance
+  async function createSingleFragrance(data: {
+    name: string,
+    brand: string,
+    concentration: string,
+    gender: string,
+    year: string,
+    description: string,
+    image_url: string,
+    topNotes: string,
+    middleNotes: string,
+    baseNotes: string,
+    perfumers: string,
+    accords?: string[],
+    fragrantica_url?: string,
+    country?: string
+  }) {
+    // Brand: Find or Create
+    let brandId;
+    const brands = await db.getBrands(data.brand);
+    const existingBrand = brands.find(b => b.name.toLowerCase() === data.brand.toLowerCase());
+    if (existingBrand) {
+      brandId = existingBrand.id;
+    } else {
+      const newB = await db.createBrand({ name: data.brand, country: data.country });
+      if (newB) brandId = newB.id;
+    }
+
+    if (!brandId) throw new Error(`Failed to resolve brand: ${data.brand}`);
+
+    // Notes: Find or Create
+    const processNotes = async (input: string) => {
+      const names = input.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
+      const ids = [];
+      for (const name of names) {
+        const existing = await db.getNotes(name);
+        const match = existing.find(n => n.name.toLowerCase() === name.toLowerCase());
+        if (match) {
+          ids.push(match.id);
+        } else {
+          const newN = await db.createNote({ name });
+          if (newN) ids.push(newN.id);
+        }
+      }
+      return ids;
+    };
+
+    const topIds = await processNotes(data.topNotes);
+    const midIds = await processNotes(data.middleNotes);
+    const baseIds = await processNotes(data.baseNotes);
+
+    // Perfumers: Find or Create
+    const perfumerIds = [];
+    const pNames = data.perfumers.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
+    for (const name of pNames) {
+      const existing = await db.getPerfumers(name);
+      const match = existing.find(p => p.name.toLowerCase() === name.toLowerCase());
+      if (match) {
+        perfumerIds.push(match.id);
+      } else {
+        const newP = await db.createPerfumer({ name });
+        if (newP) perfumerIds.push(newP.id);
+      }
+    }
+
+    // Create Fragrance
+    await db.createFragrance({
+      name: data.name,
+      brand_id: brandId,
+      concentration: data.concentration,
+      gender: data.gender,
+      launch_year: data.year ? parseInt(data.year) : null,
+      description: data.description,
+      image_url: data.image_url,
+      accords: data.accords || [],
+      fragrantica_url: data.fragrantica_url
+    }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
+  }
+
+  async function handlePickCsv() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['text/csv', 'text/comma-separated-values', 'application/csv', 'text/plain'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      let content = '';
+
+      // Check file size (limit preview for performance)
+      const isLargeFile = (asset.size || 0) > 1024 * 1024; // > 1MB
+      
+      if (Platform.OS === 'web') {
+        const response = await fetch(asset.uri);
+        content = await response.text();
+      } else {
+        content = await FileSystem.readAsStringAsync(asset.uri);
+      }
+
+      if (content) {
+        fullCsvContent.current = content;
+        setFileStats({ name: asset.name, size: asset.size || 0 });
+        
+        if (isLargeFile) {
+          // Preview only first 50 lines
+          const preview = content.split('\n').slice(0, 50).join('\n');
+          setCsvData(preview + '\n... (File too large to display fully, but ready for import)');
+          Alert.alert('Large File Loaded', `Loaded ${asset.name} (${(asset.size! / 1024 / 1024).toFixed(2)} MB). Previewing first 50 lines.`);
+        } else {
+          setCsvData(content);
+          Alert.alert('File Loaded', 'CSV data loaded. Review and click "Process CSV" to import.');
+        }
+      }
+    } catch (err) {
+      console.error('Error picking file:', err);
+      Alert.alert('Error', 'Failed to read file');
+    }
+  }
+
+  async function handleImportCsv() {
+    // Use full content from ref if available, otherwise state
+    const rawData = fullCsvContent.current || csvData;
+    
+    if (!rawData.trim()) {
+      Alert.alert('Error', 'Please paste CSV data or load a file first');
+      return;
+    }
+
+    setIsImporting(true);
+    setImportProgress('Initializing import...');
+
+    try {
+      const lines = rawData.split('\n').filter(l => l.trim());
+      let successCount = 0;
+      let errorCount = 0;
+
+      // Clear caches
+      brandCache.current.clear();
+      noteCache.current.clear();
+      perfumerCache.current.clear();
+
+      // Process in chunks to keep UI responsive
+      const CHUNK_SIZE = 10; 
+      
+      for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
+        const chunk = lines.slice(i, i + CHUNK_SIZE);
+        
+        // Update progress periodically (every chunk)
+        if (i % 50 === 0) {
+           setImportProgress(`Processing ${i}/${lines.length} (${Math.round(i/lines.length*100)}%)...`);
+           // Yield to event loop
+           await new Promise(resolve => setTimeout(resolve, 0));
+        }
+
+        // Process chunk in parallel
+        await Promise.all(chunk.map(async (line, idx) => {
+          const lineIndex = i + idx;
+          try {
+            const cols = line.split(';').map(s => s.trim());
+            
+            // Skip header or invalid
+            if ((cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') || !cols[1] || !cols[2]) {
+              if (!cols[1] && !cols[2]) errorCount++; 
+              return;
+            }
+
+            // Map columns
+            const url = cols[0] || '';
+            const name = cols[1] || '';
+            const brand = cols[2] || '';
+            const country = cols[3] || '';
+            let gender = cols[4]?.toLowerCase() || 'unisex';
+            if (gender === 'women') gender = 'female';
+            if (gender === 'men') gender = 'male';
+            
+            const year = cols[7] || '';
+            const top = cols[8] || '';
+            const middle = cols[9] || '';
+            const base = cols[10] || '';
+            
+            const perfumer1 = cols[11] || '';
+            const perfumer2 = cols[12] || '';
+            const perfumers = [perfumer1, perfumer2].filter(p => p && p.toLowerCase() !== 'unknown').join(', ');
+            
+            const accords = cols.slice(13, 18).filter(a => a && a.toLowerCase() !== 'unknown');
+
+            await createSingleFragranceWithCache({
+              name,
+              brand,
+              country,
+              concentration: 'edp',
+              gender,
+              year,
+              description: `Imported from Fragrantica. URL: ${url}`,
+              image_url: '',
+              fragrantica_url: url,
+              topNotes: top,
+              middleNotes: middle,
+              baseNotes: base,
+              perfumers,
+              accords
+            });
+            
+            successCount++;
+          } catch (err) {
+            console.warn(`Error row ${lineIndex}:`, err);
+            errorCount++;
+          }
+        }));
+      }
+
+      Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nSkipped/Failed: ${errorCount}`);
+      setCsvData('');
+      fullCsvContent.current = null;
+      setFileStats(null);
+      setImportProgress('');
+    } catch (e) {
+      Alert.alert('Import Error', 'An unexpected error occurred during import');
+      console.error(e);
+    } finally {
+      setIsImporting(false);
+      setImportProgress('');
+    }
+  }
+
+  // Optimized version with caching
+  async function createSingleFragranceWithCache(data: {
+    name: string,
+    brand: string,
+    concentration: string,
+    gender: string,
+    year: string,
+    description: string,
+    image_url: string,
+    topNotes: string,
+    middleNotes: string,
+    baseNotes: string,
+    perfumers: string,
+    accords?: string[],
+    fragrantica_url?: string,
+    country?: string
+  }) {
+    // 1. Brand
+    const brandKey = data.brand.toLowerCase();
+    let brandId = brandCache.current.get(brandKey);
+
+    if (!brandId) {
+      const brands = await db.getBrands(data.brand);
+      const existingBrand = brands.find(b => b.name.toLowerCase() === brandKey);
+      if (existingBrand) {
+        brandId = existingBrand.id;
+      } else {
+        const newB = await db.createBrand({ name: data.brand, country: data.country });
+        if (newB) brandId = newB.id;
+      }
+      if (brandId) brandCache.current.set(brandKey, brandId);
+    }
+
+    if (!brandId) throw new Error(`Failed to resolve brand: ${data.brand}`);
+
+    // 2. Notes
+    const processNotesCached = async (input: string) => {
+      const names = input.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
+      const ids = [];
+      
+      for (const name of names) {
+        const noteKey = name.toLowerCase();
+        let noteId = noteCache.current.get(noteKey);
+        
+        if (!noteId) {
+            const existing = await db.getNotes(name);
+            const match = existing.find(n => n.name.toLowerCase() === noteKey);
+            if (match) {
+                noteId = match.id;
+            } else {
+                const newN = await db.createNote({ name });
+                if (newN) noteId = newN.id;
+            }
+            if (noteId) noteCache.current.set(noteKey, noteId);
+        }
+        if (noteId) ids.push(noteId);
+      }
+      return ids;
+    };
+
+    const [topIds, midIds, baseIds] = await Promise.all([
+        processNotesCached(data.topNotes),
+        processNotesCached(data.middleNotes),
+        processNotesCached(data.baseNotes)
+    ]);
+
+    // 3. Perfumers
+    const perfumerIds = [];
+    const pNames = data.perfumers.split(',').map(s => s.trim()).filter(s => s && s.toLowerCase() !== 'unknown');
+    
+    for (const name of pNames) {
+        const perfKey = name.toLowerCase();
+        let perfId = perfumerCache.current.get(perfKey);
+        
+        if (!perfId) {
+            const existing = await db.getPerfumers(name);
+            const match = existing.find(p => p.name.toLowerCase() === perfKey);
+            if (match) {
+                perfId = match.id;
+            } else {
+                const newP = await db.createPerfumer({ name });
+                if (newP) perfId = newP.id;
+            }
+            if (perfId) perfumerCache.current.set(perfKey, perfId);
+        }
+        if (perfId) perfumerIds.push(perfId);
+    }
+
+    // 4. Create Fragrance (Always insert new for now, or check existence if needed)
+    // For speed, we assume if it's a bulk import we just append. 
+    // Ideally we'd check if fragrance exists too, but that adds another query.
+    // Let's trust the database unique constraints or allow duplicates for now if names differ slightly.
+    
+    await db.createFragrance({
+      name: data.name,
+      brand_id: brandId,
+      concentration: data.concentration,
+      gender: data.gender,
+      launch_year: data.year ? parseInt(data.year) : null,
+      description: data.description,
+      image_url: data.image_url,
+      accords: data.accords || [],
+      fragrantica_url: data.fragrantica_url
+    }, { top: topIds, middle: midIds, base: baseIds }, perfumerIds);
+  }
+
+  async function handlePickCsv() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['text/csv', 'text/comma-separated-values', 'application/csv', 'text/plain'], // Add text/plain as backup
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      let content = '';
+
+      if (Platform.OS === 'web') {
+        // On web, we can read the uri directly or use the file object
+        // The reliable way on modern web is to fetch the blob from the blob URI
+        const response = await fetch(asset.uri);
+        content = await response.text();
+      } else {
+        // On native, use FileSystem
+        content = await FileSystem.readAsStringAsync(asset.uri);
+      }
+
+      if (content) {
+        setCsvData(content);
+        Alert.alert('File Loaded', 'CSV data loaded into the text area. Review and click "Process CSV" to import.');
+      }
+    } catch (err) {
+      console.error('Error picking file:', err);
+      Alert.alert('Error', 'Failed to read file');
+    }
+  }
+
+  async function handleImportCsv() {
+    if (!csvData.trim()) {
+      Alert.alert('Error', 'Please paste CSV data first');
+      return;
+    }
+
+    setIsImporting(true);
+    setImportProgress('Starting import...');
+
+    try {
+      const lines = csvData.split('\n').filter(l => l.trim());
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip empty lines
+        if (!line.trim()) continue;
+
+        setImportProgress(`Processing ${i + 1}/${lines.length}...`);
+
+        try {
+          // Parse semicolon separated
+          const cols = line.split(';').map(s => s.trim());
+          
+          // Check if it's a header row (heuristic: "Perfume" in 2nd col)
+          if (cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') continue;
+
+          // Map columns based on user provided format:
+          // url;Perfume;Brand;Country;Gender;Rating Value;Rating Count;Year;Top;Middle;Base;Perfumer1;Perfumer2;mainaccord1;mainaccord2;mainaccord3;mainaccord4;mainaccord5
+          
+          const url = cols[0] || '';
+          const name = cols[1] || '';
+          const brand = cols[2] || '';
+          const country = cols[3] || '';
+          let gender = cols[4]?.toLowerCase() || 'unisex';
+          // Normalize gender
+          if (gender === 'women') gender = 'female';
+          if (gender === 'men') gender = 'male';
+          
+          const year = cols[7] || '';
+          const top = cols[8] || '';
+          const middle = cols[9] || '';
+          const base = cols[10] || '';
+          
+          const perfumer1 = cols[11] || '';
+          const perfumer2 = cols[12] || '';
+          const perfumers = [perfumer1, perfumer2].filter(p => p && p.toLowerCase() !== 'unknown').join(', ');
+          
+          const accords = cols.slice(13, 18).filter(a => a && a.toLowerCase() !== 'unknown');
+
+          if (!name || !brand) {
+            console.warn(`Skipping invalid row ${i}: Missing name or brand`);
+            errorCount++;
+            continue;
+          }
+
+          await createSingleFragrance({
+            name,
+            brand,
+            country,
+            concentration: 'edp', // Default
+            gender,
+            year,
+            description: `Imported from Fragrantica. URL: ${url}`,
+            image_url: '',
+            fragrantica_url: url,
+            topNotes: top,
+            middleNotes: middle,
+            baseNotes: base,
+            perfumers,
+            accords
+          });
+
+          successCount++;
+        } catch (err) {
+          console.error(`Error processing row ${i}:`, err);
+          errorCount++;
+        }
+      }
+
+      Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nFailed: ${errorCount}`);
+      setCsvData('');
+      setImportProgress('');
+    } catch (e) {
+      Alert.alert('Import Error', 'An unexpected error occurred during import');
+      console.error(e);
+    } finally {
+      setIsImporting(false);
+      setImportProgress('');
     }
   }
 
@@ -905,10 +1331,61 @@ export default function AdminScreen() {
 
                 <View style={styles.configCard}>
                   <Text style={styles.configTitle}>Bulk CSV Upload</Text>
-                  <Text style={styles.configDescription}>Coming soon in v2.</Text>
-                  <View style={styles.emptyState}>
-                    <Ionicons name="document-attach-outline" size={48} color={colors.textSecondary} />
-                  </View>
+                  <Text style={styles.configDescription}>
+                    Paste CSV data (semicolon separated) to import fragrances.
+                    Format: url;Perfume;Brand;Country;Gender;...
+                  </Text>
+                  
+                  <TouchableOpacity 
+                    style={[styles.actionButton, {marginBottom: 12, borderColor: colors.primary}]}
+                    onPress={handlePickCsv}
+                    disabled={isImporting}
+                  >
+                    <Ionicons name="document-text-outline" size={20} color={colors.primary} />
+                    <Text style={[styles.actionButtonText, {color: colors.primary}]}>Load from CSV File</Text>
+                  </TouchableOpacity>
+
+                  <TextInput 
+                    style={[styles.configInput, {marginBottom: 12}]} 
+                    multiline
+                    numberOfLines={10}
+                    placeholder="Paste CSV data here..."
+                    value={csvData}
+                    onChangeText={(text) => {
+                        setCsvData(text);
+                        fullCsvContent.current = text; // Update ref manually if typing
+                    }}
+                    editable={!isImporting && !fileStats} // Disable manual edit if file loaded
+                  />
+                  {fileStats && (
+                     <View style={{marginBottom: 12, flexDirection: 'row', justifyContent: 'space-between'}}>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                            File: {fileStats.name} ({(fileStats.size / 1024).toFixed(1)} KB)
+                        </Text>
+                        <TouchableOpacity onPress={() => {
+                            setCsvData('');
+                            fullCsvContent.current = null;
+                            setFileStats(null);
+                        }}>
+                            <Text style={{fontSize: 12, color: '#EF4444'}}>Clear File</Text>
+                        </TouchableOpacity>
+                     </View>
+                  )}
+                  {importProgress ? (
+                    <View style={{marginBottom: 12}}>
+                      <Text style={{color: colors.primary, textAlign: 'center'}}>{importProgress}</Text>
+                      <ActivityIndicator style={{marginTop: 8}} color={colors.primary} />
+                    </View>
+                  ) : null}
+                  <TouchableOpacity 
+                    style={[styles.saveButton, {opacity: isImporting ? 0.5 : 1}]} 
+                    onPress={handleImportCsv}
+                    disabled={isImporting}
+                  >
+                    <Text style={styles.saveButtonText}>
+                      {isImporting ? 'Importing...' : 'Process CSV'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
             )}
@@ -1022,8 +1499,8 @@ export default function AdminScreen() {
                 <View key={listing.id} style={styles.disputeCard}>
                   <View style={styles.disputeHeader}>
                     <Text style={styles.disputeTitle}>{listing.house} - {listing.custom_name}</Text>
-                    <Text style={{fontSize: 12, color: colors.textSecondary}}>
-                      {mounted ? new Date(listing.created_at).toLocaleDateString() : ''}
+                    <Text style={{fontSize: 12, color: colors.textSecondary}} suppressHydrationWarning={true}>
+                      {new Date(listing.created_at).toLocaleDateString()}
                     </Text>
                   </View>
                   <Text style={styles.disputeReason}>
