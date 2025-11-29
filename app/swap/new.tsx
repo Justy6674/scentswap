@@ -296,7 +296,7 @@ export default function NewSwapScreen() {
 
   if (authLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: '#FBF9F7' }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );

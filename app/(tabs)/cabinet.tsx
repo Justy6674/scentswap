@@ -182,7 +182,7 @@ export default function CabinetScreen() {
   // This prevents React hydration mismatch (Error #418)
   if (authLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#FBF9F7' }]} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>

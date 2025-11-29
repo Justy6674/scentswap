@@ -24,7 +24,7 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
-  const { isAuthenticated, outsetaUser, openLogin } = useSubscription();
+  const { isAuthenticated, outsetaUser, openLogin, isLoading: authLoading } = useSubscription();
   const { width } = useWindowDimensions();
   const [hasMounted, setHasMounted] = useState(false);
   const [listing, setListing] = useState<Listing | null>(null);
@@ -44,6 +44,14 @@ export default function ListingDetailScreen() {
   }, []);
 
   const windowWidth = hasMounted ? width : 390;
+
+  if (authLoading) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: '#FBF9F7' }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   async function loadListing() {
     setLoading(true);
