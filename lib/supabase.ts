@@ -80,14 +80,6 @@ export const getSupabase = (): SupabaseClient | null => {
   return supabaseInstance;
 };
 
-// Lazy initialization - don't create client at module load time during SSR
-export const supabase = isSupabaseConfigured() && typeof window !== 'undefined'
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        storage: createStorageAdapter(),
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: false,
-      },
-    })
-  : null;
+// Legacy export - use getSupabase() instead
+// This is kept for backwards compatibility but will be null during SSR
+export const supabase = null;
