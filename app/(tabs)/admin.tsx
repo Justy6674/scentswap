@@ -59,6 +59,13 @@ export default function AdminScreen() {
   const supabase = getSupabase();
 
   useEffect(() => {
+    // Prevent infinite loops if Supabase is not available
+    if (!supabase) {
+      console.error('Supabase not configured - cannot load admin data');
+      setLoading(false);
+      return;
+    }
+
     loadAdminData();
     loadUserActivity();
 
@@ -654,6 +661,25 @@ export default function AdminScreen() {
           <ActivityIndicator size="large" color="#8B5CF6" />
           <Text style={{ marginTop: 16, fontSize: 16, color: '#ffffff' }}>
             Loading Admin Panel...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!supabase) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+          <Ionicons name="warning" size={64} color="#EF4444" />
+          <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 16, color: '#ffffff' }}>
+            Database Configuration Error
+          </Text>
+          <Text style={{ fontSize: 16, textAlign: 'center', marginTop: 8, color: '#999999' }}>
+            Supabase environment variables are missing in production.
+          </Text>
+          <Text style={{ fontSize: 14, textAlign: 'center', marginTop: 16, color: '#666666' }}>
+            Required: EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
           </Text>
         </View>
       </SafeAreaView>
