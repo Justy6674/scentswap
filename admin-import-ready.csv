@@ -1,0 +1,916 @@
+fragrantica_url;name;brand;country;gender;rating_value;rating_count;year_released;top_notes;middle_notes;base_notes;perfumer1;perfumer2;accord1;accord2;accord3;accord4;accord5;concentration;family
+https://www.fragrantica.com/perfume/dumont/nitro-red-imported.html;Nitro Red;Dumont;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/dumont/nitro-pour-homme-imported.html;Nitro Pour Homme;Dumont;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/dumont/nitro-white-imported.html;Nitro White;Dumont;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/dumont/nitro-blue-imported.html;Nitro Blue;Dumont;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/dumont/nitro-green-imported.html;Nitro Green;Dumont;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/dumont/nitro-platinum-imported.html;Nitro Platinum;Dumont;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Mass Pleaser
+https://www.fragrantica.com/perfume/dumont/nitro-intense-imported.html;Nitro Intense;Dumont;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dumont/nitro-black-imported.html;Nitro Black;Dumont;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dumont/celerio-oros-imported.html;Celerio Oros;Dumont;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Vanilla
+https://www.fragrantica.com/perfume/dumont/celerio-epic-imported.html;Celerio Epic;Dumont;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-intense-man-imported.html;Club De Nuit Intense Man;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/cdnim-pure-parfum-imported.html;Cdnim Pure Parfum;Armaf;;male;4.5;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/cdnim-edp-imported.html;Cdnim Edp;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/cdnim-limited-edition-imported.html;Cdnim Limited Edition;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/cdn-women-imported.html;Cdn Women;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/lionheart-man-imported.html;Lionheart Man;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/yum-yum-imported.html;Yum Yum;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/armaf/sillage-imported.html;Sillage;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/imperial-imported.html;Imperial;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/untold-imported.html;Untold;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/hunter-imported.html;Hunter;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/hunter-intense-imported.html;Hunter Intense;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/ventana-marine-imported.html;Ventana Marine;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/armaf/ventana-imported.html;Ventana;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Fresh
+https://www.fragrantica.com/perfume/armaf/urban-man-elixr-imported.html;Urban Man Elixr;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/milestone-imported.html;Milestone;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/aura-fresh-imported.html;Aura Fresh;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/armaf/precioux-1-imported.html;Precioux 1;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/legesi-imported.html;Legesi;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/blue-homme-imported.html;Blue Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Fresh
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-imported.html;Odyssey Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-white-edition-imported.html;Odyssey Homme White Edition;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-gold-edition-imported.html;Odyssey Homme Gold Edition;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-red-imported.html;Odyssey Homme Red;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-blue-imported.html;Odyssey Homme Blue;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-homme-black-imported.html;Odyssey Homme Black;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/odyssey-femme-imported.html;Odyssey Femme;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/tag-him-imported.html;Tag Him;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/tag-him-prestige-edition-imported.html;Tag Him Prestige Edition;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/tag-him-pour-homme-imported.html;Tag Him Pour Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/tag-her-imported.html;Tag Her;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/derby-club-house-blanche-imported.html;Derby Club House Blanche;Armaf;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Fresh
+https://www.fragrantica.com/perfume/armaf/derby-club-house-gold-imported.html;Derby Club House Gold;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/derby-club-house-ascot-imported.html;Derby Club House Ascot;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/derby-club-house-adventure-imported.html;Derby Club House Adventure;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/derby-club-house-victory-imported.html;Derby Club House Victory;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/derby-club-house-blue-imported.html;Derby Club House Blue;Armaf;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Fresh
+https://www.fragrantica.com/perfume/armaf/all-you-need-is-passion-imported.html;All You Need Is Passion;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-pride-of-armaf-for-men-imported.html;The Pride Of Armaf For Men;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-pride-of-armaf-for-women-imported.html;The Pride Of Armaf For Women;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/the-warrior-imported.html;The Warrior;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-hunter-imported.html;The Hunter;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-hunter-intense-imported.html;The Hunter Intense;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-hunter-black-imported.html;The Hunter Black;Armaf;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-hunter-jungle-imported.html;The Hunter Jungle;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/the-legacy-imported.html;The Legacy;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/armaf/the-signature-for-women-imported.html;The Signature For Women;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/the-signature-for-men-imported.html;The Signature For Men;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-intense-man-limited-edition-parfum-imported.html;Club De Nuit Intense Man Limited Edition Parfum;Armaf;;male;4.5;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-intense-women-limited-edition-imported.html;Club De Nuit Intense Women Limited Edition;Armaf;;female;4.5;;;;;;;;;;;;;Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-milestones-imported.html;Club De Nuit Milestones;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-sillage-imported.html;Club De Nuit Sillage;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-imperiale-imported.html;Club De Nuit Imperiale;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-urban-man-imported.html;Club De Nuit Urban Man;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-urban-woman-imported.html;Club De Nuit Urban Woman;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-untold-imported.html;Club De Nuit Untold;Armaf;;male;4.5;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-timeless-imported.html;Club De Nuit Timeless;Armaf;;male;4.5;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/club-de-nuit-iconic-imported.html;Club De Nuit Iconic;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/ventana-pour-homme-imported.html;Ventana Pour Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/armaf/ventana-pour-femme-imported.html;Ventana Pour Femme;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/ventana-noir-imported.html;Ventana Noir;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/ventana-azure-imported.html;Ventana Azure;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/armaf/opus-homme-imported.html;Opus Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/opus-femme-imported.html;Opus Femme;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/armaf/opus-noir-imported.html;Opus Noir;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/opus-blue-imported.html;Opus Blue;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/armaf/opus-rouge-imported.html;Opus Rouge;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/opus-gold-imported.html;Opus Gold;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/magnificent-pour-homme-imported.html;Magnificent Pour Homme;Armaf;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/armaf/magnificent-pour-femme-imported.html;Magnificent Pour Femme;Armaf;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/spectre-ghost-imported.html;Spectre Ghost;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/spectre-wraith-imported.html;Spectre Wraith;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/pinnace-white-imported.html;Pinnace White;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/essence-de-blanc-imported.html;Essence De Blanc;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/vulcan-feu-french-avenue-imported.html;Vulcan Feu French Avenue;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/urban-man-elixir-imported.html;Urban Man Elixir;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/nuke-2-0-imported.html;Nuke 2.0;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/suits-imported.html;Suits;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/sultry-woods-imported.html;Sultry Woods;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/fierte-imported.html;Fierte;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/green-saphire-imported.html;Green Saphire;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/eau-de-spice-imported.html;Eau De Spice;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/imperial-fragrance-world-imported.html;Imperial Fragrance World;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/divin-asylum-imported.html;Divin Asylum;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/divin-oud-imported.html;Divin Oud;Fragrance World;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud
+https://www.fragrantica.com/perfume/fragrance-world/francique-63-55-imported.html;Francique 63.55;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/my-soulmate-body-imported.html;My Soulmate Body;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/mirag-absolu-imported.html;Mirag Absolu;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/tropical-kiss-imported.html;Tropical Kiss;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/fragrance-world/aqua-pura-imported.html;Aqua Pura;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/arabian-incense-imported.html;Arabian Incense;Fragrance World;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Woody
+https://www.fragrantica.com/perfume/fragrance-world/hibiscus-magic-imported.html;Hibiscus Magic;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/brown-sugar-imported.html;Brown Sugar;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/fragrance-world/aqua-royale-blue-imported.html;Aqua Royale Blue;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/enigma-une-imported.html;Enigma Une;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/enigma-trois-imported.html;Enigma Trois;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/imperium-edp-imported.html;Imperium Edp;Fragrance World;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/bavaria-pour-homme-imported.html;Bavaria Pour Homme;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/aventos-green-imported.html;Aventos Green;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/absolute-oud-magnificent-7-imported.html;Absolute Oud Magnificent 7;Fragrance World;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud
+https://www.fragrantica.com/perfume/fragrance-world/f-le-parfum-imported.html;F Le Parfum;Fragrance World;;female;4.5;;;;;;;;;;;;;Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/giorgio-black-special-edition-imported.html;Giorgio Black Special Edition;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/harmony-code-absolute-imported.html;Harmony Code Absolute;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/barakkat-rouge-540-imported.html;Barakkat Rouge 540;Fragrance World;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud
+https://www.fragrantica.com/perfume/fragrance-world/barakkat-aqua-stellar-imported.html;Barakkat Aqua Stellar;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/fragrance-world/mocha-wood-imported.html;Mocha Wood;Fragrance World;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/fragrance-world/star-men-nebula-imported.html;Star Men Nebula;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/fragrance-world/la-uno-forever-imported.html;La Uno Forever;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/fragrance-world/royal-blend-nero-imported.html;Royal Blend Nero;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/royal-blend-imported.html;Royal Blend;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/fragrance-world/sweet-paradise-imported.html;Sweet Paradise;Fragrance World;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/fragrance-world/cocktail-intense-imported.html;Cocktail Intense;Fragrance World;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rasasi/shaghaf-nafaies-al-shaghaf--imported.html;Shaghaf (nafaies Al Shaghaf);Rasasi;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Sweet Spicy Oriental
+https://www.fragrantica.com/perfume/rasasi/shuhrah-imported.html;Shuhrah;Rasasi;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rasasi/sotoor-seen-imported.html;Sotoor Seen;Rasasi;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/rasasi/sotoor-taa-imported.html;Sotoor Taa;Rasasi;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/rasasi/sotoor-waaw-imported.html;Sotoor Waaw;Rasasi;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Woody
+https://www.fragrantica.com/perfume/rasasi/hawas-tropical-imported.html;Hawas Tropical;Rasasi;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Fresh
+https://www.fragrantica.com/perfume/riffs/deoro-patchouli-imported.html;Deoro Patchouli;Riffs;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Earthy Woody
+https://www.fragrantica.com/perfume/riffs/elegant-homme-imported.html;Elegant Homme;Riffs;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Woody
+https://www.fragrantica.com/perfume/riffs/goodness-oud-imported.html;Goodness Oud;Riffs;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Rich Oud
+https://www.fragrantica.com/perfume/riffs/imperial-blue-imported.html;Imperial Blue;Riffs;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/riffs/majestic-rose-imported.html;Majestic Rose;Riffs;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Rose
+https://www.fragrantica.com/perfume/riffs/wonder-of-you-imported.html;Wonder Of You;Riffs;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Floral
+https://www.fragrantica.com/perfume/ibraheem-al-qurashi/blue-oud-imported.html;Blue Oud;Ibraheem Al Qurashi;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Floral
+https://www.fragrantica.com/perfume/ibraheem-al-qurashi/golden-amber-imported.html;Golden Amber;Ibraheem Al Qurashi;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Oriental
+https://www.fragrantica.com/perfume/nusuk/al-mukhtalif-signature-imported.html;Al Mukhtalif Signature;Nusuk;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Woody
+https://www.fragrantica.com/perfume/nusuk/ana-al-awwal-imported.html;Ana Al Awwal;Nusuk;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/my-perfumes/oud-al-layl-imported.html;Oud Al Layl;My Perfumes;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Deep
+https://www.fragrantica.com/perfume/nusuk/naseem-aqua-imported.html;Naseem Aqua;Nusuk;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/zimaya/sharaf-blend-imported.html;Sharaf Blend;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/zimaya/sharaf-club-black-imported.html;Sharaf Club Black;Zimaya;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Oriental
+https://www.fragrantica.com/perfume/ard-al-zaafaran/al-dirgham-gold-limited-edition-imported.html;Al Dirgham Gold Limited Edition;Ard Al Zaafaran;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/ard-al-zaafaran/al-dirgham-silver-special-edition-imported.html;Al Dirgham Silver Special Edition;Ard Al Zaafaran;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-aqua-dubai-imported.html;Amber Oud Aqua Dubai;Al Haramain;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Amber
+https://www.fragrantica.com/perfume/al-haramain/detour-noir-imported.html;Detour Noir;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/detour-noir-intense-imported.html;Detour Noir Intense;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/detour-eco-imported.html;Detour Eco;Al Haramain;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Fougere
+https://www.fragrantica.com/perfume/al-haramain/detour-rouge-imported.html;Detour Rouge;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dirham/dirham-oud-imported.html;Dirham Oud;Dirham;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Woody
+https://www.fragrantica.com/perfume/dirham/dirham-wardi-imported.html;Dirham Wardi;Dirham;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Rose Oud
+https://www.fragrantica.com/perfume/dirham/dirham-silver-imported.html;Dirham Silver;Dirham;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/dirham/dirham-gold-imported.html;Dirham Gold;Dirham;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/sheikh-zayed/sheikh-zayed-blue-imported.html;Sheikh Zayed Blue;Sheikh Zayed;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/al-wataniah/kayaan-classic-imported.html;Kayaan Classic;Al Wataniah;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/insurrection/insurrection-wild-ii-imported.html;Insurrection Wild Ii;Insurrection;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rue-broca/theoreme-martix-imported.html;Theoreme Martix;Rue Broca;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/rue-broca/theoreme-imported.html;Theoreme;Rue Broca;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/khadlj/island-imported.html;Island;Khadlj;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Green
+https://www.fragrantica.com/perfume/khadlj/island-vanilla-dunes-imported.html;Island Vanilla Dunes;Khadlj;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Vanilla
+https://www.fragrantica.com/perfume/khadlj/karus-blue-spice-imported.html;Karus Blue Spice;Khadlj;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/khadlj/cloud-candy-imported.html;Cloud Candy;Khadlj;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Gourmand
+https://www.fragrantica.com/perfume/khadlj/shiyaaka-gold-imported.html;Shiyaaka Gold;Khadlj;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/khadlj/shiyaaka-silver-imported.html;Shiyaaka Silver;Khadlj;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/khadlj/shiyaaka-blue-imported.html;Shiyaaka Blue;Khadlj;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Woody
+https://www.fragrantica.com/perfume/hamidi/addicted-imperial-imported.html;Addicted Imperial;Hamidi;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/hamidi/addicted-silver-imported.html;Addicted Silver;Hamidi;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/hamidi/addicted-intense-imported.html;Addicted Intense;Hamidi;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/ajmal/kuro-imported.html;Kuro;Ajmal;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/ajmal/blue-imported.html;Blue;Ajmal;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/ajmal/shiro-imported.html;Shiro;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/ajmal/rain-drops-imported.html;Rain Drops;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/ajmal/wisal-dahab-imported.html;Wisal Dahab;Ajmal;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/rayhaan/elixr-imported.html;Elixr;Rayhaan;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rayhaan/crimson-imported.html;Crimson;Rayhaan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Floral
+https://www.fragrantica.com/perfume/rayhaan/pacific-imported.html;Pacific;Rayhaan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/rayhaan/lion-imported.html;Lion;Rayhaan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rayhaan/imperia-intense-imported.html;Imperia Intense;Rayhaan;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/rayhaan/royal-wood-imported.html;Royal Wood;Rayhaan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody
+https://www.fragrantica.com/perfume/rayhaan/fresh-wave-imported.html;Fresh Wave;Rayhaan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/rayhaan/ocean-rush-imported.html;Ocean Rush;Rayhaan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/swiss-arabian/shagaf-vanilla-toffee-imported.html;Shagaf Vanilla Toffee;Swiss Arabian;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Sweet
+https://www.fragrantica.com/perfume/swiss-arabian/shagaf-oud-imported.html;Shagaf Oud;Swiss Arabian;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Spicy
+https://www.fragrantica.com/perfume/ard-al-zaafaran/bint-hooran-imported.html;Bint Hooran;Ard Al Zaafaran;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/zimaya/stallion-imported.html;Stallion;Zimaya;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-rehab/choco-musk-imported.html;Choco Musk;Al Rehab;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Sweet
+https://www.fragrantica.com/perfume/zimaya/itqan-noir-imported.html;Itqan Noir;Zimaya;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/zimaya/tiramisu-coco-imported.html;Tiramisu Coco;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Dessert
+https://www.fragrantica.com/perfume/zimaya/tiramisu-caramel-imported.html;Tiramisu Caramel;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Dessert
+https://www.fragrantica.com/perfume/zimaya/mazaaj-infused-imported.html;Mazaaj Infused;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/zimaya/rabab-imported.html;Rabab;Zimaya;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/paris-corner/atoof-imported.html;Atoof;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/paris-corner/autobiography-citron-vanille-imported.html;Autobiography - Citron Vanille;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Gourmand
+https://www.fragrantica.com/perfume/paris-corner/autobiography-salty-breeze-imported.html;Autobiography - Salty Breeze;Paris Corner;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/paris-corner/citron-vanille-imported.html;Citron Vanille;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Sweet
+https://www.fragrantica.com/perfume/paris-corner/cosmopolitan-dubai-imported.html;Cosmopolitan Dubai;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/paris-corner/choco-cult-imported.html;Choco Cult;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Chocolate
+https://www.fragrantica.com/perfume/paris-corner/date-caramel-imported.html;Date Caramel;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Sweet Gourmand
+https://www.fragrantica.com/perfume/paris-corner/december-vanilla-imported.html;December Vanilla;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Vanilla Gourmand
+https://www.fragrantica.com/perfume/paris-corner/emir-a-chaos-in-the-ocean-imported.html;Emir - A Chaos In The Ocean;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/paris-corner/emir-a-walk-on-dirt-imported.html;Emir - A Walk On Dirt;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Earthy
+https://www.fragrantica.com/perfume/paris-corner/emir-camp-fire-imported.html;Emir - Camp Fire;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Smoky Leather
+https://www.fragrantica.com/perfume/paris-corner/emir-celestial-imported.html;Emir - Celestial;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/paris-corner/emir-cherry-cola-imported.html;Emir - Cherry Cola;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Sweet
+https://www.fragrantica.com/perfume/paris-corner/emir-fascination-imported.html;Emir - Fascination;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/paris-corner/emir-fire-your-desire-imported.html;Emir - Fire Your Desire;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Amber
+https://www.fragrantica.com/perfume/paris-corner/emir-frenetic-delicious-imported.html;Emir - Frenetic Delicious;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Fruity
+https://www.fragrantica.com/perfume/paris-corner/emir-frenetic-homme-intense-imported.html;Emir - Frenetic Homme Intense;Paris Corner;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paris-corner/emir-frenetic-men-imported.html;Emir - Frenetic Men;Paris Corner;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/paris-corner/emir-frenetic-tobacco-honey-imported.html;Emir - Frenetic Tobacco Honey;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Sweet Tobacco
+https://www.fragrantica.com/perfume/paris-corner/emir-juicy-melange-imported.html;Emir - Juicy Melange;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Citrus
+https://www.fragrantica.com/perfume/paris-corner/emir-just-bergamot-imported.html;Emir - Just Bergamot;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Fresh
+https://www.fragrantica.com/perfume/paris-corner/emir-mango-punch-imported.html;Emir - Mango Punch;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Tropical
+https://www.fragrantica.com/perfume/paris-corner/emir-pear-potion-imported.html;Emir - Pear Potion;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Sweet
+https://www.fragrantica.com/perfume/paris-corner/emir-resurrection-imported.html;Emir - Resurrection;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/paris-corner/emir-rich-santal-imported.html;Emir - Rich Santal;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Creamy
+https://www.fragrantica.com/perfume/paris-corner/emir-smoky-leather-imported.html;Emir - Smoky Leather;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Leather Smoky
+https://www.fragrantica.com/perfume/paris-corner/emir-trillium-imported.html;Emir - Trillium;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/paris-corner/emir-triumphant-sapphire-imported.html;Emir - Triumphant Sapphire;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paris-corner/emir-ultra-citrus-imported.html;Emir - Ultra Citrus;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Fresh
+https://www.fragrantica.com/perfume/paris-corner/emir-vertex-imported.html;Emir - Vertex;Paris Corner;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paris-corner/emir-vibrant-delight-imported.html;Emir - Vibrant Delight;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Fruity
+https://www.fragrantica.com/perfume/paris-corner/emir-vibrant-orange-neroli-imported.html;Emir - Vibrant Orange & Neroli;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Floral
+https://www.fragrantica.com/perfume/paris-corner/emir-cedrat-essence-imported.html;Emir - Cedrat Essence;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Fresh
+https://www.fragrantica.com/perfume/paris-corner/eternal-musk-imported.html;Eternal Musk;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Musky Floral
+https://www.fragrantica.com/perfume/paris-corner/identity-oud-crescent-imported.html;Identity - Oud Crescent;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Oriental
+https://www.fragrantica.com/perfume/paris-corner/identity-rose-leather-imported.html;Identity - Rose & Leather;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Leather
+https://www.fragrantica.com/perfume/paris-corner/kaheela-lux-imported.html;Kaheela Lux;Paris Corner;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paris-corner/khair-imported.html;Khair;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Floral
+https://www.fragrantica.com/perfume/paris-corner/khair-confection-imported.html;Khair Confection;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Gourmand
+https://www.fragrantica.com/perfume/paris-corner/khair-felicity-imported.html;Khair Felicity;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Sweet
+https://www.fragrantica.com/perfume/paris-corner/khair-fusion-imported.html;Khair Fusion;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/paris-corner/khair-pistachio-imported.html;Khair Pistachio;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Nutty
+https://www.fragrantica.com/perfume/paris-corner/killer-oud-death-by-oud-imported.html;Killer Oud - Death By Oud;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Smoky
+https://www.fragrantica.com/perfume/paris-corner/killer-oud-midnight-ecstasy-imported.html;Killer Oud - Midnight Ecstasy;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Oud
+https://www.fragrantica.com/perfume/paris-corner/marshmallow-blush-imported.html;Marshmallow Blush;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Gourmand
+https://www.fragrantica.com/perfume/paris-corner/mawj-moscow-mule-imported.html;Mawj Moscow Mule;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Fresh
+https://www.fragrantica.com/perfume/paris-corner/ministry-of-gourmand-banana-bliss-imported.html;Ministry Of Gourmand - Banana Bliss;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Gourmand
+https://www.fragrantica.com/perfume/paris-corner/ministry-of-gourmand-tiramisu-specoloo-imported.html;Ministry Of Gourmand - Tiramisu Specoloo;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Dessert Gourmand
+https://www.fragrantica.com/perfume/paris-corner/ministry-series-amber-oud-imported.html;Ministry Series - Amber Oud;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Oud
+https://www.fragrantica.com/perfume/paris-corner/ministry-series-oud-royal-imported.html;Ministry Series - Oud Royal;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Spicy
+https://www.fragrantica.com/perfume/paris-corner/ministry-series-oud-satin-imported.html;Ministry Series - Oud Satin;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Sweet
+https://www.fragrantica.com/perfume/paris-corner/ministry-series-oud-indonesian-imported.html;Ministry Series - Oud Indonesian;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Woody
+https://www.fragrantica.com/perfume/paris-corner/north-stag-neuf-ix-9--imported.html;North Stag - Neuf Ix (9);Paris Corner;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paris-corner/north-stag-sept-vii-7--imported.html;North Stag - Sept Vii (7);Paris Corner;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/paris-corner/north-stag-huit-viii-8--imported.html;North Stag - Huit Viii (8);Paris Corner;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/paris-corner/north-stag-phenomenal-quatorze-xiv-14--imported.html;North Stag - Phenomenal Quatorze Xiv (14);Paris Corner;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/paris-corner/north-stag-expressions-i-une-1--imported.html;North Stag Expressions - I (une/1);Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Fresh
+https://www.fragrantica.com/perfume/paris-corner/north-stag-expressions-ii-deux-2--imported.html;North Stag Expressions - Ii (deux/2);Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/paris-corner/north-stag-expressions-iii-trois-3--imported.html;North Stag Expressions - Iii (trois/3);Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/paris-corner/north-stag-expressions-iv-quatre-4--imported.html;North Stag Expressions - Iv (quatre/4);Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/paris-corner/prive-zarah-barcode-signature-imported.html;Prive Zarah - Barcode Signature;Paris Corner;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/paris-corner/prive-zarah-blend-afgano-imported.html;Prive Zarah - Blend Afgano;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Oriental
+https://www.fragrantica.com/perfume/paris-corner/prive-zarah-bois-dores-imported.html;Prive Zarah - Bois Dores;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Amber
+https://www.fragrantica.com/perfume/paris-corner/prive-zarah-why-imported.html;Prive Zarah - Why;Paris Corner;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/paris-corner/qissa-pink--imported.html;Qissa (pink);Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/paris-corner/qissa-delicious-imported.html;Qissa Delicious;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Fruity
+https://www.fragrantica.com/perfume/paris-corner/rifaqat-imported.html;Rifaqat;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paris-corner/rifaqat-adorn-imported.html;Rifaqat Adorn;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/paris-corner/salty-breeze-imported.html;Salty Breeze;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/paris-corner/soothing-zephyr-imported.html;Soothing Zephyr;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/paris-corner/taskeen-caramel-imported.html;Taskeen Caramel;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sweet Gourmand
+https://www.fragrantica.com/perfume/paris-corner/taskeen-marina-imported.html;Taskeen Marina;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/paris-corner/voux-blue-oud-imported.html;Voux - Blue Oud;Paris Corner;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Woody
+https://www.fragrantica.com/perfume/paris-corner/voux-elegante-imported.html;Voux - Elegante;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/paris-corner/voux-voilette-imported.html;Voux - Voilette;Paris Corner;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Powdery
+https://www.fragrantica.com/perfume/paris-corner/voux-zeste-imported.html;Voux - Zeste;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Fresh
+https://www.fragrantica.com/perfume/paris-corner/voux-zingy-imported.html;Voux - Zingy;Paris Corner;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Citrus
+https://www.fragrantica.com/perfume/afnan/9-am-dive-imported.html;9 Am Dive;Afnan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/afnan/9-am-pour-femme-imported.html;9 Am Pour Femme;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/afnan/9-am-pour-homme-imported.html;9 Am Pour Homme;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/afnan/9-pm-imported.html;9 Pm;Afnan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Mass Pleaser
+https://www.fragrantica.com/perfume/afnan/9-pm-rebel-imported.html;9 Pm Rebel;Afnan;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/afnan/cherry-bouquet-imported.html;Cherry Bouquet;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Gourmand
+https://www.fragrantica.com/perfume/afnan/abstract-portrait-imported.html;Abstract Portrait;Afnan;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Fougere
+https://www.fragrantica.com/perfume/afnan/fatima-pink-imported.html;Fatima Pink;Afnan;;female;3.5;;;;;;;;;;;;;Extrait de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/afnan/fatima-velvet-love-imported.html;Fatima Velvet Love;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Gourmand
+https://www.fragrantica.com/perfume/afnan/historic-olmeda-imported.html;Historic Olmeda;Afnan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Spicy
+https://www.fragrantica.com/perfume/afnan/historic-sahara-imported.html;Historic Sahara;Afnan;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Vanilla
+https://www.fragrantica.com/perfume/afnan/modest-deux-imported.html;Modest Deux;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/afnan/modest-une-imported.html;Modest Une;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/afnan/mystique-bouquet-imported.html;Mystique Bouquet;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/afnan/penthouse-ginza-imported.html;Penthouse Ginza;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/pride-intense-imported.html;Pride Intense;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/rare-carbon-imported.html;Rare Carbon;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/rare-reef-imported.html;Rare Reef;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/rare-tiffany-imported.html;Rare Tiffany;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/supremacy-collector-s-edition-imported.html;Supremacy Collector's Edition;Afnan;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/supremacy-silver-imported.html;Supremacy Silver;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/supremacy-in-heaven-imported.html;Supremacy In Heaven;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/supremacy-in-oud-imported.html;Supremacy In Oud;Afnan;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/supremacy-not-only-intense-imported.html;Supremacy Not Only Intense;Afnan;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/theoreme-imported.html;Theoreme;Afnan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/theoreme-matrix-imported.html;Theoreme Matrix;Afnan;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/theoreme-pour-femme-imported.html;Theoreme Pour Femme;Afnan;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/turathi-blue-imported.html;Turathi Blue;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/turathi-brown-imported.html;Turathi Brown;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/afnan/turathi-electric-imported.html;Turathi Electric;Afnan;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/xerjoff/accento-imported.html;Accento;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Chypre Floral Fruity
+https://www.fragrantica.com/perfume/xerjoff/mefisto-gentiluomo-imported.html;Mefisto Gentiluomo;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/xerjoff/erba-pura-imported.html;Erba Pura;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Musk
+https://www.fragrantica.com/perfume/xerjoff/more-than-words-imported.html;More Than Words;Xerjoff;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/xerjoff/naxos-imported.html;Naxos;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Fougere Gourmand
+https://www.fragrantica.com/perfume/xerjoff/starlight-imported.html;Starlight;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Spicy
+https://www.fragrantica.com/perfume/xerjoff/wardasina-imported.html;Wardasina;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/xerjoff/zaffiro-imported.html;Zaffiro;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Floral
+https://www.fragrantica.com/perfume/xerjoff/uden-imported.html;Uden;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/xerjoff/richwood-imported.html;Richwood;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/xerjoff/1861-naxos-imported.html;1861 Naxos;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/xerjoff/alexandria-ii-imported.html;Alexandria Ii;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Oriental
+https://www.fragrantica.com/perfume/xerjoff/lira-imported.html;Lira;Xerjoff;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/xerjoff/join-the-club-imported.html;Join The Club;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Woody
+https://www.fragrantica.com/perfume/xerjoff/gloria-imported.html;Gloria;Xerjoff;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/xerjoff/vol-de-nuit-imported.html;Vol De Nuit;Xerjoff;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/xerjoff/nio-imported.html;Nio;Xerjoff;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Citrus
+https://www.fragrantica.com/perfume/xerjoff/romeo-imported.html;Romeo;Xerjoff;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/phantom-imported.html;Phantom;Paco Rabanne;;unisex;4.5;;;;;;;;;;;;;Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/paco-rabanne/fame-imported.html;Fame;Paco Rabanne;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/paco-rabanne/invictus-victory-elixir-imported.html;Invictus Victory Elixir;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/invictus-legend-imported.html;Invictus Legend;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/invictus-platinum-imported.html;Invictus Platinum;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/paco-rabanne/lady-million-imported.html;Lady Million;Paco Rabanne;;female;3.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/paco-rabanne/1-million-eau-de-toilette-imported.html;1 Million Eau De Toilette;Paco Rabanne;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/1-million-fabulous-imported.html;1 Million Fabulous;Paco Rabanne;;male;3.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/1-million-lucky-imported.html;1 Million Lucky;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/paco-rabanne/1-million-prive-imported.html;1 Million Prive;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/1-million-royal-imported.html;1 Million Royal;Paco Rabanne;;male;3.5;;;;;;;;;;;;;Parfum;Amber Woody
+https://www.fragrantica.com/perfume/paco-rabanne/phantom-legion-imported.html;Phantom Legion;Paco Rabanne;;unisex;4.5;;;;;;;;;;;;;Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/paco-rabanne/phantom-pour-homme-imported.html;Phantom Pour Homme;Paco Rabanne;;unisex;4.5;;;;;;;;;;;;;Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/paco-rabanne/pure-xs-imported.html;Pure Xs;Paco Rabanne;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/paco-rabanne/pure-xs-for-her-imported.html;Pure Xs For Her;Paco Rabanne;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-imported.html;Le Male;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Amber Spicy
+https://www.fragrantica.com/perfume/jean-paul-gaultier/ultra-male-imported.html;Ultra Male;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-le-parfum-imported.html;Le Male Le Parfum;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-beau-imported.html;Le Beau;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-beau-le-parfum-imported.html;Le Beau Le Parfum;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Amber
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-beau-paradise-garden-imported.html;Le Beau Paradise Garden;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Watery
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-in-the-navy-imported.html;Le Male In The Navy;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-le-parfum-pride-edition-imported.html;Le Male Le Parfum Pride Edition;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-elixir-imported.html;Le Male Elixir;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Fougere
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-aviator-imported.html;Le Male Aviator;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-capitaine-collector-imported.html;Le Male Capitaine Collector;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-on-board-imported.html;Le Male On Board;Jean Paul Gaultier;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-pride-2023-imported.html;Le Male Pride 2023;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/jean-paul-gaultier/le-male-pride-2024-imported.html;Le Male Pride 2024;Jean Paul Gaultier;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-imported.html;Classique;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-intense-imported.html;Classique Intense;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-essence-de-parfum-imported.html;Classique Essence De Parfum;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-x-imported.html;Classique X;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-collector-imported.html;Classique Collector;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-eau-de-parfum-imported.html;Classique Eau De Parfum;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/classique-eau-de-toilette-imported.html;Classique Eau De Toilette;Jean Paul Gaultier;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Floral
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-imported.html;Scandal;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-by-night-imported.html;Scandal By Night;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-a-paris-imported.html;Scandal A Paris;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-le-parfum-imported.html;Scandal Le Parfum;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-parfum-intense-imported.html;Scandal Parfum Intense;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-absolu-imported.html;Scandal Absolu;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-eau-de-parfum-imported.html;Scandal Eau De Parfum;Jean Paul Gaultier;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/jean-paul-gaultier/scandal-eau-de-toilette-imported.html;Scandal Eau De Toilette;Jean Paul Gaultier;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/dior/sauvage-edt-imported.html;Sauvage Edt;Dior;;male;4.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/dior/sauvage-edp-imported.html;Sauvage Edp;Dior;;male;5.0;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/dior/sauvage-parfum-imported.html;Sauvage Parfum;Dior;;male;5.0;;;;;;;;;;;;;Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/dior/sauvage-elixir-imported.html;Sauvage Elixir;Dior;;male;5.0;;;;;;;;;;;;;Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/dior/homme-intense-imported.html;Homme Intense;Dior;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/homme-parfum-imported.html;Homme Parfum;Dior;;male;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/j-adore-edp-imported.html;J'adore Edp;Dior;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/j-adore-edt-imported.html;J'adore Edt;Dior;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/dior/j-adore-parfum-d-eau-imported.html;J'adore Parfum D'eau;Dior;;female;2.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/addict-edp-imported.html;Addict Edp;Dior;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/dior/addict-edt-imported.html;Addict Edt;Dior;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Spicy
+https://www.fragrantica.com/perfume/dior/miss-dior-edp-imported.html;Miss Dior Edp;Dior;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/miss-dior-edt-imported.html;Miss Dior Edt;Dior;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/dior/gris-dior-imported.html;Gris Dior;Dior;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/dior/eau-noire-imported.html;Eau Noire;Dior;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/dior/fahrenheit-imported.html;Fahrenheit;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Toilette;Leather
+https://www.fragrantica.com/perfume/dior/fahrenheit-parfum-imported.html;Fahrenheit Parfum;Dior;;unisex;5.0;;;;;;;;;;;;;Parfum;Leather
+https://www.fragrantica.com/perfume/dior/poison-imported.html;Poison;Dior;;female;4.5;;;;;;;;;;;;;Eau de Toilette;Oriental Spicy
+https://www.fragrantica.com/perfume/dior/poison-edp-imported.html;Poison Edp;Dior;;female;5.0;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/dior/poison-girl-edp-imported.html;Poison Girl Edp;Dior;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/poison-girl-edt-imported.html;Poison Girl Edt;Dior;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/dior/joy-edp-imported.html;Joy Edp;Dior;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/joy-intense-edp-imported.html;Joy Intense Edp;Dior;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dior/gris-dior-imported.html;Gris Dior;Dior;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/dior/leather-oud-imported.html;Leather Oud;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Leather
+https://www.fragrantica.com/perfume/dior/ambre-nuit-imported.html;Ambre Nuit;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber
+https://www.fragrantica.com/perfume/dior/patchouli-imperial-imported.html;Patchouli Imperial;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Chypre
+https://www.fragrantica.com/perfume/dior/feve-delicieuse-imported.html;Feve Delicieuse;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/dior/vanilla-diorama-imported.html;Vanilla Diorama;Dior;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/yves-saint-laurent/libre-edp-imported.html;Libre Edp;Yves Saint Laurent;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Amber
+https://www.fragrantica.com/perfume/yves-saint-laurent/libre-intense-edp-imported.html;Libre Intense Edp;Yves Saint Laurent;;female;5.0;;;;;;;;;;;;;Eau de Parfum;Floral Amber
+https://www.fragrantica.com/perfume/yves-saint-laurent/libre-l-eau-nue-edp-imported.html;Libre L'eau Nue Edp;Yves Saint Laurent;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/yves-saint-laurent/mon-paris-edp-imported.html;Mon Paris Edp;Yves Saint Laurent;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/yves-saint-laurent/mon-paris-intensement-edp-imported.html;Mon Paris Intensement Edp;Yves Saint Laurent;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/yves-saint-laurent/black-opium-edp-imported.html;Black Opium Edp;Yves Saint Laurent;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Ambery Gourmand
+https://www.fragrantica.com/perfume/yves-saint-laurent/black-opium-intense-edp-imported.html;Black Opium Intense Edp;Yves Saint Laurent;;female;5.0;;;;;;;;;;;;;Eau de Parfum;Ambery Gourmand
+https://www.fragrantica.com/perfume/yves-saint-laurent/y-edp-imported.html;Y Edp;Yves Saint Laurent;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/yves-saint-laurent/y-eau-fraiche-edt-imported.html;Y Eau Fraiche Edt;Yves Saint Laurent;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Fruity Aromatic
+https://www.fragrantica.com/perfume/yves-saint-laurent/y-le-parfum-imported.html;Y Le Parfum;Yves Saint Laurent;;male;5.0;;;;;;;;;;;;;Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/yves-saint-laurent/l-homme-edp-imported.html;L'homme Edp;Yves Saint Laurent;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/l-homme-parfum-intense-edp-imported.html;L'homme Parfum Intense Edp;Yves Saint Laurent;;male;5.0;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/l-homme-ultime-edp-imported.html;L'homme Ultime Edp;Yves Saint Laurent;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/l-homme-le-parfum-imported.html;L'homme Le Parfum;Yves Saint Laurent;;male;5.0;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/la-nuit-de-l-homme-edp-imported.html;La Nuit De L'homme Edp;Yves Saint Laurent;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/la-nuit-de-l-homme-parfum-imported.html;La Nuit De L'homme Parfum;Yves Saint Laurent;;male;5.0;;;;;;;;;;;;;Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/yves-saint-laurent/la-nuit-de-l-homme-l-intense-edp-imported.html;La Nuit De L'homme L'intense Edp;Yves Saint Laurent;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/the-one-edp-imported.html;The One Edp;Dolce & Gabbana;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/the-one-edp-intense-imported.html;The One Edp Intense;Dolce & Gabbana;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/the-only-one-edp-imported.html;The Only One Edp;Dolce & Gabbana;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dolce-gabbana/the-only-one-2-edp-imported.html;The Only One 2 Edp;Dolce & Gabbana;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dolce-gabbana/devotion-edp-imported.html;Devotion Edp;Dolce & Gabbana;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dolce-gabbana/devotion-edp-intense-imported.html;Devotion Edp Intense;Dolce & Gabbana;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-edt-imported.html;Light Blue Edt;Dolce & Gabbana;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Fruity Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-edp-imported.html;Light Blue Edp;Dolce & Gabbana;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-eau-intense-edp-imported.html;Light Blue Eau Intense Edp;Dolce & Gabbana;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-forever-edp-imported.html;Light Blue Forever Edp;Dolce & Gabbana;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/dolce-gabbana/pour-homme-edt-imported.html;Pour Homme Edt;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/dolce-gabbana/pour-homme-intenso-edp-imported.html;Pour Homme Intenso Edp;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/dolce-gabbana/the-one-for-men-edp-imported.html;The One For Men Edp;Dolce & Gabbana;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/the-one-for-men-edp-intense-imported.html;The One For Men Edp Intense;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/the-one-for-men-parfum-imported.html;The One For Men Parfum;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/k-by-dolce-gabbana-edp-imported.html;K By Dolce&gabbana Edp;Dolce & Gabbana;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/k-by-dolce-gabbana-intenso-edp-imported.html;K By Dolce&gabbana Intenso Edp;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-pour-homme-edt-imported.html;Light Blue Pour Homme Edt;Dolce & Gabbana;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Fruity Aromatic
+https://www.fragrantica.com/perfume/dolce-gabbana/light-blue-intense-pour-homme-edp-imported.html;Light Blue Intense Pour Homme Edp;Dolce & Gabbana;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Aromatic
+https://www.fragrantica.com/perfume/azzaro/chrome-edt-imported.html;Chrome Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-intense-edt-imported.html;Chrome Intense Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-aqua-edt-imported.html;Chrome Aqua Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-extreme-edt-imported.html;Chrome Extreme Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-azure-edt-imported.html;Chrome Azure Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-legend-edt-imported.html;Chrome Legend Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-sport-edt-imported.html;Chrome Sport Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-pure-edt-imported.html;Chrome Pure Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-united-edt-imported.html;Chrome United Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/chrome-pure-sport-edt-imported.html;Chrome Pure Sport Edt;Azzaro;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/azzaro/wanted-edt-imported.html;Wanted Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/wanted-by-night-edt-imported.html;Wanted By Night Edt;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/wanted-eau-de-parfum-edp-imported.html;Wanted Eau De Parfum Edp;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/wanted-freeride-edt-imported.html;Wanted Freeride Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/wanted-tonic-edt-imported.html;Wanted Tonic Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/azzaro/the-most-wanted-parfum-imported.html;The Most Wanted Parfum;Azzaro;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/azzaro/the-most-wanted-intense-edp-imported.html;The Most Wanted Intense Edp;Azzaro;;male;5.0;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/azzaro/the-most-wanted-eau-de-parfum-edp-imported.html;The Most Wanted Eau De Parfum Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/azzaro/forever-wanted-elixir-edp-imported.html;Forever Wanted Elixir Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/azzaro/pour-homme-edt-imported.html;Pour Homme Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/azzaro/pour-homme-intense-edp-imported.html;Pour Homme Intense Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/azzaro/pour-homme-edition-noire-edp-imported.html;Pour Homme Edition Noire Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/azzaro/pour-elle-edp-imported.html;Pour Elle Edp;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/azzaro/pour-elle-l-eau-tres-belle-edt-imported.html;Pour Elle L'eau Tres Belle Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/pour-elle-l-eau-tres-florale-edt-imported.html;Pour Elle L'eau Tres Florale Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/mademoiselle-edt-imported.html;Mademoiselle Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/mademoiselle-l-eau-tres-belle-edt-imported.html;Mademoiselle L'eau Tres Belle Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/mademoiselle-l-eau-tres-florale-edt-imported.html;Mademoiselle L'eau Tres Florale Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/hot-pepper-edt-imported.html;Hot Pepper Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Spicy
+https://www.fragrantica.com/perfume/azzaro/fun-edt-imported.html;Fun Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/visit-for-men-edt-imported.html;Visit For Men Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/visit-for-women-edt-imported.html;Visit For Women Edt;Azzaro;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/azzaro/decibel-edt-imported.html;Decibel Edt;Azzaro;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/azzaro/elixir-edp-imported.html;Elixir Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/azzaro/forever-wanted-elixir-edp-imported.html;Forever Wanted Elixir Edp;Azzaro;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/al-haramain/detour-noir-imported.html;Detour Noir;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/al-haramain/detour-eco-imported.html;Detour Eco;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/detour-rouge-imported.html;Detour Rouge;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/al-haramain/detour-exclusif-imported.html;Detour Exclusif;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-imported.html;L'aventure;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Citrus Woody
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-intense-imported.html;L'aventure Intense;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-blanche-imported.html;L'aventure Blanche;Al Haramain;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Woody
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-femme-imported.html;L'aventure Femme;Al Haramain;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-knight-imported.html;L'aventure Knight;Al Haramain;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/al-haramain/l-aventure-gold-imported.html;L'aventure Gold;Al Haramain;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-gold-edition-imported.html;Amber Oud Gold Edition;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-white-edition-imported.html;Amber Oud White Edition;Al Haramain;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-carbon-edition-imported.html;Amber Oud Carbon Edition;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-bleu-edition-imported.html;Amber Oud Bleu Edition;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-tobacco-edition-imported.html;Amber Oud Tobacco Edition;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-ruby-edition-imported.html;Amber Oud Ruby Edition;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-dubai-night-imported.html;Amber Oud Dubai Night;Al Haramain;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-aqua-dubai-imported.html;Amber Oud Aqua Dubai;Al Haramain;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aquatic
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-gold-edition-extreme-imported.html;Amber Oud Gold Edition Extreme;Al Haramain;;unisex;5.0;;;;;;;;;;;;;Extrait de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/al-haramain/amber-oud-gold-edition-intense-imported.html;Amber Oud Gold Edition Intense;Al Haramain;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/creed/aventus-imported.html;Aventus;Creed;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/creed/aventus-for-her-imported.html;Aventus For Her;Creed;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/silver-mountain-water-imported.html;Silver Mountain Water;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic
+https://www.fragrantica.com/perfume/creed/green-irish-tweed-imported.html;Green Irish Tweed;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fougere
+https://www.fragrantica.com/perfume/creed/millesime-imperial-imported.html;Millesime Imperial;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/creed/original-vetiver-imported.html;Original Vetiver;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/creed/original-santal-imported.html;Original Santal;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/creed/bois-du-portugal-imported.html;Bois Du Portugal;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody
+https://www.fragrantica.com/perfume/creed/virgin-island-water-imported.html;Virgin Island Water;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Tropical
+https://www.fragrantica.com/perfume/creed/tabarome-imported.html;Tabarome;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Woody
+https://www.fragrantica.com/perfume/creed/himalaya-imported.html;Himalaya;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic
+https://www.fragrantica.com/perfume/creed/viking-imported.html;Viking;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Woody
+https://www.fragrantica.com/perfume/creed/viking-cologne-imported.html;Viking Cologne;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Woody
+https://www.fragrantica.com/perfume/creed/love-in-white-imported.html;Love In White;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/wind-flowers-imported.html;Wind Flowers;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/spring-flower-imported.html;Spring Flower;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/carmina-imported.html;Carmina;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/queen-of-silk-imported.html;Queen Of Silk;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/eladaria-imported.html;Eladaria;Creed;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/creed/absolu-aventus-imported.html;Absolu Aventus;Creed;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/creed/royal-mayfair-imported.html;Royal Mayfair;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/creed/delphinus-imported.html;Delphinus;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/creed/centaurus-imported.html;Centaurus;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/creed/oud-zarian-imported.html;Oud Zarian;Creed;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/versace/eros-parfum-imported.html;Eros Parfum;Versace;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/versace/eros-flame-imported.html;Eros Flame;Versace;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/versace/eros-energy-imported.html;Eros Energy;Versace;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/versace/dylan-blue-pour-homme-imported.html;Dylan Blue Pour Homme;Versace;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aquatic
+https://www.fragrantica.com/perfume/versace/man-eau-fraiche-imported.html;Man Eau Fraiche;Versace;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aquatic
+https://www.fragrantica.com/perfume/versace/pour-homme-imported.html;Pour Homme;Versace;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/versace/crystal-noir-imported.html;Crystal Noir;Versace;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Amber Floral
+https://www.fragrantica.com/perfume/versace/bright-crystal-imported.html;Bright Crystal;Versace;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/versace/yellow-diamond-imported.html;Yellow Diamond;Versace;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/versace/red-jeans-imported.html;Red Jeans;Versace;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/versace/vanitas-imported.html;Vanitas;Versace;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/versace/l-homme-imported.html;L'homme;Versace;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Floral
+https://www.fragrantica.com/perfume/versace/pour-homme-oud-noir-imported.html;Pour Homme Oud Noir;Versace;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/versace/versense-imported.html;Versense;Versace;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Green Floral
+https://www.fragrantica.com/perfume/versace/atelier-cedrat-de-diamante-imported.html;Atelier Cedrat De Diamante;Versace;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Woody
+https://www.fragrantica.com/perfume/versace/atelier-eclat-de-rose-imported.html;Atelier Eclat De Rose;Versace;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/versace/atelier-encens-supreme-imported.html;Atelier Encens Supreme;Versace;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Incense Woody
+https://www.fragrantica.com/perfume/versace/atelier-santal-boise-imported.html;Atelier Santal Boise;Versace;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Sandalwood
+https://www.fragrantica.com/perfume/carolina-herrera/good-girl-imported.html;Good Girl;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/good-girl-blush-imported.html;Good Girl Blush;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/good-girl-supreme-imported.html;Good Girl Supreme;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/very-good-girl-imported.html;Very Good Girl;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/very-good-girl-elixir-imported.html;Very Good Girl Elixir;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/212-vip-imported.html;212 Vip;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/212-vip-black-imported.html;212 Vip Black;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/212-heroes-imported.html;212 Heroes;Carolina Herrera;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Woody
+https://www.fragrantica.com/perfume/carolina-herrera/212-sexy-imported.html;212 Sexy;Carolina Herrera;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/212-men-imported.html;212 Men;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/212-men-nyc-imported.html;212 Men Nyc;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/212-vip-men-imported.html;212 Vip Men;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/212-vip-black-elixir-imported.html;212 Vip Black Elixir;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/bad-boy-imported.html;Bad Boy;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/bad-boy-le-parfum-imported.html;Bad Boy Le Parfum;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/bad-boy-cobalt-imported.html;Bad Boy Cobalt;Carolina Herrera;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/carolina-herrera/amber-desire-imported.html;Amber Desire;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber
+https://www.fragrantica.com/perfume/carolina-herrera/neroli-boheme-imported.html;Neroli Boheme;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/carolina-herrera/confidential-oud-couture-imported.html;Confidential Oud Couture;Carolina Herrera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Woody
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-edt-imported.html;Boss Bottled Edt;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-edp-imported.html;Boss Bottled Edp;Hugo Boss;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-infinite-imported.html;Boss Bottled Infinite;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-tonic-imported.html;Boss Bottled Tonic;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-edt-imported.html;Boss The Scent Edt;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Spicy Oriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-intense-edp-imported.html;Boss The Scent Intense Edp;Hugo Boss;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Oriental
+https://www.fragrantica.com/perfume/hugo-boss/hugo-man-edt-imported.html;Hugo Man Edt;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Green Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/hugo-just-different-edt-imported.html;Hugo Just Different Edt;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-night-edt-imported.html;Boss Bottled Night Edt;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-ma-vie-edp-imported.html;Boss Ma Vie Edp;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-femme-edp-imported.html;Boss Femme Edp;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-for-her-edp-imported.html;Boss The Scent For Her Edp;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-le-parfum-edp-imported.html;Boss The Scent Le Parfum Edp;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-oud-imported.html;Boss Bottled Oud;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-elixir-imported.html;Boss Bottled Elixir;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-le-parfum-imported.html;Boss The Scent Le Parfum;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Woody
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-absolute-imported.html;Boss The Scent Absolute;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Woody
+https://www.fragrantica.com/perfume/hugo-boss/hugo-energise-imported.html;Hugo Energise;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aquatic
+https://www.fragrantica.com/perfume/hugo-boss/hugo-just-different-imported.html;Hugo Just Different;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Green
+https://www.fragrantica.com/perfume/hugo-boss/boss-soul-imported.html;Boss Soul;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Woody
+https://www.fragrantica.com/perfume/hugo-boss/boss-selection-imported.html;Boss Selection;Hugo Boss;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-sport-imported.html;Boss Bottled Sport;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-unlimited-imported.html;Boss Bottled Unlimited;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-bottled-night-imported.html;Boss Bottled Night;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hugo-boss/boss-ma-vie-l-eau-imported.html;Boss Ma Vie L'eau;Hugo Boss;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-femme-imported.html;Boss Femme;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-nuit-pour-femme-imported.html;Boss Nuit Pour Femme;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-orange-imported.html;Boss Orange;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-for-her-imported.html;Boss The Scent For Her;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-magnetic-imported.html;Boss The Scent Magnetic;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-alive-imported.html;Boss Alive;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/boss-the-scent-private-accord-imported.html;Boss The Scent Private Accord;Hugo Boss;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/hugo-boss/hugo-reversed-imported.html;Hugo Reversed;Hugo Boss;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/hermes/terre-d-hermes-edt-imported.html;Terre D'hermes Edt;Hermes;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Citrus
+https://www.fragrantica.com/perfume/hermes/terre-d-hermes-edp-imported.html;Terre D'hermes Edp;Hermes;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Citrus
+https://www.fragrantica.com/perfume/hermes/terre-d-hermes-eau-tres-fraiche-imported.html;Terre D'hermes Eau Tres Fraiche;Hermes;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Citrus
+https://www.fragrantica.com/perfume/hermes/terre-d-hermes-eau-givree-imported.html;Terre D'hermes Eau Givree;Hermes;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Woody Citrus
+https://www.fragrantica.com/perfume/hermes/h24-edt-imported.html;H24 Edt;Hermes;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Green
+https://www.fragrantica.com/perfume/hermes/h24-herbes-vives-edp-imported.html;H24 Herbes Vives Edp;Hermes;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/hermes/un-jardin-sur-le-nil-edt-imported.html;Un Jardin Sur Le Nil Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/un-jardin-sur-le-toit-edt-imported.html;Un Jardin Sur Le Toit Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/un-jardin-mediterraneen-edt-imported.html;Un Jardin Mediterraneen Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/un-jardin-d-amalfi-edt-imported.html;Un Jardin D'amalfi Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/un-jardin-en-mediterranee-edt-imported.html;Un Jardin En Mediterranee Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/un-jardin-sur-le-toit-edt-imported.html;Un Jardin Sur Le Toit Edt;Hermes;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Green Fruity
+https://www.fragrantica.com/perfume/hermes/24-faubourg-edp-imported.html;24 Faubourg Edp;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hermes/24-faubourg-edt-imported.html;24 Faubourg Edt;Hermes;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/hermes/caleche-edp-imported.html;Caleche Edp;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hermes/caleche-edt-imported.html;Caleche Edt;Hermes;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/hermes/elixir-des-merveilles-edp-imported.html;Elixir Des Merveilles Edp;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/hermes/elixir-des-merveilles-bleue-edp-imported.html;Elixir Des Merveilles Bleue Edp;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/hermes/barenia-edp-imported.html;Barenia Edp;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Chypre Fruity
+https://www.fragrantica.com/perfume/hermes/barenia-eau-de-parfum-intense-imported.html;Barenia Eau De Parfum Intense;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Chypre Fruity
+https://www.fragrantica.com/perfume/hermes/barenia-eau-de-parfum-imported.html;Barenia Eau De Parfum;Hermes;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Chypre Fruity
+https://www.fragrantica.com/perfume/hermes/hermessence-collection-edp-imported.html;Hermessence Collection Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/hermes/oud-alezan-edp-imported.html;Oud Alezan Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/hermes/epice-marine-edp-imported.html;Epice Marine Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/hermes/ambre-narguile-edp-imported.html;Ambre Narguile Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/hermes/poivre-samarcande-edp-imported.html;Poivre Samarcande Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Spicy Woody
+https://www.fragrantica.com/perfume/hermes/vanille-galante-edp-imported.html;Vanille Galante Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/hermes/brin-de-reglisse-edp-imported.html;Brin De Reglisse Edp;Hermes;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/tom-ford/black-orchid-edp-imported.html;Black Orchid Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/tom-ford/black-orchid-edt-imported.html;Black Orchid Edt;Tom Ford;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Floral
+https://www.fragrantica.com/perfume/tom-ford/tobacco-vanille-edp-imported.html;Tobacco Vanille Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/tom-ford/lost-cherry-edp-imported.html;Lost Cherry Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Fruity
+https://www.fragrantica.com/perfume/tom-ford/velvet-orchid-edp-imported.html;Velvet Orchid Edp;Tom Ford;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/tom-ford/fucking-fabulous-edp-imported.html;Fucking Fabulous Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Fougere
+https://www.fragrantica.com/perfume/tom-ford/oud-wood-edp-imported.html;Oud Wood Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/tom-ford/noir-de-noir-edp-imported.html;Noir De Noir Edp;Tom Ford;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/tom-ford/white-patchouli-edp-imported.html;White Patchouli Edp;Tom Ford;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Chypre Floral
+https://www.fragrantica.com/perfume/tom-ford/black-orchid-parfum-imported.html;Black Orchid Parfum;Tom Ford;;unisex;5.0;;;;;;;;;;;;;Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/tom-ford/neroli-portofino-edt-imported.html;Neroli Portofino Edt;Tom Ford;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/tom-ford/private-blend-oud-fleur-edp-imported.html;Private Blend Oud Fleur Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/tom-ford/fucking-fabulous-edp-imported.html;Fucking Fabulous Edp;Tom Ford;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/parfums-de-marly/delina-edp-imported.html;Delina Edp;Parfums De Marly;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/parfums-de-marly/delina-exclusif-edp-imported.html;Delina Exclusif Edp;Parfums De Marly;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/parfums-de-marly/delina-la-rosee-edp-imported.html;Delina La Rosee Edp;Parfums De Marly;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/parfums-de-marly/valaya-edp-imported.html;Valaya Edp;Parfums De Marly;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Musky Woody
+https://www.fragrantica.com/perfume/parfums-de-marly/valaya-exclusif-edp-imported.html;Valaya Exclusif Edp;Parfums De Marly;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Musky Woody
+https://www.fragrantica.com/perfume/parfums-de-marly/castley-edp-imported.html;Castley Edp;Parfums De Marly;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/parfums-de-marly/palatine-edp-imported.html;Palatine Edp;Parfums De Marly;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/parfums-de-marly/altha-r-edp-imported.html;Althaïr Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/parfums-de-marly/haltane-edp-imported.html;Haltane Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/parfums-de-marly/layton-edp-imported.html;Layton Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/parfums-de-marly/layton-exclusif-edp-imported.html;Layton Exclusif Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/parfums-de-marly/greenley-edp-imported.html;Greenley Edp;Parfums De Marly;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Woody
+https://www.fragrantica.com/perfume/parfums-de-marly/perseus-edp-imported.html;Perseus Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Woody
+https://www.fragrantica.com/perfume/parfums-de-marly/godolphin-edp-imported.html;Godolphin Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Leather Chypre
+https://www.fragrantica.com/perfume/parfums-de-marly/darley-edp-imported.html;Darley Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Fougere
+https://www.fragrantica.com/perfume/parfums-de-marly/habdan-edp-imported.html;Habdan Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/parfums-de-marly/oajan-edp-imported.html;Oajan Edp;Parfums De Marly;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-edt-imported.html;Stronger With You Edt;Giorgio Armani;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Fougere
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-intensely-edp-imported.html;Stronger With You Intensely Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-absolutely-edp-imported.html;Stronger With You Absolutely Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-leather-edp-imported.html;Stronger With You Leather Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Leather
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-oud-edp-imported.html;Stronger With You Oud Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-only-edp-imported.html;Stronger With You Only Edp;Giorgio Armani;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-freeze-edp-imported.html;Stronger With You Freeze Edp;Giorgio Armani;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Aquatic
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-amber-edp-imported.html;Stronger With You Amber Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-parfum-imported.html;Stronger With You Parfum;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/stronger-with-you-tobacco-edp-imported.html;Stronger With You Tobacco Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/because-it-s-you-edp-imported.html;Because It's You Edp;Giorgio Armani;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/because-it-s-you-intensely-edp-imported.html;Because It's You Intensely Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/giorgio-armani/armani-code-edt-imported.html;Armani Code Edt;Giorgio Armani;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Oriental Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/armani-code-profumo-edp-imported.html;Armani Code Profumo Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/armani-code-absolu-edp-imported.html;Armani Code Absolu Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/armani-code-parfum-imported.html;Armani Code Parfum;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Parfum;Oriental Spicy
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gio-edt-imported.html;Acqua Di Gio Edt;Giorgio Armani;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aquatic Aromatic
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gio-profondo-edp-imported.html;Acqua Di Gio Profondo Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Aromatic
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gio-absolu-edp-imported.html;Acqua Di Gio Absolu Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aquatic
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gio-elixir-edp-imported.html;Acqua Di Gio Elixir Edp;Giorgio Armani;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Aromatic
+https://www.fragrantica.com/perfume/giorgio-armani/si-edp-imported.html;Si Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Chypre Fruity
+https://www.fragrantica.com/perfume/giorgio-armani/si-passione-edp-imported.html;Si Passione Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/giorgio-armani/si-fiori-edp-imported.html;Si Fiori Edp;Giorgio Armani;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/giorgio-armani/si-intense-edp-imported.html;Si Intense Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Chypre Fruity
+https://www.fragrantica.com/perfume/giorgio-armani/my-way-edp-imported.html;My Way Edp;Giorgio Armani;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/my-way-intense-edp-imported.html;My Way Intense Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/my-way-parfum-imported.html;My Way Parfum;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/my-way-nectar-edp-imported.html;My Way Nectar Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gioia-edp-imported.html;Acqua Di Gioia Edp;Giorgio Armani;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Floral
+https://www.fragrantica.com/perfume/giorgio-armani/acqua-di-gioia-essenza-edp-imported.html;Acqua Di Gioia Essenza Edp;Giorgio Armani;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Floral
+https://www.fragrantica.com/perfume/valentino/donna-born-in-roma-edp-imported.html;Donna Born In Roma Edp;Valentino;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Woody
+https://www.fragrantica.com/perfume/valentino/donna-born-in-roma-intense-edp-imported.html;Donna Born In Roma Intense Edp;Valentino;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/valentino/donna-born-in-roma-coral-fantasy-edp-imported.html;Donna Born In Roma Coral Fantasy Edp;Valentino;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/valentino/donna-born-in-roma-green-stravaganza-edp-imported.html;Donna Born In Roma Green Stravaganza Edp;Valentino;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Green Floral
+https://www.fragrantica.com/perfume/valentino/valentina-edp-imported.html;Valentina Edp;Valentino;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/valentino/valentina-assoluto-edp-imported.html;Valentina Assoluto Edp;Valentino;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/valentino/valentina-pink-edp-imported.html;Valentina Pink Edp;Valentino;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/valentino/valentina-oud-mystique-edp-imported.html;Valentina Oud Mystique Edp;Valentino;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oriental
+https://www.fragrantica.com/perfume/valentino/valentino-uomo-edt-imported.html;Valentino Uomo Edt;Valentino;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Spicy
+https://www.fragrantica.com/perfume/valentino/valentino-uomo-intense-edp-imported.html;Valentino Uomo Intense Edp;Valentino;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/valentino/valentino-uomo-noir-absolu-edp-imported.html;Valentino Uomo Noir Absolu Edp;Valentino;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/valentino/valentino-uomo-born-in-roma-edp-imported.html;Valentino Uomo Born In Roma Edp;Valentino;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Woody
+https://www.fragrantica.com/perfume/louis-vuitton/imagination-imported.html;Imagination;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/l-immensite-imported.html;L'immensite;Louis Vuitton;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/louis-vuitton/afternoon-swim-imported.html;Afternoon Swim;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/attrape-reves-imported.html;Attrape-reves;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/heures-d-absence-imported.html;Heures D'absence;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/le-jour-se-leve-imported.html;Le Jour Se Leve;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/rose-des-vents-imported.html;Rose Des Vents;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/coeur-battant-imported.html;Coeur Battant;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/matiere-noire-imported.html;Matiere Noire;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/louis-vuitton/spell-on-you-imported.html;Spell On You;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/pacific-chill-imported.html;Pacific Chill;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/california-dream-imported.html;California Dream;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/city-of-stars-imported.html;City Of Stars;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/apogee-imported.html;Apogee;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/au-hasard-imported.html;Au Hasard;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/louis-vuitton/cactus-garden-imported.html;Cactus Garden;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/contre-moi-imported.html;Contre Moi;Louis Vuitton;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/on-the-beach-imported.html;On The Beach;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/louis-vuitton/les-sables-roses-imported.html;Les Sables Roses;Louis Vuitton;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/ombre-nomade-imported.html;Ombre Nomade;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud
+https://www.fragrantica.com/perfume/louis-vuitton/symphony-imported.html;Symphony;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Extrait de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/dancing-blossom-imported.html;Dancing Blossom;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Extrait de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/myriad-imported.html;Myriad;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Extrait de Parfum;Floriental
+https://www.fragrantica.com/perfume/louis-vuitton/rhapsody-imported.html;Rhapsody;Louis Vuitton;;unisex;4.5;;;;;;;;;;;;;Extrait de Parfum;Floriental
+https://www.fragrantica.com/perfume/prada/paradoxe-eau-de-parfum-imported.html;Paradoxe Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/prada/paradoxe-intense-eau-de-parfum-imported.html;Paradoxe Intense Eau De Parfum;Prada;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/prada/paradoxe-virtual-flower-eau-de-parfum-imported.html;Paradoxe Virtual Flower Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/prada/paradoxe-radical-essence-parfum-imported.html;Paradoxe Radical Essence Parfum;Prada;;female;4.5;;;;;;;;;;;;;Parfum;Amber Woody
+https://www.fragrantica.com/perfume/prada/luna-rossa-eau-de-parfum-imported.html;Luna Rossa Eau De Parfum;Prada;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/prada/luna-rossa-ocean-eau-de-parfum-imported.html;Luna Rossa Ocean Eau De Parfum;Prada;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Aromatic
+https://www.fragrantica.com/perfume/prada/luna-rossa-carbon-eau-de-parfum-imported.html;Luna Rossa Carbon Eau De Parfum;Prada;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/prada/luna-rossa-extreme-eau-de-parfum-imported.html;Luna Rossa Extreme Eau De Parfum;Prada;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/prada/luna-rossa-sport-eau-de-parfum-imported.html;Luna Rossa Sport Eau De Parfum;Prada;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Aquatic
+https://www.fragrantica.com/perfume/prada/luna-rossa-black-eau-de-parfum-imported.html;Luna Rossa Black Eau De Parfum;Prada;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/prada/luna-rossa-ocean-eau-de-toilette-imported.html;Luna Rossa Ocean Eau De Toilette;Prada;;male;2.5;;;;;;;;;;;;;Eau de Toilette;Aquatic Aromatic
+https://www.fragrantica.com/perfume/prada/les-infusions-de-mandarine-eau-de-parfum-imported.html;Les Infusions De Mandarine Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/prada/les-infusions-de-vetiver-eau-de-parfum-imported.html;Les Infusions De Vetiver Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/prada/les-infusions-de-iris-eau-de-parfum-imported.html;Les Infusions De Iris Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/prada/les-infusions-de-rose-eau-de-parfum-imported.html;Les Infusions De Rose Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/prada/les-infusions-de-vanille-eau-de-parfum-imported.html;Les Infusions De Vanille Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Vanilla
+https://www.fragrantica.com/perfume/prada/les-infusions-de-cedre-eau-de-parfum-imported.html;Les Infusions De Cedre Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/prada/les-infusions-de-gingembre-eau-de-parfum-imported.html;Les Infusions De Gingembre Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/prada/les-infusions-de-rhubarbe-eau-de-parfum-imported.html;Les Infusions De Rhubarbe Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity
+https://www.fragrantica.com/perfume/prada/les-infusions-de-figue-eau-de-parfum-imported.html;Les Infusions De Figue Eau De Parfum;Prada;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/prada/prada-candy-eau-de-parfum-imported.html;Prada Candy Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/prada/prada-candy-night-eau-de-parfum-imported.html;Prada Candy Night Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/prada/prada-candy-florale-eau-de-parfum-imported.html;Prada Candy Florale Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Floral
+https://www.fragrantica.com/perfume/prada/prada-candy-kiss-eau-de-parfum-imported.html;Prada Candy Kiss Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Floral
+https://www.fragrantica.com/perfume/prada/prada-candy-gloss-eau-de-parfum-imported.html;Prada Candy Gloss Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Fruity
+https://www.fragrantica.com/perfume/prada/prada-candy-l-eau-eau-de-parfum-imported.html;Prada Candy L'eau Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Floral
+https://www.fragrantica.com/perfume/prada/prada-candy-sugar-pop-eau-de-parfum-imported.html;Prada Candy Sugar Pop Eau De Parfum;Prada;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/tease-eau-de-parfum-imported.html;Tease Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/tease-rebel-eau-de-parfum-imported.html;Tease Rebel Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/love-spell-eau-de-toilette-imported.html;Love Spell Eau De Toilette;Victoria's Secret;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floral Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/very-sexy-eau-de-parfum-imported.html;Very Sexy Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/victoria-s-secret/very-sexy-now-eau-de-parfum-imported.html;Very Sexy Now Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/bombshell-eau-de-parfum-imported.html;Bombshell Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/bombshell-intense-eau-de-parfum-imported.html;Bombshell Intense Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/heavenly-eau-de-parfum-imported.html;Heavenly Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/scandalous-eau-de-parfum-imported.html;Scandalous Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/victoria-s-secret/victoria-eau-de-parfum-imported.html;Victoria Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/love-eau-de-parfum-imported.html;Love Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/angelic-eau-de-parfum-imported.html;Angelic Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/very-sexy-angel-eau-de-parfum-imported.html;Very Sexy Angel Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/love-addict-eau-de-parfum-imported.html;Love Addict Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/velvet-petals-eau-de-parfum-imported.html;Velvet Petals Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/secret-charm-eau-de-parfum-imported.html;Secret Charm Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/love-me-eau-de-parfum-imported.html;Love Me Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/fantasy-eau-de-parfum-imported.html;Fantasy Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/midnight-fantasy-eau-de-parfum-imported.html;Midnight Fantasy Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/love-by-victoria-eau-de-parfum-imported.html;Love By Victoria Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/bombshell-seduction-eau-de-parfum-imported.html;Bombshell Seduction Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/victoria-s-secret/very-sexy-now-eau-de-parfum-imported.html;Very Sexy Now Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/victoria-s-secret/tease-rebel-eau-de-parfum-imported.html;Tease Rebel Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriential
+https://www.fragrantica.com/perfume/victoria-s-secret/love-spell-eau-de-parfum-imported.html;Love Spell Eau De Parfum;Victoria's Secret;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/guerlain/shalimar-eau-de-parfum-imported.html;Shalimar Eau De Parfum;Guerlain;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental
+https://www.fragrantica.com/perfume/guerlain/shalimar-souffle-de-parfum-imported.html;Shalimar Souffle De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/shalimar-parfum-initial-eau-de-parfum-imported.html;Shalimar Parfum Initial Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/shalimar-cologne-imported.html;Shalimar Cologne;Guerlain;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus
+https://www.fragrantica.com/perfume/guerlain/mon-guerlain-eau-de-parfum-imported.html;Mon Guerlain Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/guerlain/mon-guerlain-bloom-of-rose-eau-de-parfum-imported.html;Mon Guerlain Bloom Of Rose Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/mon-guerlain-intense-eau-de-parfum-imported.html;Mon Guerlain Intense Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/guerlain/la-petite-robe-noire-eau-de-parfum-imported.html;La Petite Robe Noire Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/guerlain/la-petite-robe-noire-intense-eau-de-parfum-imported.html;La Petite Robe Noire Intense Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental Fruity
+https://www.fragrantica.com/perfume/guerlain/la-petite-robe-noire-black-perfecto-eau-de-parfum-imported.html;La Petite Robe Noire Black Perfecto Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/l-instant-de-guerlain-eau-de-parfum-imported.html;L'instant De Guerlain Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/l-instant-de-guerlain-eau-de-toilette-imported.html;L'instant De Guerlain Eau De Toilette;Guerlain;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/guerlain/idylle-eau-de-parfum-imported.html;Idylle Eau De Parfum;Guerlain;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/guerlain/idylle-eau-de-toilette-imported.html;Idylle Eau De Toilette;Guerlain;;female;2.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/diptyque/philosykos-eau-de-toilette-imported.html;Philosykos Eau De Toilette;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Fruity
+https://www.fragrantica.com/perfume/diptyque/do-son-eau-de-toilette-imported.html;Do Son Eau De Toilette;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Floral
+https://www.fragrantica.com/perfume/diptyque/l-ombre-dans-l-eau-eau-de-toilette-imported.html;L'ombre Dans L'eau Eau De Toilette;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Floral Fruity
+https://www.fragrantica.com/perfume/diptyque/tuberose-eau-de-toilette-imported.html;Tuberose Eau De Toilette;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Floral
+https://www.fragrantica.com/perfume/diptyque/eau-rose-eau-de-toilette-imported.html;Eau Rose Eau De Toilette;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Toilette;Floral
+https://www.fragrantica.com/perfume/diptyque/fleur-de-peau-eau-de-parfum-imported.html;Fleur De Peau Eau De Parfum;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/diptyque/volutes-eau-de-parfum-imported.html;Volutes Eau De Parfum;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental
+https://www.fragrantica.com/perfume/diptyque/sante-eau-de-toilette-imported.html;Sante Eau De Toilette;Diptyque;;unisex;2.5;;;;;;;;;;;;;Eau de Toilette;Citrus Aromatic
+https://www.fragrantica.com/perfume/diptyque/oud-palao-eau-de-parfum-imported.html;Oud Palao Eau De Parfum;Diptyque;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oud Floral
+https://www.fragrantica.com/perfume/diptyque/do-son-eau-de-parfum-imported.html;Do Son Eau De Parfum;Diptyque;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/jo-malone/english-pear-freesia-cologne-imported.html;English Pear & Freesia Cologne;Jo Malone;;unisex;3.5;;;;;;;;;;;;;Cologne;Floral Fruity
+https://www.fragrantica.com/perfume/jo-malone/peony-blush-suede-cologne-imported.html;Peony & Blush Suede Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Floral
+https://www.fragrantica.com/perfume/jo-malone/lime-basil-mandarin-cologne-imported.html;Lime Basil & Mandarin Cologne;Jo Malone;;unisex;3.5;;;;;;;;;;;;;Cologne;Citrus Aromatic
+https://www.fragrantica.com/perfume/jo-malone/wood-sage-sea-salt-cologne-imported.html;Wood Sage & Sea Salt Cologne;Jo Malone;;unisex;3.5;;;;;;;;;;;;;Cologne;Woody Aromatic
+https://www.fragrantica.com/perfume/jo-malone/pomegranate-noir-cologne-imported.html;Pomegranate Noir Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Oriental Fruity
+https://www.fragrantica.com/perfume/jo-malone/nectarine-blossom-honey-cologne-imported.html;Nectarine Blossom & Honey Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Floral Fruity
+https://www.fragrantica.com/perfume/jo-malone/red-roses-cologne-imported.html;Red Roses Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Floral
+https://www.fragrantica.com/perfume/jo-malone/amber-lavender-cologne-imported.html;Amber & Lavender Cologne;Jo Malone;;unisex;3.5;;;;;;;;;;;;;Cologne;Amber Floral
+https://www.fragrantica.com/perfume/jo-malone/peony-blush-suede-cologne-imported.html;Peony & Blush Suede Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Floral
+https://www.fragrantica.com/perfume/jo-malone/wild-bluebell-cologne-imported.html;Wild Bluebell Cologne;Jo Malone;;female;3.5;;;;;;;;;;;;;Cologne;Floral
+https://www.fragrantica.com/perfume/jo-malone/english-oak-redcurrant-cologne-imported.html;English Oak & Redcurrant Cologne;Jo Malone;;unisex;3.5;;;;;;;;;;;;;Cologne;Woody Fruity
+https://www.fragrantica.com/perfume/ralph-lauren/ralph-eau-de-parfum-imported.html;Ralph Eau De Parfum;Ralph Lauren;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/ralph-lauren/ralph-eau-de-toilette-imported.html;Ralph Eau De Toilette;Ralph Lauren;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/ralph-lauren/romance-eau-de-parfum-imported.html;Romance Eau De Parfum;Ralph Lauren;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/ralph-lauren/romance-eau-de-toilette-imported.html;Romance Eau De Toilette;Ralph Lauren;;female;3.5;;;;;;;;;;;;;Eau de Toilette;Floriental
+https://www.fragrantica.com/perfume/ralph-lauren/notorious-eau-de-parfum-imported.html;Notorious Eau De Parfum;Ralph Lauren;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/ralph-lauren/blue-eau-de-toilette-imported.html;Blue Eau De Toilette;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/ralph-lauren/polo-black-eau-de-parfum-imported.html;Polo Black Eau De Parfum;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/ralph-lauren/polo-red-eau-de-parfum-imported.html;Polo Red Eau De Parfum;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/ralph-lauren/polo-blue-eau-de-parfum-imported.html;Polo Blue Eau De Parfum;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/ralph-lauren/polo-green-eau-de-parfum-imported.html;Polo Green Eau De Parfum;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/ralph-lauren/polo-eau-de-toilette-imported.html;Polo Eau De Toilette;Ralph Lauren;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Woody Aromatic
+https://www.fragrantica.com/perfume/lattafa/abaan-imported.html;Abaan;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/adeeb-imported.html;Adeeb;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/afeef-imported.html;Afeef;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/afkaar-imported.html;Afkaar;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/al-awsaaf-imported.html;Al Awsaaf;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/al-azal-imported.html;Al Azal;Lattafa;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/al-dur-al-maknoon-gold-imported.html;Al Dur Al Maknoon Gold;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/al-dur-al-maknoon-silver-imported.html;Al Dur Al Maknoon Silver;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/qaeed-al-fursan-imported.html;Qaeed Al Fursan;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Oriental Woody
+https://www.fragrantica.com/perfume/lattafa/al-muarikh-the-historian-imported.html;Al Muarikh The Historian;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/al-najris-imported.html;Al Najris;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/ameer-al-oudh-imported.html;Ameer Al Oudh;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/ameer-al-oudh-intense-oud-imported.html;Ameer Al Oudh Intense Oud;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/amwaaj-al-oud-imported.html;Amwaaj Al Oud;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/anfas-oud-imported.html;Anfas Oud;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/angham-imported.html;Angham;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/atheeri-imported.html;Atheeri;Lattafa;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/atlas-imported.html;Atlas;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/aura-imported.html;Aura;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/awraq-al-oud-imported.html;Awraq Al Oud;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/asad-imported.html;Asad;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/asad-bourbon-imported.html;Asad Bourbon;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/bade-e-al-oud-honor-glory-imported.html;Bade'e Al Oud Honor & Glory;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/bade-e-al-oud-sublime-imported.html;Bade'e Al Oud Sublime;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/eclaire-imported.html;Eclaire;Lattafa;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity Gourmand
+https://www.fragrantica.com/perfume/lattafa/fakhar-imported.html;Fakhar;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/fakhar-black-imported.html;Fakhar Black;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/khamrah-imported.html;Khamrah;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/khamrah-qahwa-imported.html;Khamrah Qahwa;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/khamrah-dukhan-imported.html;Khamrah Dukhan;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/liam-imported.html;Liam;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/nebras-imported.html;Nebras;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/raghba-imported.html;Raghba;Lattafa;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/dynasty-imported.html;Dynasty;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/lattafa/victoria-imported.html;Victoria;Lattafa;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/lattafa/the-kingdom-women--imported.html;The Kingdom (women);Lattafa;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Fruity Gourmand
+https://www.fragrantica.com/perfume/maison-alhambra/bright-peach-imported.html;Bright Peach;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/maison-alhambra/woody-oud-imported.html;Woody Oud;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/maison-alhambra/lovely-cherie-imported.html;Lovely Cherie;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Cherry Gourmand
+https://www.fragrantica.com/perfume/maison-alhambra/toscano-leather-imported.html;Toscano Leather;Maison Alhambra;;unisex;2.5;;;;;;;;;;;;;Eau de Parfum;Leather
+https://www.fragrantica.com/perfume/maison-alhambra/yeah-imported.html;Yeah;Maison Alhambra;;unisex;2.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/maison-alhambra/tobacco-touch-imported.html;Tobacco Touch;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Tobacco
+https://www.fragrantica.com/perfume/maison-alhambra/jorge-di-profumo-imported.html;Jorge Di Profumo;Maison Alhambra;;unisex;2.5;;;;;;;;;;;;;Eau de Parfum;Aquatic Aromatic
+https://www.fragrantica.com/perfume/maison-alhambra/porto-neroli-imported.html;Porto Neroli;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/maison-alhambra/intense-peach-imported.html;Intense Peach;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/maison-alhambra/sceptre-bronzite-imported.html;Sceptre Bronzite;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/kismet-angel-imported.html;Kismet Angel;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/tabac-imported.html;Tabac;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Tabac Accord
+https://www.fragrantica.com/perfume/maison-alhambra/signatures-no-iii-imported.html;Signatures No. Iii;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/zaffiro-crafted-oud-imported.html;Zaffiro Crafted Oud;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/amber-leather-imported.html;Amber & Leather;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Leather
+https://www.fragrantica.com/perfume/maison-alhambra/salvo-elixir-imported.html;Salvo Elixir;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/perseus-imported.html;Perseus;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Unknown
+https://www.fragrantica.com/perfume/maison-alhambra/black-origami-imported.html;Black Origami;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Chocolate
+https://www.fragrantica.com/perfume/maison-alhambra/floral-ambrosia-imported.html;Floral Ambrosia;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/maison-alhambra/kingsman-imported.html;Kingsman;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/maison-alhambra/rose-oud-imported.html;Rose Oud;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/maison-alhambra/karat-imported.html;Karat;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Gourmand
+https://www.fragrantica.com/perfume/maison-alhambra/opera-noir-imported.html;Opera Noir;Maison Alhambra;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Oriental Floral
+https://www.fragrantica.com/perfume/maison-alhambra/amberley-ombre-blue-imported.html;Amberley Ombre Blue;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Patchouli Fig
+https://www.fragrantica.com/perfume/maison-alhambra/amberley-pur-oud-imported.html;Amberley Pur Oud;Maison Alhambra;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oud
+https://www.fragrantica.com/perfume/ajmal/evoke-for-him-imported.html;Evoke For Him;Ajmal;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aromatic
+https://www.fragrantica.com/perfume/ajmal/blu-imported.html;Blu;Ajmal;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Aquatic
+https://www.fragrantica.com/perfume/ajmal/amber-wood-imported.html;Amber Wood;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Amber
+https://www.fragrantica.com/perfume/ajmal/wisal-layel-imported.html;Wisal Layel;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral Woody
+https://www.fragrantica.com/perfume/ajmal/amber-musc-imported.html;Amber Musc;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Musk
+https://www.fragrantica.com/perfume/ajmal/patchouli-wood-imported.html;Patchouli Wood;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/ajmal/moshriqa-imported.html;Moshriqa;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Spicy Oriental
+https://www.fragrantica.com/perfume/ajmal/musk-rose-imported.html;Musk Rose;Ajmal;;unisex;4.5;;;;;;;;;;;;;Alcohol-free;Floral Musk
+https://www.fragrantica.com/perfume/ajmal/oudh-mukhallat-imported.html;Oudh Mukhallat;Ajmal;;unisex;4.5;;;;;;;;;;;;;Attar;Oudh Blend
+https://www.fragrantica.com/perfume/ajmal/dahn-al-oudh-zayeed-imported.html;Dahn Al Oudh Zayeed;Ajmal;;unisex;4.5;;;;;;;;;;;;;Concentrate;Rich Oudh
+https://www.fragrantica.com/perfume/ajmal/majmua-imported.html;Majmua;Ajmal;;unisex;4.5;;;;;;;;;;;;;Concentrate;Floral Amber Woody
+https://www.fragrantica.com/perfume/ajmal/1001-nights-imported.html;1001 Nights;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Spicy
+https://www.fragrantica.com/perfume/ajmal/kuro-imported.html;Kuro;Ajmal;;unisex;2.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/ajmal/silver-shade-imported.html;Silver Shade;Ajmal;;unisex;2.5;;;;;;;;;;;;;Eau de Parfum;Floral Powdery
+https://www.fragrantica.com/perfume/ajmal/wisal-dhahab-imported.html;Wisal Dhahab;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Floral Oriental
+https://www.fragrantica.com/perfume/ajmal/bombay-dreams-imported.html;Bombay Dreams;Ajmal;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/ajmal/artisan-fleur-silk-imported.html;Artisan Fleur Silk;Ajmal;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/ajmal/amber-musc-noir-amber-musk-edp--imported.html;Amber Musc Noir (amber Musk Edp);Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Musk
+https://www.fragrantica.com/perfume/ajmal/ambre-pimente-imported.html;Ambre Pimente;Ajmal;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Amber
+https://www.fragrantica.com/perfume/ajmal/sacred-love-imported.html;Sacred Love;Ajmal;;female;2.5;;;;;;;;;;;;;Eau de Parfum;Citrus Floral
+https://www.fragrantica.com/perfume/ajmal/bling-women--imported.html;Bling (women);Ajmal;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral
+https://www.fragrantica.com/perfume/ajmal/amaze-imported.html;Amaze;Ajmal;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aromatic
+https://www.fragrantica.com/perfume/ajmal/song-of-oud-imported.html;Song Of Oud;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Oud
+https://www.fragrantica.com/perfume/ajmal/amber-wood-noir-imported.html;Amber Wood Noir;Ajmal;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Musky
+https://www.fragrantica.com/perfume/ajmal/silent-storm-imported.html;Silent Storm;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Citrus Amber
+https://www.fragrantica.com/perfume/ajmal/zeal-imported.html;Zeal;Ajmal;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Spicy
+https://www.fragrantica.com/perfume/ajmal/mukhalat-al-raki-imported.html;Mukhalat Al Raki;Ajmal;;unisex;4.5;;;;;;;;;;;;;Oil;Floral Woody Musky
+https://www.fragrantica.com/perfume/ajmal/colaba-mukhalat-imported.html;Colaba Mukhalat;Ajmal;;unisex;4.5;;;;;;;;;;;;;Oil;Floral Ambery
+https://www.fragrantica.com/perfume/ajmal/vanilla-amber-oil-imported.html;Vanilla Amber Oil;Ajmal;;unisex;4.5;;;;;;;;;;;;;Oil;Gourmand Vanilla
+https://www.fragrantica.com/perfume/zimaya/amber-is-great-imported.html;Amber Is Great;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Amber
+https://www.fragrantica.com/perfume/zimaya/yaa-umree-imported.html;Yaa Umree;Zimaya;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Creamy Floral
+https://www.fragrantica.com/perfume/zimaya/mazaaj-infused-imported.html;Mazaaj Infused;Zimaya;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Gourmand
+https://www.fragrantica.com/perfume/zimaya/hawwa-pink-imported.html;Hawwa Pink;Zimaya;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/zimaya/hawwa-red-imported.html;Hawwa Red;Zimaya;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Fruity Floral
+https://www.fragrantica.com/perfume/zimaya/itqan-noir-imported.html;Itqan Noir;Zimaya;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Woody
+https://www.fragrantica.com/perfume/zimaya/stallion-imported.html;Stallion;Zimaya;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh
+https://www.fragrantica.com/perfume/montblanc/legend-edt-imported.html;Legend Edt;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Toilette;Aromatic Fougere
+https://www.fragrantica.com/perfume/montblanc/legend-edp-imported.html;Legend Edp;Montblanc;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Aromatic Fougere
+https://www.fragrantica.com/perfume/montblanc/legend-spirit-imported.html;Legend Spirit;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/montblanc/legend-blue-imported.html;Legend Blue;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Aquatic
+https://www.fragrantica.com/perfume/montblanc/legend-red-imported.html;Legend Red;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Fruity
+https://www.fragrantica.com/perfume/montblanc/legend-night-imported.html;Legend Night;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/montblanc/explorer-imported.html;Explorer;Montblanc;;male;3.5;;;;;;;;;;;;;Eau de Parfum;Woody Aromatic
+https://www.fragrantica.com/perfume/montblanc/signature-imported.html;Signature;Montblanc;;female;2.5;;;;;;;;;;;;;Eau de Parfum;Floral Musk
+https://www.fragrantica.com/perfume/montblanc/signature-absolue-imported.html;Signature Absolue;Montblanc;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Tropical Floral
+https://www.fragrantica.com/perfume/mancera/instant-crush-imported.html;Instant Crush;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Amber Floral
+https://www.fragrantica.com/perfume/mancera/cedrat-boise-imported.html;Cedrat Boise;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/mancera/red-tobacco-imported.html;Red Tobacco;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Tobacco Spicy
+https://www.fragrantica.com/perfume/mancera/black-vanilla-imported.html;Black Vanilla;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Spicy Amber
+https://www.fragrantica.com/perfume/mancera/feminity-imported.html;Feminity;Mancera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Powdery
+https://www.fragrantica.com/perfume/mancera/pearl-imported.html;Pearl;Mancera;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Fig Floral Musk
+https://www.fragrantica.com/perfume/mancera/velvet-vanilla-imported.html;Velvet Vanilla;Mancera;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/mancera/roses-vanille-imported.html;Roses Vanille;Mancera;;female;4.5;;;;;;;;;;;;;Eau de Parfum;Floriental
+https://www.fragrantica.com/perfume/mancera/hindu-kush-imported.html;Hindu Kush;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Woody
+https://www.fragrantica.com/perfume/mancera/holiday-imported.html;Holiday;Mancera;;unisex;3.5;;;;;;;;;;;;;Eau de Parfum;Fresh Oriental
+https://www.fragrantica.com/perfume/mancera/aoud-lemon-mint-imported.html;Aoud Lemon Mint;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Fresh Woody
+https://www.fragrantica.com/perfume/mancera/french-riviera-imported.html;French Riviera;Mancera;;unisex;4.5;;;;;;;;;;;;;Eau de Parfum;Citrus Aromatic
+https://www.fragrantica.com/perfume/mancera/wind-wood-imported.html;Wind Wood;Mancera;;male;4.5;;;;;;;;;;;;;Eau de Parfum;Woody Floral
+https://www.fragrantica.com/perfume/mancera/roses-greedy-imported.html;Roses Greedy;Mancera;;female;3.5;;;;;;;;;;;;;Eau de Parfum;Floral Gourmand
