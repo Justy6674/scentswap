@@ -21,20 +21,34 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { db } from '@/lib/database';
 import { User, Listing, Swap } from '@/types';
-import { parseFragranceData } from '@/lib/ai-services';
-import { enhancementService, EnhancementQueueStats } from '@/lib/enhancement-service';
-import { aiEnhancementEngine } from '@/lib/ai-enhancement-engine';
-
-// SSR-safe platform check
+// SSR-safe platform check - must be defined before any conditional imports
 const isWeb = typeof window !== 'undefined';
 
-// Lazy-load expo packages to avoid SSR issues
+// Lazy-load modules to avoid SSR issues
+let parseFragranceData: typeof import('@/lib/ai-services').parseFragranceData | null = null;
+let enhancementService: typeof import('@/lib/enhancement-service').enhancementService | null = null;
+let aiEnhancementEngine: typeof import('@/lib/ai-enhancement-engine').aiEnhancementEngine | null = null;
 let DocumentPicker: typeof import('expo-document-picker') | null = null;
 let FileSystem: typeof import('expo-file-system') | null = null;
 let Clipboard: typeof import('expo-clipboard') | null = null;
 
-const loadExpoPackages = async () => {
+// Type imports for TypeScript
+type EnhancementQueueStats = import('@/lib/enhancement-service').EnhancementQueueStats;
+
+const loadModules = async () => {
   if (isWeb) {
+    if (!parseFragranceData) {
+      const aiServices = await import('@/lib/ai-services');
+      parseFragranceData = aiServices.parseFragranceData;
+    }
+    if (!enhancementService) {
+      const enhService = await import('@/lib/enhancement-service');
+      enhancementService = enhService.enhancementService;
+    }
+    if (!aiEnhancementEngine) {
+      const aiEngine = await import('@/lib/ai-enhancement-engine');
+      aiEnhancementEngine = aiEngine.aiEnhancementEngine;
+    }
     if (!DocumentPicker) DocumentPicker = await import('expo-document-picker');
     if (!FileSystem) FileSystem = await import('expo-file-system');
     if (!Clipboard) Clipboard = await import('expo-clipboard');
@@ -160,9 +174,15 @@ export default function AdminScreen() {
   
   // Hydration fix: Ensure component only renders on client
   const [isMounted, setIsMounted] = useState(false);
+  const [modulesLoaded, setModulesLoaded] = useState(false);
   
+  // Load modules on mount
   useEffect(() => {
     setIsMounted(true);
+    loadModules().then(() => setModulesLoaded(true));
+  }, []);
+  
+  useEffect(() => {
     if (user || outsetaUser) {
     checkAdminAccess();
     }
@@ -1155,7 +1175,7 @@ export default function AdminScreen() {
 
   // Use consistent loading state to prevent hydration mismatch
   // Server always renders this, client will update after mount
-  if (!isMounted || legacyAuthLoading || subscriptionLoading || isLoading) {
+  if (!isMounted || !modulesLoaded || legacyAuthLoading || subscriptionLoading || isLoading) {
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: '#1A1A2E'}}>
         <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
