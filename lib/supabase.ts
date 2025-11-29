@@ -1,39 +1,60 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-const ExpoSecureStoreAdapter = {
+// SSR-safe check for web platform
+const isWeb = typeof window !== 'undefined' || Platform.OS === 'web';
+
+// Lazy-loaded SecureStore to avoid SSR issues
+let SecureStore: typeof import('expo-secure-store') | null = null;
+const getSecureStore = async () => {
+  if (!SecureStore && !isWeb) {
+    SecureStore = await import('expo-secure-store');
+  }
+  return SecureStore;
+};
+
+// Storage adapter that works on both web and native
+const createStorageAdapter = () => ({
   getItem: async (key: string): Promise<string | null> => {
-    if (Platform.OS === 'web') {
-      if (typeof localStorage !== 'undefined') {
-        return localStorage.getItem(key);
-      }
-      return null;
+    // Web: use localStorage
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      return localStorage.getItem(key);
     }
-    return SecureStore.getItemAsync(key);
+    // Native: use SecureStore
+    const store = await getSecureStore();
+    if (store) {
+      return store.getItemAsync(key);
+    }
+    return null;
   },
   setItem: async (key: string, value: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, value);
-      }
+    // Web: use localStorage
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, value);
       return;
     }
-    await SecureStore.setItemAsync(key, value);
+    // Native: use SecureStore
+    const store = await getSecureStore();
+    if (store) {
+      await store.setItemAsync(key, value);
+    }
   },
   removeItem: async (key: string): Promise<void> => {
-    if (Platform.OS === 'web') {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(key);
-      }
+    // Web: use localStorage
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
       return;
     }
-    await SecureStore.deleteItemAsync(key);
+    // Native: use SecureStore
+    const store = await getSecureStore();
+    if (store) {
+      await store.deleteItemAsync(key);
+    }
   },
-};
+});
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(supabaseUrl && supabaseAnonKey);
@@ -49,7 +70,7 @@ export const getSupabase = (): SupabaseClient | null => {
   if (!supabaseInstance) {
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        storage: ExpoSecureStoreAdapter,
+        storage: createStorageAdapter(),
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
@@ -60,13 +81,16 @@ export const getSupabase = (): SupabaseClient | null => {
   return supabaseInstance;
 };
 
-export const supabase = isSupabaseConfigured() 
+// Lazy initialization - don't create client at module load time during SSR
+export const supabase = isSupabaseConfigured() && typeof window !== 'undefined'
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
-        storage: ExpoSecureStoreAdapter,
+        storage: createStorageAdapter(),
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
       },
     })
+  : null;
+
   : null;
