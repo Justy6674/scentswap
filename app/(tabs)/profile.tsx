@@ -23,6 +23,8 @@ export default function ProfileScreen() {
   const colors = Colors[colorScheme];
   const { isAuthenticated, outsetaUser, subscription, openProfile, logout, getPlan, openLogin, isLoading: authLoading } = useSubscription();
   const [ratings, setRatings] = useState<Rating[]>([]);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (isAuthenticated && outsetaUser) {
@@ -501,7 +503,7 @@ export default function ProfileScreen() {
                     <Text style={styles.ratingText}>{rating.overall_score}/5</Text>
                   </View>
                   <Text style={styles.ratingDate}>
-                    {new Date(rating.created_at).toLocaleDateString()}
+                    {mounted ? new Date(rating.created_at).toLocaleDateString() : ''}
                   </Text>
                 </View>
                 {rating.review && (

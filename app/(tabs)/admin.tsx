@@ -59,6 +59,8 @@ export default function AdminScreen() {
   const isAdmin = authIsAdmin || subscriptionIsAdmin;
   
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
@@ -1023,7 +1025,7 @@ export default function AdminScreen() {
                   <View style={styles.disputeHeader}>
                     <Text style={styles.disputeTitle}>{listing.house} - {listing.custom_name}</Text>
                     <Text style={{fontSize: 12, color: colors.textSecondary}}>
-                      {new Date(listing.created_at).toLocaleDateString()}
+                      {mounted ? new Date(listing.created_at).toLocaleDateString() : ''}
                     </Text>
                   </View>
                   <Text style={styles.disputeReason}>

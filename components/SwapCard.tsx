@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -13,6 +13,8 @@ interface SwapCardProps {
 }
 
 export function SwapCard({ swap, currentUserId, onPress }: SwapCardProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
 
@@ -216,7 +218,7 @@ export function SwapCard({ swap, currentUserId, onPress }: SwapCardProps) {
 
       <View style={styles.footer}>
         <Text style={styles.timestamp}>
-          {formatDistanceToNow(new Date(swap.created_at), { addSuffix: true })}
+          {mounted ? formatDistanceToNow(new Date(swap.created_at), { addSuffix: true }) : ''}
         </Text>
         {swap.fairness_score && (
           <View style={styles.fairnessScore}>

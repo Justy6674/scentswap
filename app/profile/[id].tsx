@@ -23,6 +23,8 @@ export default function UserProfileScreen() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (id) {
@@ -295,7 +297,7 @@ export default function UserProfileScreen() {
                       <Text style={styles.ratingText}>{rating.overall_score}/5</Text>
                     </View>
                     <Text style={styles.ratingDate}>
-                      {new Date(rating.created_at).toLocaleDateString()}
+                      {mounted ? new Date(rating.created_at).toLocaleDateString() : ''}
                     </Text>
                   </View>
                   {rating.review && (

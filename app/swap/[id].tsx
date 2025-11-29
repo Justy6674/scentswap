@@ -30,6 +30,8 @@ export default function SwapDetailScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -495,7 +497,7 @@ export default function SwapDetailScreen() {
                         { color: msg.sender_id === currentUserId ? '#FFFFFF' : colors.textSecondary },
                       ]}
                     >
-                      {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                      {mounted ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: true }) : ''}
                     </Text>
                   </View>
                 ))
