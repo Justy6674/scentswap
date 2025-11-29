@@ -35,7 +35,7 @@ interface Fragrance {
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user?.is_admin) {
+  if (!isAdmin) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
