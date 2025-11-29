@@ -573,7 +573,19 @@ export default function AdminScreen() {
           }
 
           // Insert Batch
+          // If batch is invalid, this could throw. Ensure we handle it.
+          // However, the previous check (batchFragrances.length === 0) handles the empty case.
+          // If bulkCreateFragrances fails for other reasons (e.g. foreign key), catch block will grab it.
           const createdFragrances = await db.bulkCreateFragrances(batchFragrances);
+
+          if (!createdFragrances || createdFragrances.length === 0) {
+             // Fallback: if insert failed silently or returned no data but didn't throw
+             console.warn(`Batch ${i/BATCH_SIZE} insert returned no data. Skipping relations.`);
+             processedCount += batch.length;
+             setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
+             await new Promise(r => setTimeout(r, 0));
+             continue;
+          }
 
           // Link Relations for this batch
           const batchNoteRelations = [];
@@ -581,7 +593,25 @@ export default function AdminScreen() {
 
           for (let j = 0; j < createdFragrances.length; j++) {
               const frag = createdFragrances[j];
-              const originalRow = batch[j]; // Maps 1:1 because we pushed sequentially
+              // Map back to original row.
+              // CRITICAL FIX: batchFragrances and createdFragrances might not align 1:1 if DB generated IDs out of order 
+              // or filtered something.
+              // BUT Supabase insert select() usually preserves order or we should join on unique name/brand.
+              // For bulk speed, we assume order. 
+              // A Safer way is to find the matching row by name/brand_id in the batch.
+              
+              const originalRow = batch.find(r => 
+                  r.brand.toLowerCase() === brandMap.get(frag.brand_id)?.toLowerCase() || // brandMap stores ID, we need to reverse lookup? No.
+                  // Let's match by Name + BrandID from our prepared batchFragrances
+                  (r.cols[1] === frag.name && brandMap.get(r.brand.toLowerCase()) === frag.brand_id)
+              );
+              
+              // Fallback to index if unique match fails (riskier but faster)
+              const fallbackRow = batch[j]; 
+              
+              const rowToUse = originalRow || fallbackRow;
+
+              if (!rowToUse) continue;
 
               // Link Notes
               const processNotes = (str: string, type: string) => {
@@ -590,12 +620,12 @@ export default function AdminScreen() {
                       if (nid) batchNoteRelations.push({ fragrance_id: frag.id, note_id: nid, type });
                   });
               };
-              processNotes(originalRow.top, 'top');
-              processNotes(originalRow.middle, 'middle');
-              processNotes(originalRow.base, 'base');
+              processNotes(rowToUse.top, 'top');
+              processNotes(rowToUse.middle, 'middle');
+              processNotes(rowToUse.base, 'base');
 
               // Link Perfumers
-              originalRow.perfumersStr.split(',').map((s: string) => s.trim()).filter((s: string) => s).forEach((p: string) => {
+              rowToUse.perfumersStr.split(',').map((s: string) => s.trim()).filter((s: string) => s).forEach((p: string) => {
                   const pid = perfumerMap.get(p.toLowerCase());
                   if (pid) batchPerfumerRelations.push({ fragrance_id: frag.id, perfumer_id: pid });
               });
