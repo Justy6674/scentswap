@@ -254,25 +254,38 @@ export default function AdminScreen() {
 
   const loadAdminData = async () => {
     if (!supabase) {
+      console.error('Supabase not available for admin data loading');
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      console.log('Loading admin data...');
 
       // Use raw SQL queries to bypass RLS for admin access
+      console.log('Trying RPC functions...');
       const { data: userCount } = await supabase.rpc('admin_count_users');
       const { data: fragranceCount } = await supabase.rpc('admin_count_fragrances');
       const { data: listingCount } = await supabase.rpc('admin_count_active_listings');
       const { data: swapStats } = await supabase.rpc('admin_get_swap_stats');
 
+      console.log('RPC results:', { userCount, fragranceCount, listingCount, swapStats });
+
       // Fallback to direct queries if RPC functions don't exist
       if (userCount === null) {
-        const { count: users } = await supabase.from('users').select('*', { count: 'exact', head: true });
-        const { count: fragrances } = await supabase.from('fragrance_master').select('*', { count: 'exact', head: true });
-        const { count: listings } = await supabase.from('listings').select('*', { count: 'exact', head: true }).eq('is_active', true);
-        const { data: swaps } = await supabase.from('swaps').select('status');
+        console.log('RPC functions not available, using direct queries...');
+        const { count: users, error: usersError } = await supabase.from('users').select('*', { count: 'exact', head: true });
+        const { count: fragrances, error: fragrancesError } = await supabase.from('fragrance_master').select('*', { count: 'exact', head: true });
+        const { count: listings, error: listingsError } = await supabase.from('listings').select('*', { count: 'exact', head: true }).eq('is_active', true);
+        const { data: swaps, error: swapsError } = await supabase.from('swaps').select('status');
+
+        console.log('Direct query results:', {
+          users: { count: users, error: usersError },
+          fragrances: { count: fragrances, error: fragrancesError },
+          listings: { count: listings, error: listingsError },
+          swaps: { count: swaps?.length, error: swapsError }
+        });
 
         setStats({
           total_users: users || 0,
@@ -282,6 +295,7 @@ export default function AdminScreen() {
           pending_swaps: swaps?.filter(s => s.status === 'proposed').length || 0,
         });
       } else {
+        console.log('Using RPC function results');
         setStats({
           total_users: userCount || 0,
           total_fragrances: fragranceCount || 24795,
@@ -310,26 +324,50 @@ export default function AdminScreen() {
   };
 
   const loadFragrances = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      console.error('Supabase client not available');
+      Alert.alert('Database Error', 'Supabase client not initialized');
+      return;
+    }
+
+    console.log('Starting fragrance load...');
 
     try {
-      // Use different approaches to get fragrance data
+      // First, test basic connectivity with a simple count
+      console.log('Testing database connectivity...');
+      const { count: testCount, error: testError } = await supabase
+        .from('fragrance_master')
+        .select('*', { count: 'exact', head: true });
+
+      console.log('Database test result:', { count: testCount, error: testError });
+
+      if (testError) {
+        console.error('Database connectivity test failed:', testError);
+        Alert.alert('Database Connection Failed', `Error: ${testError.message}\n\nDetails: ${testError.details || 'No additional details'}\n\nCode: ${testError.code || 'Unknown'}`);
+        return;
+      }
+
+      console.log(`Database connectivity OK. Found ${testCount} total fragrances.`);
+
+      // Now try to load actual data
       let query = supabase
         .from('fragrance_master')
         .select('id, name, brand, concentration, year_released, data_quality_score, verified, created_at')
         .order('id', { ascending: false })
-        .limit(100); // Increased limit to show more data
+        .limit(100);
 
       if (searchQuery) {
         query = query.or(`name.ilike.%${searchQuery}%,brand.ilike.%${searchQuery}%`);
       }
 
+      console.log('Executing fragrance query...');
       const { data, error } = await query;
 
       if (error) {
         console.error('Primary fragrance query error:', error);
 
         // Try alternative query without ordering
+        console.log('Trying alternative query without ordering...');
         const { data: altData, error: altError } = await supabase
           .from('fragrance_master')
           .select('id, name, brand, concentration, year_released, data_quality_score, verified')
@@ -337,33 +375,22 @@ export default function AdminScreen() {
 
         if (altError) {
           console.error('Alternative query error:', altError);
-
-          // Try basic count query to test connectivity
-          const { count, error: countError } = await supabase
-            .from('fragrance_master')
-            .select('*', { count: 'exact', head: true });
-
-          if (countError) {
-            console.error('Count query error:', countError);
-            Alert.alert('Database Error', `Unable to connect to fragrance database: ${countError.message}`);
-          } else {
-            Alert.alert('Partial Success', `Found ${count} fragrances but cannot load list. Check RLS policies.`);
-          }
-
+          Alert.alert('Query Failed', `Primary query error: ${error.message}\n\nAlternative query error: ${altError.message}\n\nFound ${testCount} fragrances but cannot access them. This suggests an RLS (Row Level Security) policy issue.`);
           setFragrances([]);
           return;
         }
 
+        console.log(`Alternative query succeeded with ${altData?.length || 0} fragrances`);
         setFragrances(altData || []);
         return;
       }
 
-      console.log(`Loaded ${data.length} fragrances successfully`);
+      console.log(`Primary query succeeded with ${data?.length || 0} fragrances`);
       setFragrances(data || []);
 
     } catch (error) {
-      console.error('Error loading fragrances:', error);
-      Alert.alert('Connection Error', 'Failed to load fragrances. Check your internet connection.');
+      console.error('Unexpected error loading fragrances:', error);
+      Alert.alert('Connection Error', `Failed to load fragrances: ${error}\n\nCheck your internet connection and Supabase configuration.`);
     }
   };
 
