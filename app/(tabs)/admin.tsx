@@ -600,8 +600,8 @@ export default function AdminScreen() {
           }
 
           // Link Relations for this batch
-          const batchNoteRelations = [];
-          const batchPerfumerRelations = [];
+          const batchNoteRelations: {fragrance_id: string, note_id: string, type: string}[] = [];
+          const batchPerfumerRelations: {fragrance_id: string, perfumer_id: string}[] = [];
 
           for (let j = 0; j < createdFragrances.length; j++) {
               const frag = createdFragrances[j];
@@ -667,132 +667,6 @@ export default function AdminScreen() {
       setImportProgress('');
     } finally {
       setIsImporting(false);
-    }
-  }
-
-  // Removed outdated single-creation functions
-  async function handlePickCsv() {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['text/csv', 'text/comma-separated-values', 'application/csv', 'text/plain'], // Add text/plain as backup
-        copyToCacheDirectory: true,
-      });
-
-      if (result.canceled) return;
-
-      const asset = result.assets[0];
-      let content = '';
-
-      if (Platform.OS === 'web') {
-        // On web, we can read the uri directly or use the file object
-        // The reliable way on modern web is to fetch the blob from the blob URI
-        const response = await fetch(asset.uri);
-        content = await response.text();
-      } else {
-        // On native, use FileSystem
-        content = await FileSystem.readAsStringAsync(asset.uri);
-      }
-
-      if (content) {
-        setCsvData(content);
-        Alert.alert('File Loaded', 'CSV data loaded into the text area. Review and click "Process CSV" to import.');
-      }
-    } catch (err) {
-      console.error('Error picking file:', err);
-      Alert.alert('Error', 'Failed to read file');
-    }
-  }
-
-  async function handleImportCsv() {
-    if (!csvData.trim()) {
-      Alert.alert('Error', 'Please paste CSV data first');
-      return;
-    }
-
-    setIsImporting(true);
-    setImportProgress('Starting import...');
-
-    try {
-      const lines = csvData.split('\n').filter(l => l.trim());
-      let successCount = 0;
-      let errorCount = 0;
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        // Skip empty lines
-        if (!line.trim()) continue;
-
-        setImportProgress(`Processing ${i + 1}/${lines.length}...`);
-
-        try {
-          // Parse semicolon separated
-          const cols = line.split(';').map(s => s.trim());
-          
-          // Check if it's a header row (heuristic: "Perfume" in 2nd col)
-          if (cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') continue;
-
-          // Map columns based on user provided format:
-          // url;Perfume;Brand;Country;Gender;Rating Value;Rating Count;Year;Top;Middle;Base;Perfumer1;Perfumer2;mainaccord1;mainaccord2;mainaccord3;mainaccord4;mainaccord5
-          
-          const url = cols[0] || '';
-          const name = cols[1] || '';
-          const brand = cols[2] || '';
-          const country = cols[3] || '';
-          let gender = cols[4]?.toLowerCase() || 'unisex';
-          // Normalize gender
-          if (gender === 'women') gender = 'female';
-          if (gender === 'men') gender = 'male';
-          
-          const year = cols[7] || '';
-          const top = cols[8] || '';
-          const middle = cols[9] || '';
-          const base = cols[10] || '';
-          
-          const perfumer1 = cols[11] || '';
-          const perfumer2 = cols[12] || '';
-          const perfumers = [perfumer1, perfumer2].filter(p => p && p.toLowerCase() !== 'unknown').join(', ');
-          
-          const accords = cols.slice(13, 18).filter(a => a && a.toLowerCase() !== 'unknown');
-
-          if (!name || !brand) {
-            console.warn(`Skipping invalid row ${i}: Missing name or brand`);
-            errorCount++;
-            continue;
-          }
-
-          await createSingleFragrance({
-            name,
-            brand,
-            country,
-            concentration: 'edp', // Default
-            gender,
-            year,
-            description: `Imported from Fragrantica. URL: ${url}`,
-            image_url: '',
-            fragrantica_url: url,
-            topNotes: top,
-            middleNotes: middle,
-            baseNotes: base,
-            perfumers,
-            accords
-          });
-
-          successCount++;
-        } catch (err) {
-          console.error(`Error processing row ${i}:`, err);
-          errorCount++;
-        }
-      }
-
-      Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nFailed: ${errorCount}`);
-      setCsvData('');
-      setImportProgress('');
-    } catch (e) {
-      Alert.alert('Import Error', 'An unexpected error occurred during import');
-      console.error(e);
-    } finally {
-      setIsImporting(false);
-      setImportProgress('');
     }
   }
 
@@ -1610,7 +1484,7 @@ export default function AdminScreen() {
                 <View key={listing.id} style={styles.disputeCard}>
                   <View style={styles.disputeHeader}>
                     <Text style={styles.disputeTitle}>{listing.house} - {listing.custom_name}</Text>
-                    <Text style={{fontSize: 12, color: colors.textSecondary}} suppressHydrationWarning={true}>
+                    <Text style={{fontSize: 12, color: colors.textSecondary}}>
                       {new Date(listing.created_at).toLocaleDateString()}
                     </Text>
                   </View>
@@ -1707,7 +1581,7 @@ export default function AdminScreen() {
         )}
 
         {/* Other tabs placeholders */}
-        {(activeTab === 'listings' || activeTab === 'swaps') && activeTab !== 'overview' && (
+        {(activeTab === 'listings' || activeTab === 'swaps') && (
            <View style={styles.section}>
              <Text style={styles.sectionTitle}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</Text>
              <View style={styles.emptyState}>
