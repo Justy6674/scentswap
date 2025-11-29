@@ -1,4 +1,5 @@
-import OpenAI from 'openai';
+// @ts-ignore
+import OpenAI from 'openai/lite';
 
 interface FragranceData {
   id: string;
