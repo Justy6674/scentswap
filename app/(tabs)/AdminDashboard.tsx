@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -14,8 +13,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSupabase } from '@/lib/supabase';
 
@@ -37,143 +34,8 @@ interface Fragrance {
   verified: boolean;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-  },
-  accessDenied: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  accessDeniedTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 16,
-  },
-  accessDeniedText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  header: {
-    padding: 20,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-  },
-  tab: {
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  activeTab: {
-    borderBottomColor: '#8B5CF6',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  statCard: {
-    padding: 20,
-    borderRadius: 12,
-    flex: 1,
-    minWidth: 150,
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#8B5CF6',
-  },
-  statLabel: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  searchContainer: {
-    marginBottom: 20,
-  },
-  searchInput: {
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    borderWidth: 1,
-  },
-  fragranceCard: {
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  fragranceName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  fragranceBrand: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  fragranceDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  qualityScore: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  aiButton: {
-    backgroundColor: '#8B5CF6',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  aiButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
-
-export default function AdminContent() {
+export default function AdminDashboard() {
   const { user } = useAuth();
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme];
-
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -187,7 +49,10 @@ export default function AdminContent() {
   }, []);
 
   const loadAdminData = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -264,10 +129,12 @@ export default function AdminContent() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.loadingContainer}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#8B5CF6" />
-          <Text style={[styles.loadingText, { color: colors.text }]}>Loading Admin Panel...</Text>
+          <Text style={{ marginTop: 16, fontSize: 16, color: '#ffffff' }}>
+            Loading Admin Panel...
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -275,11 +142,13 @@ export default function AdminContent() {
 
   if (!user?.is_admin) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.accessDenied}>
-          <Ionicons name="lock-closed" size={64} color={colors.textSecondary} />
-          <Text style={[styles.accessDeniedTitle, { color: colors.text }]}>Access Denied</Text>
-          <Text style={[styles.accessDeniedText, { color: colors.textSecondary }]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 }}>
+          <Ionicons name="lock-closed" size={64} color="#666666" />
+          <Text style={{ fontSize: 24, fontWeight: 'bold', marginTop: 16, color: '#ffffff' }}>
+            Access Denied
+          </Text>
+          <Text style={{ fontSize: 16, textAlign: 'center', marginTop: 8, color: '#999999' }}>
             You don't have admin privileges to access this page.
           </Text>
         </View>
@@ -289,25 +158,33 @@ export default function AdminContent() {
 
   const renderOverview = () => (
     <View>
-      <Text style={[styles.headerTitle, { color: colors.text, fontSize: 20, marginBottom: 20 }]}>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 20 }}>
         System Overview
       </Text>
-      <View style={styles.statsGrid}>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-          <Text style={styles.statValue}>{stats?.total_users || 0}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total Users</Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, flex: 1, minWidth: 150 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#8B5CF6' }}>
+            {stats?.total_users || 0}
+          </Text>
+          <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>Total Users</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-          <Text style={styles.statValue}>{stats?.total_fragrances || 0}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Fragrances</Text>
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, flex: 1, minWidth: 150 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#8B5CF6' }}>
+            {stats?.total_fragrances || 0}
+          </Text>
+          <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>Fragrances</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-          <Text style={styles.statValue}>{stats?.active_listings || 0}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Active Listings</Text>
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, flex: 1, minWidth: 150 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#8B5CF6' }}>
+            {stats?.active_listings || 0}
+          </Text>
+          <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>Active Listings</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: colors.card }]}>
-          <Text style={styles.statValue}>{stats?.total_swaps || 0}</Text>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Total Swaps</Text>
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, flex: 1, minWidth: 150 }}>
+          <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#8B5CF6' }}>
+            {stats?.total_swaps || 0}
+          </Text>
+          <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>Total Swaps</Text>
         </View>
       </View>
     </View>
@@ -315,15 +192,23 @@ export default function AdminContent() {
 
   const renderDatabase = () => (
     <View>
-      <Text style={[styles.headerTitle, { color: colors.text, fontSize: 20, marginBottom: 20 }]}>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 20 }}>
         Fragrance Master Database
       </Text>
 
-      <View style={styles.searchContainer}>
+      <View style={{ marginBottom: 20 }}>
         <TextInput
-          style={[styles.searchInput, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+          style={{
+            backgroundColor: '#2a2a2a',
+            borderRadius: 8,
+            padding: 12,
+            fontSize: 16,
+            color: '#ffffff',
+            borderWidth: 1,
+            borderColor: '#3a3a3a'
+          }}
           placeholder="Search fragrances by name or brand..."
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor="#666666"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -333,20 +218,31 @@ export default function AdminContent() {
         data={fragrances}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={[styles.fragranceCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.fragranceName, { color: colors.text }]}>{item.name}</Text>
-            <Text style={[styles.fragranceBrand, { color: colors.textSecondary }]}>
+          <View style={{
+            backgroundColor: '#2a2a2a',
+            padding: 16,
+            marginBottom: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: '#3a3a3a'
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#ffffff', marginBottom: 4 }}>
+              {item.name}
+            </Text>
+            <Text style={{ fontSize: 14, color: '#999999', marginBottom: 8 }}>
               {item.brand}
               {item.concentration && ` • ${item.concentration}`}
               {item.year_released && ` • ${item.year_released}`}
             </Text>
 
-            <View style={styles.fragranceDetails}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
               <View>
-                <Text style={[styles.qualityScore, {
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: '600',
                   color: item.data_quality_score >= 80 ? '#10B981' :
                          item.data_quality_score >= 60 ? '#F59E0B' : '#EF4444'
-                }]}>
+                }}>
                   Quality: {item.data_quality_score}%
                 </Text>
                 {item.verified && (
@@ -357,11 +253,19 @@ export default function AdminContent() {
               </View>
 
               <TouchableOpacity
-                style={styles.aiButton}
+                style={{
+                  backgroundColor: '#8B5CF6',
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  borderRadius: 6,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6
+                }}
                 onPress={() => handleAIEnhancement(item.id)}
               >
                 <Ionicons name="sparkles" size={14} color="#FFFFFF" />
-                <Text style={styles.aiButtonText}>Enhance</Text>
+                <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Enhance</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -372,32 +276,41 @@ export default function AdminContent() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Admin Dashboard</Text>
-        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+      <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
+        <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#ffffff' }}>Admin Dashboard</Text>
+        <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>
           Manage your ScentSwap platform • {stats?.total_fragrances} fragrances loaded
         </Text>
       </View>
 
-      <View style={[styles.tabContainer, { backgroundColor: colors.card }]}>
+      <View style={{ flexDirection: 'row', backgroundColor: '#2a2a2a', paddingHorizontal: 20 }}>
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'database', label: 'Database' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
-            style={[styles.tab, activeTab === tab.id && styles.activeTab]}
+            style={{
+              paddingVertical: 16,
+              paddingHorizontal: 20,
+              borderBottomWidth: 2,
+              borderBottomColor: activeTab === tab.id ? '#8B5CF6' : 'transparent'
+            }}
             onPress={() => setActiveTab(tab.id)}
           >
-            <Text style={[styles.tabText, { color: activeTab === tab.id ? '#8B5CF6' : colors.textSecondary }]}>
+            <Text style={{
+              fontSize: 14,
+              fontWeight: '600',
+              color: activeTab === tab.id ? '#8B5CF6' : '#999999'
+            }}>
               {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'database' && renderDatabase()}
       </ScrollView>

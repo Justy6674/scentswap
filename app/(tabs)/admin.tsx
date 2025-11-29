@@ -1,5 +1,5 @@
-import AdminContent from './AdminContent';
+import AdminDashboard from './AdminDashboard';
 
 export default function AdminScreen() {
-  return <AdminContent />;
+  return <AdminDashboard />;
 }
