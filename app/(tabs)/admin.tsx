@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,9 +15,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
-import * as Clipboard from 'expo-clipboard';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -28,6 +25,19 @@ import { User, Listing, Swap } from '@/types';
 import { parseFragranceData } from '@/lib/ai-services';
 import { enhancementService, EnhancementQueueStats } from '@/lib/enhancement-service';
 import { aiEnhancementEngine } from '@/lib/ai-enhancement-engine';
+
+// Lazy-load expo packages to avoid SSR issues
+let DocumentPicker: typeof import('expo-document-picker') | null = null;
+let FileSystem: typeof import('expo-file-system') | null = null;
+let Clipboard: typeof import('expo-clipboard') | null = null;
+
+const loadExpoPackages = async () => {
+  if (typeof window !== 'undefined') {
+    if (!DocumentPicker) DocumentPicker = await import('expo-document-picker');
+    if (!FileSystem) FileSystem = await import('expo-file-system');
+    if (!Clipboard) Clipboard = await import('expo-clipboard');
+  }
+};
 
 // ... (Previous Interfaces)
 interface AdminStats {
@@ -197,10 +207,17 @@ export default function AdminScreen() {
   // Ensure clipboard handler is defined before render
   const handlePasteFromClipboard = async () => {
     try {
+      await loadExpoPackages();
+      
       // Client-side check for clipboard support
       if (Platform.OS === 'web' && !navigator.clipboard) {
          Alert.alert('Error', 'Clipboard access not supported in this browser context.');
          return;
+      }
+
+      if (!Clipboard) {
+        Alert.alert('Error', 'Clipboard not available');
+        return;
       }
 
       const content = await Clipboard.getStringAsync();
@@ -457,6 +474,13 @@ export default function AdminScreen() {
 
   async function handlePickCsv() {
     try {
+      await loadExpoPackages();
+      
+      if (!DocumentPicker) {
+        Alert.alert('Error', 'Document picker not available');
+        return;
+      }
+      
       const result = await DocumentPicker.getDocumentAsync({
         type: ['text/csv', 'text/comma-separated-values', 'application/csv', 'text/plain'],
         copyToCacheDirectory: true,
@@ -473,7 +497,7 @@ export default function AdminScreen() {
       if (Platform.OS === 'web') {
         const response = await fetch(asset.uri);
         content = await response.text();
-      } else {
+      } else if (FileSystem) {
         content = await FileSystem.readAsStringAsync(asset.uri);
       }
 
