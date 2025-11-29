@@ -53,18 +53,6 @@ interface AIConfig {
 
 type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market';
 
-// Types for bulk import relations
-interface NoteRelation {
-  fragrance_id: string;
-  note_id: string;
-  type: string;
-}
-
-interface PerfumerRelation {
-  fragrance_id: string;
-  perfumer_id: string;
-}
-
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -124,20 +112,16 @@ export default function AdminScreen() {
     }
   }, [user, isAdmin, outsetaUser]);
 
-  // Ensure clipboard handler is defined before render - and safe for web
+  // Ensure clipboard handler is defined before render
   const handlePasteFromClipboard = async () => {
     try {
-      let content = '';
-      
-      // Use Expo Clipboard for native/web consistently
+      // Client-side check for clipboard support
       if (Platform.OS === 'web' && !navigator.clipboard) {
-         // Fallback for insecure contexts or older browsers if needed
-         Alert.alert('Error', 'Clipboard access requires a secure context (HTTPS) or modern browser.');
+         Alert.alert('Error', 'Clipboard access not supported in this browser context.');
          return;
       }
 
-      content = await Clipboard.getStringAsync();
-      
+      const content = await Clipboard.getStringAsync();
       if (!content) {
         Alert.alert('Clipboard Empty', 'No text found in clipboard.');
         return;
@@ -158,7 +142,7 @@ export default function AdminScreen() {
       }
     } catch (err) {
       console.error('Clipboard error:', err);
-      Alert.alert('Error', 'Failed to read from clipboard. Please ensure you grant permission.');
+      Alert.alert('Error', 'Failed to read from clipboard. Please allow permissions if prompted.');
     }
   };
 
@@ -335,7 +319,10 @@ export default function AdminScreen() {
       if (newB) brandId = newB.id;
     }
 
-    if (!brandId) throw new Error(`Failed to resolve brand: ${data.brand}`);
+    if (!brandId) {
+      console.warn(`Failed to resolve brand: ${data.brand} - skipping fragrance`);
+      return; // Skip this fragrance if brand can't be created
+    }
 
     // Notes: Find or Create
     const processNotes = async (input: string) => {
@@ -460,7 +447,7 @@ export default function AdminScreen() {
         // Skip header or invalid
         if ((cols[1]?.toLowerCase() === 'perfume' && cols[2]?.toLowerCase() === 'brand') || !cols[1] || !cols[2]) continue;
 
-        const brand = cols[2];
+        const brand = cols[2]; // Keep original casing for later proper formatting
         const top = cols[8] || '';
         const middle = cols[9] || '';
         const base = cols[10] || '';
@@ -495,19 +482,48 @@ export default function AdminScreen() {
       setImportProgress(`Phase 2/4: Syncing References (${brandsToSync.size} brands, ${notesToSync.size} notes)...`);
       await new Promise(r => setTimeout(r, 10));
 
-      // Sync Brands
+      // Sync Brands (with proper casing and case-insensitive matching)
       const brandMap = new Map<string, string>();
       const brandNames = Array.from(brandsToSync);
-      
-      // Fetch existing
+
+      // First, try to fetch all brands that exist (case-sensitive)
       const existingBrands = await db.bulkGetBrands(brandNames);
       existingBrands.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
 
-      // Create missing
+      // Also try with Title Case versions
+      const titleCasedNames = brandNames.map(name =>
+        name.split('-').map(part =>
+          part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+        ).join('-')
+      );
+      const existingTitleBrands = await db.bulkGetBrands(titleCasedNames);
+      existingTitleBrands.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
+
+      // Create missing brands with proper Title Case
       const newBrands = brandNames.filter(name => !brandMap.has(name.toLowerCase()));
       if (newBrands.length > 0) {
-          const created = await db.bulkCreateBrands(newBrands.map(name => ({ name })));
-          created.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
+          const brandsToCreate = newBrands.map(name => ({
+            name: name.split('-').map(part =>
+              part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+            ).join('-')
+          }));
+          try {
+            const created = await db.bulkCreateBrands(brandsToCreate);
+            created.forEach(b => brandMap.set(b.name.toLowerCase(), b.id));
+          } catch (error) {
+            console.error('Error bulk creating brands:', error);
+            // Try to create them one by one as fallback
+            for (const brand of brandsToCreate) {
+              try {
+                const single = await db.createBrand(brand);
+                if (single) {
+                  brandMap.set(single.name.toLowerCase(), single.id);
+                }
+              } catch (e) {
+                console.warn(`Could not create brand ${brand.name}:`, e);
+              }
+            }
+          }
       }
 
       // Sync Notes
@@ -538,40 +554,48 @@ export default function AdminScreen() {
       setImportProgress('Phase 3/4: Uploading Fragrances...');
       await new Promise(r => setTimeout(r, 10));
 
-      const fragrancesToInsert: any[] = [];
-      const fragranceNoteRelations: any[] = [];
-      const fragrancePerfumerRelations: any[] = [];
-
       // We need IDs for the new fragrances to link relations.
       // Strategy: Insert fragrances, get IDs back, then insert relations.
       // We will do this in batches of 500.
 
       const BATCH_SIZE = 500;
       let processedCount = 0;
+      let i = 0;
 
-      for (let i = 0; i < parsedRows.length; i += BATCH_SIZE) {
-          const batch = parsedRows.slice(i, i + BATCH_SIZE);
-          const batchFragrances = [];
-          
-          // Prepare batch
-          for (const row of batch) {
-              // Correct logic:
-              // brandMap key is brand NAME (lowercase), value is brand ID.
-              // So we look up the ID using the row's brand name.
-              const brandNameKey = row.brand.toLowerCase();
-              const brandId = brandMap.get(brandNameKey);
-              
-              if (!brandId) {
-                  console.warn(`Skipping row: Brand ID not found for '${row.brand}'`);
-                  continue; 
-              }
+      // Recursive function for batch processing
+      const processChunk = async () => {
+        if (i >= parsedRows.length) {
+          setIsImporting(false);
+          setImportProgress('');
+          Alert.alert('Import Complete', `Successfully imported ${processedCount} fragrances.`);
+          setCsvData('');
+          fullCsvContent.current = null;
+          setFileStats(null);
+          return;
+        }
 
-              const cols = row.cols;
-              const url = cols[0] || '';
-              const name = cols[1] || '';
-              const country = cols[3] || '';
-              let gender = cols[4]?.toLowerCase() || 'unisex';
-              if (gender === 'women') gender = 'female';
+        const batch = parsedRows.slice(i, i + BATCH_SIZE);
+        const batchFragrances = [];
+        
+        // Prepare batch
+        for (const row of batch) {
+            // Correct logic:
+            // brandMap key is brand NAME (lowercase), value is brand ID.
+            // So we look up the ID using the row's brand name.
+            const brandNameKey = row.brand.toLowerCase();
+            const brandId = brandMap.get(brandNameKey);
+            
+            if (!brandId) {
+                console.warn(`Skipping row: Brand ID not found for '${row.brand}'`);
+                continue; 
+            }
+
+            const cols = row.cols;
+            const url = cols[0] || '';
+            const name = cols[1] || '';
+            const country = cols[3] || '';
+            let gender = cols[5]?.toLowerCase() || 'unisex'; // Gender is column 5, not 4
+            if (gender === 'women') gender = 'female';
             if (gender === 'men') gender = 'male';
             const year = cols[7] ? parseInt(cols[7]) : null;
 
@@ -586,53 +610,42 @@ export default function AdminScreen() {
                 fragrantica_url: url,
                 accords: row.accords
             });
-          }
+        }
 
-          if (batchFragrances.length === 0) {
-             // Skip batch if empty (all invalid)
-             processedCount += batch.length;
-             setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
-             await new Promise(r => setTimeout(r, 0));
-             continue;
-          }
+        if (batchFragrances.length === 0) {
+           // Skip batch if empty (all invalid)
+           processedCount += batch.length;
+           setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
+           i += BATCH_SIZE;
+           setTimeout(processChunk, 0);
+           return;
+        }
 
+        try {
           // Insert Batch
-          // If batch is invalid, this could throw. Ensure we handle it.
-          // However, the previous check (batchFragrances.length === 0) handles the empty case.
-          // If bulkCreateFragrances fails for other reasons (e.g. foreign key), catch block will grab it.
           const createdFragrances = await db.bulkCreateFragrances(batchFragrances);
 
           if (!createdFragrances || createdFragrances.length === 0) {
-             // Fallback: if insert failed silently or returned no data but didn't throw
              console.warn(`Batch ${i/BATCH_SIZE} insert returned no data. Skipping relations.`);
              processedCount += batch.length;
-             setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
-             await new Promise(r => setTimeout(r, 0));
-             continue;
+             i += BATCH_SIZE;
+             setTimeout(processChunk, 0);
+             return;
           }
 
           // Link Relations for this batch
-          const batchNoteRelations: NoteRelation[] = [];
-          const batchPerfumerRelations: PerfumerRelation[] = [];
+          const batchNoteRelations: any[] = [];
+          const batchPerfumerRelations: any[] = [];
 
           for (let j = 0; j < createdFragrances.length; j++) {
               const frag = createdFragrances[j];
-              // Map back to original row.
-              // CRITICAL FIX: batchFragrances and createdFragrances might not align 1:1 if DB generated IDs out of order 
-              // or filtered something.
-              // BUT Supabase insert select() usually preserves order or we should join on unique name/brand.
-              // For bulk speed, we assume order. 
-              // A Safer way is to find the matching row by name/brand_id in the batch.
-              
+              // Map back to original row using Name + BrandID logic
               const originalRow = batch.find(r => 
-                  r.brand.toLowerCase() === brandMap.get(frag.brand_id)?.toLowerCase() || // brandMap stores ID, we need to reverse lookup? No.
-                  // Let's match by Name + BrandID from our prepared batchFragrances
                   (r.cols[1] === frag.name && brandMap.get(r.brand.toLowerCase()) === frag.brand_id)
               );
               
-              // Fallback to index if unique match fails (riskier but faster)
+              // Fallback to index if unique match fails
               const fallbackRow = batch[j]; 
-              
               const rowToUse = originalRow || fallbackRow;
 
               if (!rowToUse) continue;
@@ -661,24 +674,26 @@ export default function AdminScreen() {
 
           processedCount += batch.length;
           setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
-          await new Promise(r => setTimeout(r, 0)); // Yield
-      }
+          
+          i += BATCH_SIZE;
+          setTimeout(processChunk, 0); // Yield to event loop and process next chunk
 
-      setImportProgress('Phase 4/4: Finalizing...');
-      
-      Alert.alert('Import Complete', `Successfully imported ${processedCount} fragrances.`);
-      setCsvData('');
-      fullCsvContent.current = null;
-      setFileStats(null);
-      setImportProgress('');
+        } catch (err) {
+          console.error(`Error processing batch ${i/BATCH_SIZE}:`, err);
+          // Continue to next batch even if this one failed
+          i += BATCH_SIZE;
+          setTimeout(processChunk, 0);
+        }
+      };
+
+      // Start recursive loop
+      processChunk();
 
     } catch (e) {
       Alert.alert('Import Error', 'An unexpected error occurred during import');
       console.error(e);
       setIsImporting(false);
       setImportProgress('');
-    } finally {
-      setIsImporting(false);
     }
   }
 
@@ -1496,7 +1511,7 @@ export default function AdminScreen() {
                 <View key={listing.id} style={styles.disputeCard}>
                   <View style={styles.disputeHeader}>
                     <Text style={styles.disputeTitle}>{listing.house} - {listing.custom_name}</Text>
-                    <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                    <Text style={{fontSize: 12, color: colors.textSecondary}} suppressHydrationWarning={true}>
                       {new Date(listing.created_at).toLocaleDateString()}
                     </Text>
                   </View>
@@ -1593,7 +1608,7 @@ export default function AdminScreen() {
         )}
 
         {/* Other tabs placeholders */}
-        {(activeTab === 'listings' || activeTab === 'swaps') && (
+        {(activeTab === 'listings' || activeTab === 'swaps') && activeTab !== 'overview' && (
            <View style={styles.section}>
              <Text style={styles.sectionTitle}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</Text>
              <View style={styles.emptyState}>
