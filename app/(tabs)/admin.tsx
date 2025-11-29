@@ -136,6 +136,15 @@ export default function AdminScreen() {
   const [enhancingFragranceId, setEnhancingFragranceId] = useState<string | null>(null);
   const [enhancementProgress, setEnhancementProgress] = useState('');
   const [enhancementBrandFilter, setEnhancementBrandFilter] = useState('');
+  const [pendingChanges, setPendingChanges] = useState<any[]>([]);
+  const [enhancementSubTab, setEnhancementSubTab] = useState<'find' | 'approve' | 'analytics'>('find');
+  const [analyticsData, setAnalyticsData] = useState<{
+    total_enhanced: number;
+    success_rate: number;
+    avg_changes_per_fragrance: number;
+    top_sources: {source: string; count: number}[];
+    recent_activity: {date: string; count: number}[];
+  } | null>(null);
   
   // Hydration fix: Ensure component only renders on client
   const [isMounted, setIsMounted] = useState(false);
@@ -1118,29 +1127,14 @@ export default function AdminScreen() {
     },
   });
 
-  if (!isMounted) {
+  // Use consistent loading state to prevent hydration mismatch
+  // Server always renders this, client will update after mount
+  if (!isMounted || legacyAuthLoading || subscriptionLoading || isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (legacyAuthLoading || subscriptionLoading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#000000' }}>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      <SafeAreaView style={{flex: 1, backgroundColor: '#1A1A2E'}}>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <ActivityIndicator size="large" color="#8B5CF6" />
+          <Text style={{color: '#9CA3AF', marginTop: 12}}>Loading Admin Panel...</Text>
         </View>
       </SafeAreaView>
     );
@@ -2012,9 +2006,11 @@ export default function AdminScreen() {
                   <Text style={styles.statValue}>{enhancementStats.processing_requests}</Text>
                   <Text style={styles.statLabel}>Processing</Text>
                 </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{enhancementStats.pending_approvals}</Text>
-                  <Text style={styles.statLabel}>Awaiting Approval</Text>
+                <View style={[styles.statCard, enhancementStats.pending_approvals > 0 && {borderColor: '#F59E0B', borderWidth: 2}]}>
+                  <Text style={[styles.statValue, enhancementStats.pending_approvals > 0 && {color: '#F59E0B'}]}>
+                    {enhancementStats.pending_approvals}
+                  </Text>
+                  <Text style={styles.statLabel}>⚡ Awaiting Approval</Text>
                 </View>
                 <View style={styles.statCard}>
                   <Text style={styles.statValue}>{enhancementStats.total_completed_today}</Text>
@@ -2023,22 +2019,110 @@ export default function AdminScreen() {
               </View>
             )}
 
-            {/* Load Stats Button */}
-            <TouchableOpacity 
-              style={[styles.saveButton, {marginBottom: 16}]}
-              onPress={async () => {
-                setEnhancementProgress('Loading enhancement stats...');
-                const stats = await enhancementService.getQueueStats();
-                setEnhancementStats(stats);
-                setEnhancementProgress('');
-              }}
-            >
-              <Text style={styles.saveButtonText}>Refresh Stats</Text>
-            </TouchableOpacity>
+            {/* Sub-tabs for Enhancement */}
+            <View style={{flexDirection: 'row', marginBottom: 16, gap: 8}}>
+              <TouchableOpacity 
+                style={{
+                  flex: 1, 
+                  padding: 12, 
+                  borderRadius: 8, 
+                  backgroundColor: enhancementSubTab === 'find' ? colors.primary : colors.card,
+                  alignItems: 'center'
+                }}
+                onPress={() => setEnhancementSubTab('find')}
+              >
+                <Text style={{color: enhancementSubTab === 'find' ? '#FFF' : colors.text, fontWeight: '600'}}>
+                  🔍 Find & Enhance
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={{
+                  flex: 1, 
+                  padding: 12, 
+                  borderRadius: 8, 
+                  backgroundColor: enhancementSubTab === 'approve' ? colors.primary : colors.card,
+                  alignItems: 'center',
+                  position: 'relative'
+                }}
+                onPress={async () => {
+                  setEnhancementSubTab('approve');
+                  setEnhancementProgress('Loading pending changes...');
+                  const changes = await enhancementService.getPendingChanges(50);
+                  setPendingChanges(changes);
+                  setEnhancementProgress('');
+                }}
+              >
+                <Text style={{color: enhancementSubTab === 'approve' ? '#FFF' : colors.text, fontWeight: '600'}}>
+                  ✅ Approve Changes
+                </Text>
+                {enhancementStats && enhancementStats.pending_approvals > 0 && (
+                  <View style={{
+                    position: 'absolute', 
+                    top: -8, 
+                    right: -8, 
+                    backgroundColor: '#EF4444', 
+                    borderRadius: 12, 
+                    minWidth: 24, 
+                    height: 24, 
+                    justifyContent: 'center', 
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{color: '#FFF', fontSize: 12, fontWeight: 'bold'}}>
+                      {enhancementStats.pending_approvals}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={{
+                  flex: 1, 
+                  padding: 12, 
+                  borderRadius: 8, 
+                  backgroundColor: enhancementSubTab === 'analytics' ? colors.primary : colors.card,
+                  alignItems: 'center'
+                }}
+                onPress={async () => {
+                  setEnhancementSubTab('analytics');
+                  setEnhancementProgress('Loading analytics...');
+                  // Load analytics data
+                  const stats = await enhancementService.getEnhancementAnalytics();
+                  setAnalyticsData(stats);
+                  setEnhancementProgress('');
+                }}
+              >
+                <Text style={{color: enhancementSubTab === 'analytics' ? '#FFF' : colors.text, fontWeight: '600'}}>
+                  📊 Analytics
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-            {/* Filter & Find Fragrances */}
-            <View style={styles.configCard}>
-              <Text style={styles.configTitle}>Find Fragrances to Enhance</Text>
+            {/* Progress Display */}
+            {enhancementProgress ? (
+              <View style={{marginVertical: 12, padding: 12, backgroundColor: colors.card, borderRadius: 8}}>
+                <Text style={{color: colors.primary, textAlign: 'center'}}>{enhancementProgress}</Text>
+                {enhancingFragranceId && <ActivityIndicator style={{marginTop: 8}} color={colors.primary} />}
+              </View>
+            ) : null}
+
+            {/* FIND & ENHANCE SUB-TAB */}
+            {enhancementSubTab === 'find' && (
+              <>
+                {/* Load Stats Button */}
+                <TouchableOpacity 
+                  style={[styles.saveButton, {marginBottom: 16}]}
+                  onPress={async () => {
+                    setEnhancementProgress('Loading enhancement stats...');
+                    const stats = await enhancementService.getQueueStats();
+                    setEnhancementStats(stats);
+                    setEnhancementProgress('');
+                  }}
+                >
+                  <Text style={styles.saveButtonText}>Refresh Stats</Text>
+                </TouchableOpacity>
+
+                {/* Filter & Find Fragrances */}
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Find Fragrances to Enhance</Text>
               <Text style={styles.configDescription}>
                 Search for fragrances with incomplete data that need AI enhancement.
               </Text>
@@ -2197,6 +2281,223 @@ export default function AdminScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+              </>
+            )}
+
+            {/* APPROVE CHANGES SUB-TAB */}
+            {enhancementSubTab === 'approve' && (
+              <>
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>Pending Changes ({pendingChanges.length})</Text>
+                  <Text style={styles.configDescription}>
+                    Review and approve AI-generated changes before they're applied to the database.
+                  </Text>
+                  
+                  {/* Quick Actions */}
+                  <View style={{flexDirection: 'row', gap: 8, marginVertical: 12}}>
+                    <TouchableOpacity 
+                      style={[styles.actionButton, {flex: 1, borderColor: '#22C55E', backgroundColor: '#22C55E20'}]}
+                      onPress={async () => {
+                        const highConfidence = pendingChanges.filter(c => c.confidence_score >= 0.9);
+                        if (highConfidence.length === 0) {
+                          setEnhancementProgress('No high-confidence changes to auto-approve');
+                          return;
+                        }
+                        setEnhancementProgress(`Auto-approving ${highConfidence.length} high-confidence changes...`);
+                        const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+                        await enhancementService.approveChanges(highConfidence.map(c => c.id), adminId);
+                        const changes = await enhancementService.getPendingChanges(50);
+                        setPendingChanges(changes);
+                        const stats = await enhancementService.getQueueStats();
+                        setEnhancementStats(stats);
+                        setEnhancementProgress(`✅ Auto-approved ${highConfidence.length} changes`);
+                      }}
+                    >
+                      <Text style={{color: '#22C55E', fontWeight: '600'}}>✅ Auto-Approve High Confidence (≥90%)</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {pendingChanges.length === 0 ? (
+                    <View style={{padding: 24, alignItems: 'center'}}>
+                      <Text style={{fontSize: 48, marginBottom: 12}}>🎉</Text>
+                      <Text style={{color: colors.textSecondary, textAlign: 'center'}}>
+                        No pending changes to review!{'\n'}All caught up.
+                      </Text>
+                    </View>
+                  ) : (
+                    pendingChanges.map((change) => (
+                      <View key={change.id} style={{
+                        borderWidth: 1,
+                        borderColor: colors.border,
+                        borderRadius: 8,
+                        padding: 12,
+                        marginTop: 12,
+                        backgroundColor: colors.card
+                      }}>
+                        {/* Change Header */}
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
+                          <View>
+                            <Text style={{color: colors.text, fontWeight: '600', fontSize: 14}}>
+                              {change.fragrance_name || 'Unknown Fragrance'}
+                            </Text>
+                            <Text style={{color: colors.textSecondary, fontSize: 12}}>
+                              Field: {change.field_name} • Source: {change.source}
+                            </Text>
+                          </View>
+                          <View style={{
+                            backgroundColor: change.confidence_score >= 0.9 ? '#22C55E20' : 
+                                           change.confidence_score >= 0.7 ? '#F59E0B20' : '#EF444420',
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 12
+                          }}>
+                            <Text style={{
+                              color: change.confidence_score >= 0.9 ? '#22C55E' : 
+                                     change.confidence_score >= 0.7 ? '#F59E0B' : '#EF4444',
+                              fontWeight: '600',
+                              fontSize: 12
+                            }}>
+                              {Math.round(change.confidence_score * 100)}% confidence
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Diff View */}
+                        <View style={{backgroundColor: colors.background, borderRadius: 6, padding: 8, marginBottom: 8}}>
+                          <View style={{flexDirection: 'row', marginBottom: 4}}>
+                            <Text style={{color: '#EF4444', fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', flex: 1}}>
+                              - {JSON.stringify(change.old_value) || '(empty)'}
+                            </Text>
+                          </View>
+                          <View style={{flexDirection: 'row'}}>
+                            <Text style={{color: '#22C55E', fontSize: 12, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', flex: 1}}>
+                              + {JSON.stringify(change.new_value)}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Action Buttons */}
+                        <View style={{flexDirection: 'row', gap: 8}}>
+                          <TouchableOpacity 
+                            style={{
+                              flex: 1, 
+                              padding: 10, 
+                              backgroundColor: '#22C55E', 
+                              borderRadius: 6, 
+                              alignItems: 'center'
+                            }}
+                            onPress={async () => {
+                              const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+                              await enhancementService.approveChanges([change.id], adminId);
+                              setPendingChanges(prev => prev.filter(c => c.id !== change.id));
+                              const stats = await enhancementService.getQueueStats();
+                              setEnhancementStats(stats);
+                            }}
+                          >
+                            <Text style={{color: '#FFF', fontWeight: '600'}}>✅ Approve</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={{
+                              flex: 1, 
+                              padding: 10, 
+                              backgroundColor: '#EF4444', 
+                              borderRadius: 6, 
+                              alignItems: 'center'
+                            }}
+                            onPress={async () => {
+                              const adminId = user?.id || outsetaUser?.clientIdentifier || 'admin';
+                              await enhancementService.rejectChanges([change.id], adminId, 'Rejected by admin');
+                              setPendingChanges(prev => prev.filter(c => c.id !== change.id));
+                              const stats = await enhancementService.getQueueStats();
+                              setEnhancementStats(stats);
+                            }}
+                          >
+                            <Text style={{color: '#FFF', fontWeight: '600'}}>❌ Reject</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))
+                  )}
+                </View>
+              </>
+            )}
+
+            {/* ANALYTICS SUB-TAB */}
+            {enhancementSubTab === 'analytics' && (
+              <>
+                <View style={styles.configCard}>
+                  <Text style={styles.configTitle}>📊 Enhancement Analytics</Text>
+                  
+                  {analyticsData ? (
+                    <>
+                      {/* Key Metrics */}
+                      <View style={[styles.statsGrid, {marginTop: 12}]}>
+                        <View style={styles.statCard}>
+                          <Text style={styles.statValue}>{analyticsData.total_enhanced}</Text>
+                          <Text style={styles.statLabel}>Total Enhanced</Text>
+                        </View>
+                        <View style={styles.statCard}>
+                          <Text style={[styles.statValue, {color: analyticsData.success_rate >= 80 ? '#22C55E' : '#F59E0B'}]}>
+                            {analyticsData.success_rate}%
+                          </Text>
+                          <Text style={styles.statLabel}>Success Rate</Text>
+                        </View>
+                        <View style={styles.statCard}>
+                          <Text style={styles.statValue}>{analyticsData.avg_changes_per_fragrance.toFixed(1)}</Text>
+                          <Text style={styles.statLabel}>Avg Changes/Fragrance</Text>
+                        </View>
+                      </View>
+
+                      {/* Top Sources */}
+                      <Text style={{color: colors.text, fontWeight: '600', marginTop: 16, marginBottom: 8}}>
+                        Top Data Sources
+                      </Text>
+                      {analyticsData.top_sources.map((source, idx) => (
+                        <View key={source.source} style={{
+                          flexDirection: 'row', 
+                          justifyContent: 'space-between', 
+                          paddingVertical: 8,
+                          borderBottomWidth: idx < analyticsData.top_sources.length - 1 ? 1 : 0,
+                          borderBottomColor: colors.border
+                        }}>
+                          <Text style={{color: colors.text}}>{source.source}</Text>
+                          <Text style={{color: colors.primary, fontWeight: '600'}}>{source.count} changes</Text>
+                        </View>
+                      ))}
+
+                      {/* Recent Activity Chart (simple bar representation) */}
+                      <Text style={{color: colors.text, fontWeight: '600', marginTop: 16, marginBottom: 8}}>
+                        Recent Activity (Last 7 Days)
+                      </Text>
+                      <View style={{flexDirection: 'row', alignItems: 'flex-end', height: 100, gap: 4}}>
+                        {analyticsData.recent_activity.map((day, idx) => {
+                          const maxCount = Math.max(...analyticsData.recent_activity.map(d => d.count), 1);
+                          const height = (day.count / maxCount) * 80;
+                          return (
+                            <View key={day.date} style={{flex: 1, alignItems: 'center'}}>
+                              <View style={{
+                                width: '100%', 
+                                height: Math.max(height, 4), 
+                                backgroundColor: colors.primary,
+                                borderRadius: 4
+                              }} />
+                              <Text style={{color: colors.textSecondary, fontSize: 10, marginTop: 4}}>
+                                {new Date(day.date).toLocaleDateString('en-AU', {weekday: 'short'})}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </>
+                  ) : (
+                    <View style={{padding: 24, alignItems: 'center'}}>
+                      <ActivityIndicator color={colors.primary} />
+                      <Text style={{color: colors.textSecondary, marginTop: 8}}>Loading analytics...</Text>
+                    </View>
+                  )}
+                </View>
+              </>
+            )}
           </View>
         )}
 

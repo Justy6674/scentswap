@@ -317,6 +317,147 @@ class EnhancementService {
     }
   }
 
+  async getPendingChanges(limit: number = 50): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('fragrance_enhancement_changes')
+        .select(`
+          *,
+          request:fragrance_enhancement_requests(
+            id,
+            fragrance_id,
+            fragrance:fragrance_master(id, name, brand)
+          )
+        `)
+        .eq('status', 'pending')
+        .order('confidence_score', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      
+      // Flatten the data to include fragrance info at top level
+      return (data || []).map(change => ({
+        ...change,
+        fragrance_name: change.request?.fragrance?.name,
+        fragrance_brand: change.request?.fragrance?.brand
+      }));
+    } catch (error) {
+      console.error('Error getting pending changes:', error);
+      return [];
+    }
+  }
+
+  async getEnhancementAnalytics(): Promise<{
+    total_enhanced: number;
+    success_rate: number;
+    avg_changes_per_fragrance: number;
+    top_sources: {source: string; count: number}[];
+    recent_activity: {date: string; count: number}[];
+  }> {
+    if (!isSupabaseConfigured()) {
+      return {
+        total_enhanced: 0,
+        success_rate: 0,
+        avg_changes_per_fragrance: 0,
+        top_sources: [],
+        recent_activity: []
+      };
+    }
+    const supabase = getSupabase()!;
+
+    try {
+      // Get total completed requests
+      const { count: totalCompleted } = await supabase
+        .from('fragrance_enhancement_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'completed');
+
+      // Get total failed requests
+      const { count: totalFailed } = await supabase
+        .from('fragrance_enhancement_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'failed');
+
+      // Get total approved changes
+      const { count: totalApproved } = await supabase
+        .from('fragrance_enhancement_changes')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['approved', 'auto_approved']);
+
+      // Calculate success rate
+      const totalRequests = (totalCompleted || 0) + (totalFailed || 0);
+      const successRate = totalRequests > 0 ? Math.round(((totalCompleted || 0) / totalRequests) * 100) : 0;
+
+      // Calculate average changes per fragrance
+      const avgChanges = (totalCompleted || 0) > 0 ? (totalApproved || 0) / (totalCompleted || 0) : 0;
+
+      // Get top sources
+      const { data: sourceData } = await supabase
+        .from('fragrance_enhancement_changes')
+        .select('source')
+        .in('status', ['approved', 'auto_approved']);
+      
+      const sourceCounts: Record<string, number> = {};
+      (sourceData || []).forEach(item => {
+        sourceCounts[item.source] = (sourceCounts[item.source] || 0) + 1;
+      });
+      const topSources = Object.entries(sourceCounts)
+        .map(([source, count]) => ({ source, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // Get recent activity (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { data: recentData } = await supabase
+        .from('fragrance_enhancement_requests')
+        .select('completed_at')
+        .eq('status', 'completed')
+        .gte('completed_at', sevenDaysAgo.toISOString());
+
+      // Group by date
+      const activityByDate: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        activityByDate[date.toISOString().split('T')[0]] = 0;
+      }
+      
+      (recentData || []).forEach(item => {
+        if (item.completed_at) {
+          const date = item.completed_at.split('T')[0];
+          if (activityByDate[date] !== undefined) {
+            activityByDate[date]++;
+          }
+        }
+      });
+
+      const recentActivity = Object.entries(activityByDate)
+        .map(([date, count]) => ({ date, count }));
+
+      return {
+        total_enhanced: totalCompleted || 0,
+        success_rate: successRate,
+        avg_changes_per_fragrance: avgChanges,
+        top_sources: topSources,
+        recent_activity: recentActivity
+      };
+    } catch (error) {
+      console.error('Error getting enhancement analytics:', error);
+      return {
+        total_enhanced: 0,
+        success_rate: 0,
+        avg_changes_per_fragrance: 0,
+        top_sources: [],
+        recent_activity: []
+      };
+    }
+  }
+
   async approveChanges(changeIds: string[], adminId: string): Promise<{
     success: boolean;
     applied_count: number;
