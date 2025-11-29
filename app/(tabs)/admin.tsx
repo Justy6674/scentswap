@@ -73,9 +73,8 @@ interface AIConfig {
 type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market' | 'ai-enhance';
 
 export default function AdminScreen() {
-  // CRITICAL: Use a stable default for SSR to prevent hydration mismatch
-  // The actual colorScheme will be used after isMounted is true
-  const rawColorScheme = useColorScheme();
+  // useColorScheme returns null during SSR, 'light' or 'dark' after mount
+  const colorScheme = useColorScheme() ?? 'dark';
   const { user, isAdmin: authIsAdmin, isLoading: legacyAuthLoading } = useAuth();
   const { isAdmin: subscriptionIsAdmin, outsetaUser, isLoading: subscriptionLoading } = useSubscription();
   
@@ -1142,8 +1141,6 @@ export default function AdminScreen() {
   }
 
   // Initialize colors AFTER isMounted check to prevent hydration mismatch
-  // Use 'dark' as default during SSR, actual scheme after mounting
-  const colorScheme = rawColorScheme ?? 'dark';
   const colors = Colors[colorScheme];
 
   const isAuthenticated = user || outsetaUser;
