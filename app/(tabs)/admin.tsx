@@ -19,12 +19,12 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { db } from '@/lib/database';
 import { User, Listing, Swap } from '@/types';
 // SSR-safe platform check - must be defined before any conditional imports
 const isWeb = typeof window !== 'undefined';
 
 // Lazy-load modules to avoid SSR issues
+let db: typeof import('@/lib/database').db | null = null;
 let parseFragranceData: typeof import('@/lib/ai-services').parseFragranceData | null = null;
 let enhancementService: typeof import('@/lib/enhancement-service').enhancementService | null = null;
 let aiEnhancementEngine: typeof import('@/lib/ai-enhancement-engine').aiEnhancementEngine | null = null;
@@ -37,6 +37,10 @@ type EnhancementQueueStats = import('@/lib/enhancement-service').EnhancementQueu
 
 const loadModules = async () => {
   if (isWeb) {
+    if (!db) {
+      const database = await import('@/lib/database');
+      db = database.db;
+    }
     if (!parseFragranceData) {
       const aiServices = await import('@/lib/ai-services');
       parseFragranceData = aiServices.parseFragranceData;
