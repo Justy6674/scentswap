@@ -23,10 +23,9 @@ import {
   Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Colors } from '@/constants/Colors';
 
 // Simple colors for callback page
-const COLORS = {
+const colors = {
   background: '#FBF9F7',
   primary: '#5BBFBA',
   text: '#2D3436',
@@ -60,8 +59,6 @@ export default function AuthCallbackScreen() {
       const urlParams = new URLSearchParams(window.location.search);
       const accessToken = urlParams.get('access_token');
 
-      console.log('Callback: access_token present:', !!accessToken);
-
       if (!accessToken) {
         // No token - might already be logged in, check Outseta
         setMessage('Checking session...');
@@ -71,14 +68,13 @@ export default function AuthCallbackScreen() {
           try {
             const user = await (window as any).Outseta.getUser();
             if (user) {
-              console.log('Callback: User already logged in:', user.Email);
               setStatus('success');
               setMessage('Welcome back!');
               setTimeout(() => router.replace('/(tabs)'), 1000);
               return;
             }
           } catch (e) {
-            console.log('Callback: No existing session');
+            // No existing session
           }
         }
         
@@ -95,7 +91,6 @@ export default function AuthCallbackScreen() {
 
       // Set the token in Outseta - it will handle storage
       if ((window as any).Outseta) {
-        console.log('Callback: Setting access token');
         (window as any).Outseta.setAccessToken(accessToken);
       }
 
@@ -128,7 +123,6 @@ export default function AuthCallbackScreen() {
       }
       await new Promise(resolve => setTimeout(resolve, 200));
     }
-    console.warn('Outseta did not load in time');
   }
 
   const styles = StyleSheet.create({

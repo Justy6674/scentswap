@@ -181,39 +181,32 @@ export default function LandingPage() {
   // CRITICAL: Prevent hydration mismatch by only rendering responsive content after mount
   const [mounted, setMounted] = useState(false);
   
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
   // Use safe default during SSR, actual value after mount
   const isDesktop = mounted ? width > 768 : false;
   
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
 
-  // Guard against hydration mismatch
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#000000' }}>Loading...</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-    ]).start();
-  }, []);
+    if (!loading) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }
+  }, [loading, fadeAnim, slideAnim]);
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
@@ -232,6 +225,15 @@ export default function LandingPage() {
   const handleExplore = () => {
     router.push('/(tabs)');
   };
+
+  // Guard against hydration mismatch
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#000000' }}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 

@@ -223,43 +223,18 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const Outseta = (window as any).Outseta;
       
       if (!Outseta) {
-        console.log('Outseta not available');
         return;
       }
-      
-      // Check both localStorage and sessionStorage for tokens
-      // Per Outseta docs: tokenStorage can be 'local', 'session', or 'cookie'
-      console.log('All localStorage keys:', Object.keys(localStorage));
-      console.log('All sessionStorage keys:', Object.keys(sessionStorage));
-      
-      // Look for any key containing 'outseta' or 'token' (case insensitive)
-      const allLocalKeys = Object.keys(localStorage);
-      const allSessionKeys = Object.keys(sessionStorage);
-      
-      const tokenKeys = [...allLocalKeys, ...allSessionKeys].filter(k => 
-        k.toLowerCase().includes('outseta') || k.toLowerCase().includes('token')
-      );
-      console.log('Potential token keys found:', tokenKeys);
 
       // Some browsers/nocodes store the JWT under ...settings; extract if present
       const restoredToken = extractTokenFromSettings();
       if (restoredToken && Outseta.setAccessToken) {
-        console.log('Rehydrating Outseta token from localStorage settings');
         Outseta.setAccessToken(restoredToken);
-      }
-      
-      // Check if there's an access_token in the URL (after login redirect)
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlToken = urlParams.get('access_token');
-      if (urlToken) {
-        console.log('Found access_token in URL - user just logged in!');
       }
       
       // Try to get current user using approved method: Outseta.getUser()
       // Add timeout because getUser() can hang if no session exists
       try {
-        console.log('Checking for Outseta user session...');
-        
         // Race between getUser() and a timeout
         const userPromise = Outseta.getUser();
         const timeoutPromise = new Promise((_, reject) => 
@@ -267,52 +242,39 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         );
         
         const user = await Promise.race([userPromise, timeoutPromise]);
-        console.log('Outseta.getUser() returned:', user ? `User found: ${user.Email}` : 'No user');
         
         if (user) {
           // Get JWT payload using approved method: Outseta.getJwtPayload()
           const jwtPayload = await Outseta.getJwtPayload();
-          console.log('Outseta.getJwtPayload() returned:', jwtPayload ? 'JWT found' : 'No JWT');
           handleOutsetaUser(user, jwtPayload);
         }
       } catch (e: any) {
         // No user logged in or timeout - this is expected for unauthenticated users
-        console.log('No Outseta user session:', e?.message || e);
       }
       
       // Listen for auth changes using Outseta's event system
       // Per Outseta docs: https://go.outseta.com/support/kb/articles/6Dmw7qm4/access-user-info-client-side-with-javascript
       // The accessToken.set event receives the decoded JWT payload as a parameter
       if (Outseta.on) {
-        console.log('Setting up Outseta event listeners...');
-        
         // Per docs: Outseta.on('accessToken.set', (payload) => { ... })
         // The payload IS the decoded JWT - no need to call getJwtPayload()
         Outseta.on('accessToken.set', async (payload: any) => {
-          console.log('Outseta event: accessToken.set triggered with payload:', payload);
           try {
             // Get full user profile (has more data than JWT payload)
             const user = await Outseta.getUser();
-            console.log('accessToken.set - User found:', user?.Email);
             handleOutsetaUser(user, payload);
           } catch (e) {
             console.error('Error handling accessToken.set:', e);
             // Even if getUser fails, we have the JWT payload
             if (payload && payload.email) {
-              console.log('Using JWT payload directly');
               handleOutsetaUser({ Email: payload.email, Uid: payload.sub }, payload);
             }
           }
         });
         
         Outseta.on('accessToken.clear', () => {
-          console.log('Outseta event: accessToken.clear triggered');
           handleLogout();
         });
-        
-        console.log('Outseta event listeners registered');
-      } else {
-        console.log('Outseta.on not available - cannot register event listeners');
       }
     } catch (error) {
       console.error('Error initializing Outseta:', error);
@@ -331,7 +293,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
     // Don't throw - just continue without Outseta
-    console.log('Outseta script did not load in time');
   };
 
   const extractTokenFromSettings = (): string | null => {
@@ -341,9 +302,6 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage?.getItem(storageKey) || window.sessionStorage?.getItem(storageKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      console.log('DEBUG: Settings keys:', Object.keys(parsed));
-      if (parsed.auth) console.log('DEBUG: parsed.auth keys:', Object.keys(parsed.auth));
-      if (parsed.accessToken) console.log('DEBUG: Found accessToken at root');
       return (
         parsed?.accessToken ||
         parsed?.AccessToken ||
@@ -352,13 +310,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         null
       );
     } catch (error) {
-      console.error('Failed to parse Outseta settings for token', error);
       return null;
     }
   };
 
   const handleOutsetaUser = (user: any, jwtPayload: any) => {
-    console.log('handleOutsetaUser called with:', { email: user?.Email, planUid: jwtPayload?.['outseta:planUid'] });
     const planUid = jwtPayload?.['outseta:planUid'] || OUTSETA_CONFIG.planUids.FREE;
     const tier = getTierFromPlanUid(planUid);
     

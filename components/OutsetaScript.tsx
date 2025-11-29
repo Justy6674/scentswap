@@ -28,9 +28,12 @@ declare global {
     Outseta: {
       getUser: () => Promise<any>;
       getJwtPayload: () => Promise<any>;
+      getAccessToken: () => string | null;
       setAccessToken: (token: string | null) => void;
-      on: (event: string, callback: () => void) => void;
+      on: (event: string, callback: (payload?: any) => void) => void;
       off: (event: string, callback: () => void) => void;
+      auth?: { open: () => void };
+      profile?: { open: () => void };
     };
   }
 }
@@ -43,7 +46,6 @@ export function OutsetaScript() {
 
     // Check if already loaded
     if (window.Outseta) {
-      console.log('Outseta already loaded');
       handlePostLoginToken();
       return;
     }
@@ -66,7 +68,6 @@ export function OutsetaScript() {
     script.async = true;
     
     script.onload = () => {
-      console.log('Outseta script loaded successfully');
       handlePostLoginToken();
     };
     
@@ -106,8 +107,6 @@ export function OutsetaScript() {
     }
     
     if (accessToken) {
-      console.log('Access token found in URL, setting via Outseta.setAccessToken()');
-      
       // Per docs: "Outseta's nocode module will grab the token from the URL and store it"
       // The script should handle this automatically, but if Outseta is ready, we can set it
       if (window.Outseta && window.Outseta.setAccessToken) {
