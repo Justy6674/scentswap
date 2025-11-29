@@ -53,6 +53,7 @@ export default function AdminScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [userActivity, setUserActivity] = useState<UserActivity[]>([]);
   const [liveUsers, setLiveUsers] = useState(0);
+  const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   const supabase = getSupabase();
 
@@ -66,7 +67,111 @@ export default function AdminScreen() {
       updateLiveUserCount();
     }, 5000); // Update every 5 seconds
 
-    return () => clearInterval(activityInterval);
+    // Set up real-time database subscriptions
+    const setupRealtimeSubscriptions = () => {
+      if (!supabase) return;
+
+      // Subscribe to fragrance_master changes
+      const fragranceSubscription = supabase
+        .channel('fragrance_changes')
+        .on('postgres_changes', {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'fragrance_master'
+        }, (payload) => {
+          console.log('Real-time fragrance change:', payload);
+
+          if (payload.eventType === 'INSERT') {
+            // Add new fragrance to list
+            const newFragrance = payload.new as Fragrance;
+            setFragrances(prev => [newFragrance, ...prev.slice(0, 99)]);
+
+            Alert.alert('New Fragrance Added', `"${newFragrance.name}" by ${newFragrance.brand} was added to the database.`);
+          }
+          else if (payload.eventType === 'UPDATE') {
+            // Update existing fragrance
+            const updatedFragrance = payload.new as Fragrance;
+            setFragrances(prev => prev.map(f =>
+              f.id === updatedFragrance.id ? updatedFragrance : f
+            ));
+
+            console.log(`Fragrance "${updatedFragrance.name}" updated in real-time`);
+          }
+          else if (payload.eventType === 'DELETE') {
+            // Remove deleted fragrance
+            const deletedId = payload.old.id;
+            setFragrances(prev => prev.filter(f => f.id !== deletedId));
+
+            Alert.alert('Fragrance Deleted', `A fragrance was removed from the database.`);
+          }
+
+          // Update stats when changes happen
+          loadAdminData();
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setRealtimeConnected(true);
+            console.log('Real-time fragrance subscriptions active');
+          } else if (status === 'CLOSED') {
+            setRealtimeConnected(false);
+          }
+        });
+
+      // Subscribe to users table changes
+      const usersSubscription = supabase
+        .channel('user_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'users'
+        }, (payload) => {
+          console.log('Real-time user change:', payload);
+
+          if (payload.eventType === 'INSERT') {
+            const newUser = payload.new;
+            Alert.alert('New User Registered', `New user: ${newUser.email || 'Unknown'}`);
+          }
+
+          // Refresh user activity and stats
+          loadUserActivity();
+          loadAdminData();
+        })
+        .subscribe();
+
+      // Subscribe to listings changes
+      const listingsSubscription = supabase
+        .channel('listing_changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'listings'
+        }, (payload) => {
+          console.log('Real-time listing change:', payload);
+
+          if (payload.eventType === 'INSERT') {
+            const newListing = payload.new;
+            Alert.alert('New Listing Created', `New listing: ${newListing.title || 'Unknown'}`);
+          }
+
+          // Refresh activity and stats
+          loadUserActivity();
+          loadAdminData();
+        })
+        .subscribe();
+
+      return () => {
+        fragranceSubscription.unsubscribe();
+        usersSubscription.unsubscribe();
+        listingsSubscription.unsubscribe();
+      };
+    };
+
+    const unsubscribe = setupRealtimeSubscriptions();
+
+    return () => {
+      clearInterval(activityInterval);
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const loadUserActivity = async () => {
@@ -782,10 +887,29 @@ export default function AdminScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
       <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
-        <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#ffffff' }}>Admin Dashboard</Text>
-        <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>
-          Manage your ScentSwap platform • {stats?.total_fragrances} fragrances loaded
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View>
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#ffffff' }}>Admin Dashboard</Text>
+            <Text style={{ fontSize: 14, marginTop: 4, color: '#999999' }}>
+              Manage your ScentSwap platform • {stats?.total_fragrances} fragrances loaded
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: realtimeConnected ? '#10B981' : '#EF4444'
+            }} />
+            <Text style={{
+              fontSize: 12,
+              color: realtimeConnected ? '#10B981' : '#EF4444',
+              fontWeight: '600'
+            }}>
+              {realtimeConnected ? 'Live Sync Active' : 'Connecting...'}
+            </Text>
+          </View>
+        </View>
       </View>
 
       <View style={{ flexDirection: 'row', backgroundColor: '#2a2a2a', paddingHorizontal: 20 }}>
