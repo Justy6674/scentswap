@@ -29,18 +29,35 @@ import { parseFragranceData } from '@/lib/ai-services';
 
 // ... (Previous Interfaces)
 interface AdminStats {
+  // User stats
   total_users: number;
   new_users_7d: number;
-  active_listings: number;
-  new_listings_7d: number;
-  total_swaps: number;
-  pending_swaps: number;
-  completed_swaps: number;
-  disputed_swaps: number;
-  new_swaps_7d: number;
   verified_users: number;
   premium_users: number;
   elite_users: number;
+
+  // Listings stats
+  active_listings: number;
+  new_listings_7d: number;
+  total_listings: number;
+
+  // Swaps stats
+  total_swaps: number;
+  pending_swaps: number;
+  active_swaps: number;
+  completed_swaps: number;
+  disputed_swaps: number;
+  cancelled_swaps: number;
+  new_swaps_7d: number;
+
+  // Fragrance Master Database stats
+  total_fragrances: number;
+  unique_brands: number;
+  avg_rating: number;
+  new_fragrances_7d: number;
+  fragrances_with_concentration: number;
+  fragrances_with_family: number;
+  database_completeness: number;
 }
 
 // New Interfaces for AI
@@ -1182,37 +1199,219 @@ export default function AdminScreen() {
       >
         {activeTab === 'overview' && stats && (
           <>
-            {/* Existing Overview Content */}
+            {/* Platform Statistics */}
             <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{stats.total_users}</Text>
-                <Text style={styles.statLabel}>Total Users</Text>
-                <Text style={[styles.statChange, styles.statChangePositive]}>
-                  +{stats.new_users_7d} this week
-                </Text>
+              {/* Users Section */}
+              <View style={[styles.statCard, styles.statCardWide]}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <View>
+                    <Text style={styles.statValue}>{stats.total_users?.toLocaleString() || 0}</Text>
+                    <Text style={styles.statLabel}>Total Users</Text>
+                  </View>
+                  <View style={{alignItems: 'flex-end'}}>
+                    <Text style={[styles.statChange, styles.statChangePositive]}>
+                      +{stats.new_users_7d || 0} this week
+                    </Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>
+                      +{stats.new_users_30d || 0} this month
+                    </Text>
+                  </View>
+                </View>
+                <View style={{flexDirection: 'row', gap: 12, marginTop: 12}}>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 16, fontWeight: 'bold', color: '#22C55E'}}>{stats.verified_users || 0}</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>Verified</Text>
+                  </View>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 16, fontWeight: 'bold', color: '#A855F7'}}>{stats.premium_users || 0}</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>Premium</Text>
+                  </View>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 16, fontWeight: 'bold', color: '#F59E0B'}}>{stats.elite_users || 0}</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>Elite</Text>
+                  </View>
+                </View>
               </View>
-              {/* ... other existing stats ... */}
-              <View style={styles.statCard}>
-                <Text style={styles.statValue}>{stats.active_listings}</Text>
-                <Text style={styles.statLabel}>Active Listings</Text>
-                <Text style={[styles.statChange, styles.statChangePositive]}>
-                  +{stats.new_listings_7d} this week
-                </Text>
+
+              {/* Database Section */}
+              <View style={[styles.statCard, styles.statCardWide]}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <View>
+                    <Text style={[styles.statValue, {color: '#22C55E'}]}>{stats.total_fragrances?.toLocaleString() || 0}</Text>
+                    <Text style={styles.statLabel}>Fragrance Master Database</Text>
+                  </View>
+                  <View style={{alignItems: 'flex-end'}}>
+                    <Text style={{fontSize: 14, fontWeight: 'bold', color: colors.primary}}>
+                      {stats.unique_brands || 0} Brands
+                    </Text>
+                    <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                      ⭐ {stats.avg_rating?.toFixed(2) || '0.00'} avg rating
+                    </Text>
+                    {stats.new_fragrances_7d > 0 && (
+                      <Text style={{fontSize: 11, color: '#22C55E', fontWeight: 'bold'}}>
+                        +{stats.new_fragrances_7d} this week
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={{flexDirection: 'row', gap: 12, marginTop: 12}}>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 14, fontWeight: 'bold', color: '#3B82F6'}}>{stats.fragrances_with_concentration || 0}</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>With Concentration</Text>
+                  </View>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 14, fontWeight: 'bold', color: '#8B5CF6'}}>{stats.fragrances_with_family || 0}</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>With Family</Text>
+                  </View>
+                  <View style={{flex: 1, alignItems: 'center', padding: 8, backgroundColor: colors.background, borderRadius: 8}}>
+                    <Text style={{fontSize: 14, fontWeight: 'bold', color: '#10B981'}}>{stats.database_completeness}%</Text>
+                    <Text style={{fontSize: 10, color: colors.textSecondary}}>Complete</Text>
+                  </View>
+                </View>
               </View>
-              {/* ... */}
+
+              {/* Listings */}
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{stats.total_listings?.toLocaleString() || 0}</Text>
+                <Text style={styles.statLabel}>Total Listings</Text>
+                <View style={{marginTop: 8}}>
+                  <Text style={{fontSize: 12, color: '#22C55E'}}>
+                    {stats.active_listings || 0} active
+                  </Text>
+                  <Text style={[styles.statChange, styles.statChangePositive]}>
+                    +{stats.new_listings_7d || 0} this week
+                  </Text>
+                </View>
+              </View>
+
+              {/* Swaps */}
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{stats.total_swaps?.toLocaleString() || 0}</Text>
+                <Text style={styles.statLabel}>Total Swaps</Text>
+                <View style={{marginTop: 8}}>
+                  <View style={{flexDirection: 'row', gap: 8}}>
+                    <Text style={{fontSize: 11, color: '#F59E0B'}}>
+                      {stats.pending_swaps || 0} pending
+                    </Text>
+                    <Text style={{fontSize: 11, color: '#3B82F6'}}>
+                      {stats.active_swaps || 0} active
+                    </Text>
+                  </View>
+                  <View style={{flexDirection: 'row', gap: 8, marginTop: 2}}>
+                    <Text style={{fontSize: 11, color: '#22C55E'}}>
+                      {stats.completed_swaps || 0} completed
+                    </Text>
+                    {stats.cancelled_swaps > 0 && (
+                      <Text style={{fontSize: 11, color: '#9CA3AF'}}>
+                        {stats.cancelled_swaps} cancelled
+                      </Text>
+                    )}
+                  </View>
+                  {stats.disputed_swaps > 0 && (
+                    <Text style={{fontSize: 11, color: '#EF4444', fontWeight: 'bold'}}>
+                      ⚠️ {stats.disputed_swaps} disputed
+                    </Text>
+                  )}
+                  {stats.new_swaps_7d > 0 && (
+                    <Text style={{fontSize: 11, color: '#22C55E', marginTop: 4}}>
+                      +{stats.new_swaps_7d} this week
+                    </Text>
+                  )}
+                </View>
+              </View>
             </View>
-            {/* Reuse existing dispute/recent user sections from previous implementation if available in state */}
-            {disputedSwaps.length > 0 && (
-               <View style={styles.section}>
-                 <Text style={styles.sectionTitle}>⚠️ Disputes Requiring Attention</Text>
-                 {/* ... Dispute list ... */}
-                 {disputedSwaps.map(swap => (
-                    <View key={swap.id} style={styles.disputeCard}>
-                        <Text>{swap.id}</Text>
-                        {/* Simplified for brevity in this rewrite, normally preserve full logic */}
+            {/* Disputes Section */}
+            {disputedSwaps && disputedSwaps.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>⚠️ Disputes Requiring Attention</Text>
+                {disputedSwaps.map(swap => (
+                  <View key={swap.id} style={styles.disputeCard}>
+                    <View style={styles.disputeHeader}>
+                      <Text style={styles.disputeTitle}>Swap #{swap.id.slice(0, 8)}</Text>
+                      <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                        {new Date(swap.created_at).toLocaleDateString()}
+                      </Text>
                     </View>
-                 ))}
-               </View>
+                    <Text style={styles.disputeReason}>
+                      Status: {swap.status}
+                    </Text>
+                    {swap.dispute_reason && (
+                      <Text style={{fontSize: 12, color: colors.textSecondary, marginTop: 4}}>
+                        Reason: {swap.dispute_reason}
+                      </Text>
+                    )}
+                    <View style={styles.disputeActions}>
+                      <TouchableOpacity
+                        style={[styles.actionButton, {borderColor: '#22C55E'}]}
+                        onPress={() => handleResolveDispute(swap.id, 'favor_initiator')}
+                      >
+                        <Text style={[styles.actionButtonText, {color: '#22C55E'}]}>Favor Initiator</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.actionButton, {borderColor: '#3B82F6'}]}
+                        onPress={() => handleResolveDispute(swap.id, 'favor_recipient')}
+                      >
+                        <Text style={[styles.actionButtonText, {color: '#3B82F6'}]}>Favor Recipient</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.actionButton, {borderColor: '#F59E0B'}]}
+                        onPress={() => handleResolveDispute(swap.id, 'mutual')}
+                      >
+                        <Text style={[styles.actionButtonText, {color: '#F59E0B'}]}>Mutual</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Recent Users Section */}
+            {recentUsers && recentUsers.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Recent Users</Text>
+                {recentUsers.map(user => (
+                  <View key={user.id} style={styles.userCard}>
+                    <View style={styles.userHeader}>
+                      <View>
+                        <Text style={styles.userName}>{user.full_name || 'Anonymous'}</Text>
+                        <Text style={styles.userEmail}>{user.email}</Text>
+                      </View>
+                      <View style={{alignItems: 'flex-end'}}>
+                        <Text style={{fontSize: 10, color: colors.textSecondary}}>
+                          Joined {new Date(user.created_at).toLocaleDateString()}
+                        </Text>
+                        {user.verification_tier && (
+                          <View style={[styles.badge, {
+                            backgroundColor: user.verification_tier === 'verified' ? '#22C55E' :
+                                          user.verification_tier === 'trusted' ? '#3B82F6' :
+                                          user.verification_tier === 'elite' ? '#F59E0B' : '#6B7280'
+                          }]}>
+                            <Text style={[styles.badgeText, {color: '#FFF'}]}>
+                              {user.verification_tier}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    <View style={styles.userActions}>
+                      <TouchableOpacity
+                        style={[styles.actionButton, {borderColor: '#22C55E'}]}
+                        onPress={() => handleVerifyUser(user.id)}
+                      >
+                        <Ionicons name="checkmark-circle" size={14} color="#22C55E" />
+                        <Text style={[styles.actionButtonText, {color: '#22C55E'}]}>Verify</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.actionButton, {borderColor: '#EF4444'}]}
+                        onPress={() => handleSuspendUser(user.id)}
+                      >
+                        <Ionicons name="ban" size={14} color="#EF4444" />
+                        <Text style={[styles.actionButtonText, {color: '#EF4444'}]}>Suspend</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+              </View>
             )}
           </>
         )}
@@ -1252,29 +1451,48 @@ export default function AdminScreen() {
                     <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 8}}>
                       <View style={{alignItems: 'center'}}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
-                          {fragranceStats.total_count.toLocaleString()}
+                          {fragranceStats.total_count?.toLocaleString() || 0}
                         </Text>
                         <Text style={{fontSize: 12, color: colors.textSecondary}}>Total Fragrances</Text>
                       </View>
                       <View style={{alignItems: 'center'}}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
-                          {fragranceStats.unique_brands.toLocaleString()}
+                          {fragranceStats.unique_brands?.toLocaleString() || 0}
                         </Text>
                         <Text style={{fontSize: 12, color: colors.textSecondary}}>Brands</Text>
                       </View>
                       <View style={{alignItems: 'center'}}>
                         <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
-                          {fragranceStats.avg_rating.toFixed(2)}
+                          {(fragranceStats.avg_rating || 0).toFixed(2)}
                         </Text>
                         <Text style={{fontSize: 12, color: colors.textSecondary}}>Avg Rating</Text>
                       </View>
                       <View style={{alignItems: 'center'}}>
-                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
-                          {fragranceStats.with_year.toLocaleString()}
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: '#22C55E'}}>
+                          {fragranceStats.recently_added || 0}
                         </Text>
-                        <Text style={{fontSize: 12, color: colors.textSecondary}}>With Year</Text>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>Added (7d)</Text>
                       </View>
                     </View>
+                    {fragranceStats.source_breakdown && Object.keys(fragranceStats.source_breakdown).length > 0 && (
+                      <View style={{marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border}}>
+                        <Text style={{fontSize: 12, fontWeight: 'bold', color: colors.text, marginBottom: 8}}>Data Sources:</Text>
+                        <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 8}}>
+                          {Object.entries(fragranceStats.source_breakdown).map(([source, count]) => (
+                            <View key={source} style={{
+                              backgroundColor: colors.background,
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 12
+                            }}>
+                              <Text style={{fontSize: 10, color: colors.textSecondary}}>
+                                {source}: {count}
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
                   </View>
                 )}
 

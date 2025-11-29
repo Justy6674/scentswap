@@ -961,33 +961,64 @@ class DatabaseClient {
     const supabase = getSupabase()!;
 
     try {
-      // Get counts from each table
-      const [usersResult, listingsResult, swapsResult] = await Promise.all([
+      // Get counts from all tables including fragrance_master
+      const [usersResult, listingsResult, swapsResult, fragranceResult] = await Promise.all([
         supabase.from('users').select('id, created_at, verification_tier, subscription_plan', { count: 'exact' }),
         supabase.from('listings').select('id, created_at, is_active', { count: 'exact' }),
         supabase.from('swaps').select('id, created_at, status', { count: 'exact' }),
+        supabase.from('fragrance_master').select('id, brand, rating_value, created_at, concentration, family', { count: 'exact' }),
       ]);
 
       const users = usersResult.data || [];
       const listings = listingsResult.data || [];
       const swaps = swapsResult.data || [];
+      const fragrances = fragranceResult.data || [];
 
       const now = new Date();
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
+      // Calculate fragrance database stats
+      const uniqueBrands = new Set(fragrances.map(f => f.brand).filter(Boolean)).size;
+      const avgRating = fragrances.length > 0
+        ? fragrances
+            .filter(f => f.rating_value && f.rating_value > 0)
+            .reduce((sum, f) => sum + f.rating_value, 0) /
+          Math.max(1, fragrances.filter(f => f.rating_value && f.rating_value > 0).length)
+        : 0;
+      const recentFragrances = fragrances.filter(f => new Date(f.created_at) > weekAgo).length;
+      const withConcentration = fragrances.filter(f => f.concentration).length;
+      const withFamily = fragrances.filter(f => f.family).length;
+
       return {
+        // User stats
         total_users: users.length,
         new_users_7d: users.filter(u => new Date(u.created_at) > weekAgo).length,
-        active_listings: listings.filter(l => l.is_active).length,
-        new_listings_7d: listings.filter(l => new Date(l.created_at) > weekAgo).length,
-        total_swaps: swaps.length,
-        pending_swaps: swaps.filter(s => s.status === 'proposed').length,
-        completed_swaps: swaps.filter(s => s.status === 'completed').length,
-        disputed_swaps: swaps.filter(s => s.status === 'disputed').length,
-        new_swaps_7d: swaps.filter(s => new Date(s.created_at) > weekAgo).length,
         verified_users: users.filter(u => u.verification_tier === 'verified' || u.verification_tier === 'trusted' || u.verification_tier === 'elite').length,
         premium_users: users.filter(u => u.subscription_plan === 'premium').length,
         elite_users: users.filter(u => u.subscription_plan === 'elite').length,
+
+        // Listings stats
+        active_listings: listings.filter(l => l.is_active).length,
+        new_listings_7d: listings.filter(l => new Date(l.created_at) > weekAgo).length,
+        total_listings: listings.length,
+
+        // Swaps stats
+        total_swaps: swaps.length,
+        pending_swaps: swaps.filter(s => s.status === 'proposed').length,
+        active_swaps: swaps.filter(s => s.status === 'accepted' || s.status === 'locked' || s.status === 'shipping').length,
+        completed_swaps: swaps.filter(s => s.status === 'completed').length,
+        disputed_swaps: swaps.filter(s => s.status === 'disputed').length,
+        cancelled_swaps: swaps.filter(s => s.status === 'cancelled').length,
+        new_swaps_7d: swaps.filter(s => new Date(s.created_at) > weekAgo).length,
+
+        // Fragrance Master Database stats
+        total_fragrances: fragrances.length,
+        unique_brands: uniqueBrands,
+        avg_rating: parseFloat(avgRating.toFixed(2)),
+        new_fragrances_7d: recentFragrances,
+        fragrances_with_concentration: withConcentration,
+        fragrances_with_family: withFamily,
+        database_completeness: fragrances.length > 0 ? parseFloat(((withConcentration + withFamily) / (fragrances.length * 2) * 100).toFixed(1)) : 0,
       };
     } catch (error) {
       console.error('Error getting admin stats:', error);
