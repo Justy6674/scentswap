@@ -53,6 +53,18 @@ interface AIConfig {
 
 type AdminTab = 'overview' | 'database' | 'users' | 'listings' | 'swaps' | 'ai-config' | 'review' | 'models' | 'market';
 
+// Types for bulk import relations
+interface NoteRelation {
+  fragrance_id: string;
+  note_id: string;
+  type: string;
+}
+
+interface PerfumerRelation {
+  fragrance_id: string;
+  perfumer_id: string;
+}
+
 export default function AdminScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
@@ -600,8 +612,8 @@ export default function AdminScreen() {
           }
 
           // Link Relations for this batch
-          const batchNoteRelations: {fragrance_id: string, note_id: string, type: string}[] = [];
-          const batchPerfumerRelations: {fragrance_id: string, perfumer_id: string}[] = [];
+          const batchNoteRelations: NoteRelation[] = [];
+          const batchPerfumerRelations: PerfumerRelation[] = [];
 
           for (let j = 0; j < createdFragrances.length; j++) {
               const frag = createdFragrances[j];
