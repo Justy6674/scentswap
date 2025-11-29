@@ -442,17 +442,26 @@ export default function AdminScreen() {
       // Process in chunks to keep UI responsive
       const CHUNK_SIZE = 5; 
       
-      for (let i = 0; i < lines.length; i += CHUNK_SIZE) {
-        const chunk = lines.slice(i, i + CHUNK_SIZE);
-        
-        // Update progress periodically (every chunk)
-        if (i % 10 === 0) {
-           setImportProgress(`Processing ${i}/${lines.length} (${Math.round(i/lines.length*100)}%)...`);
-           // Yield to event loop aggressively
-           await new Promise(resolve => setTimeout(resolve, 0));
+      // Fix: Use setTimeout to break the synchronous loop entirely
+      let i = 0;
+      
+      const processChunk = async () => {
+        if (i >= lines.length) {
+          setIsImporting(false);
+          setImportProgress('');
+          Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nSkipped/Failed: ${errorCount}`);
+          setCsvData('');
+          fullCsvContent.current = null;
+          setFileStats(null);
+          return;
         }
 
-        // Process chunk in parallel
+        const chunk = lines.slice(i, i + CHUNK_SIZE);
+        
+        if (i % 10 === 0) {
+           setImportProgress(`Processing ${i}/${lines.length} (${Math.round(i/lines.length*100)}%)...`);
+        }
+
         await Promise.all(chunk.map(async (line, idx) => {
           const lineIndex = i + idx;
           try {
@@ -507,17 +516,16 @@ export default function AdminScreen() {
             errorCount++;
           }
         }));
-      }
 
-      Alert.alert('Import Complete', `Successfully imported ${successCount} fragrances.\nSkipped/Failed: ${errorCount}`);
-      setCsvData('');
-      fullCsvContent.current = null;
-      setFileStats(null);
-      setImportProgress('');
+        i += CHUNK_SIZE;
+        setTimeout(processChunk, 0); // Schedule next chunk
+      };
+
+      processChunk(); // Start the loop
+
     } catch (e) {
       Alert.alert('Import Error', 'An unexpected error occurred during import');
       console.error(e);
-    } finally {
       setIsImporting(false);
       setImportProgress('');
     }
