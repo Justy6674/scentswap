@@ -46,7 +46,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SubscriptionProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? ScentSwapDarkTheme : ScentSwapLightTheme}>
+        <ThemeProvider value={ScentSwapLightTheme}>
           <OutsetaScript />
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
