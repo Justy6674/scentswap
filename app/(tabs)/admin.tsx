@@ -548,20 +548,28 @@ export default function AdminScreen() {
               const country = cols[3] || '';
               let gender = cols[4]?.toLowerCase() || 'unisex';
               if (gender === 'women') gender = 'female';
-              if (gender === 'men') gender = 'male';
-              const year = cols[7] ? parseInt(cols[7]) : null;
+            if (gender === 'men') gender = 'male';
+            const year = cols[7] ? parseInt(cols[7]) : null;
 
-              batchFragrances.push({
-                  name,
-                  brand_id: brandId,
-                  concentration: 'edp', // Default
-                  gender,
-                  launch_year: isNaN(year!) ? null : year,
-                  description: `Imported from Fragrantica. URL: ${url}`,
-                  image_url: '',
-                  fragrantica_url: url,
-                  accords: row.accords
-              });
+            batchFragrances.push({
+                name,
+                brand_id: brandId,
+                concentration: 'edp', // Default
+                gender,
+                launch_year: isNaN(year!) ? null : year,
+                description: `Imported from Fragrantica. URL: ${url}`,
+                image_url: '',
+                fragrantica_url: url,
+                accords: row.accords
+            });
+          }
+
+          if (batchFragrances.length === 0) {
+             // Skip batch if empty (all invalid)
+             processedCount += batch.length;
+             setImportProgress(`Phase 3/4: Uploading Fragrances (${processedCount}/${parsedRows.length})...`);
+             await new Promise(r => setTimeout(r, 0));
+             continue;
           }
 
           // Insert Batch
