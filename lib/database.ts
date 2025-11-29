@@ -1773,6 +1773,87 @@ class DatabaseClient {
       return [];
     }
   }
+
+  // Enhanced fragrance operations for uploads and enrichment
+  async enhanceFragranceByUrl(fragranticaUrl: string, enhancementData: any): Promise<{
+    success: boolean;
+    action: 'created' | 'enhanced' | 'error';
+    updatedFields?: string[];
+    error?: string;
+  }> {
+    if (!isSupabaseConfigured()) return { success: false, action: 'error', error: 'Supabase not configured' };
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase.rpc('enrich_fragrance_master', {
+        p_fragrantica_url: fragranticaUrl,
+        ...enhancementData
+      });
+
+      if (error) throw error;
+
+      const result = data[0];
+      return {
+        success: true,
+        action: result.action_taken.toLowerCase(),
+        updatedFields: result.updated_fields || []
+      };
+
+    } catch (error) {
+      console.error('Error enhancing fragrance:', error);
+      return {
+        success: false,
+        action: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async checkForDuplicates(fragranticaUrl: string): Promise<{
+    exists: boolean;
+    fragmentData?: any;
+    missingFields?: string[];
+  }> {
+    if (!isSupabaseConfigured()) return { exists: false };
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('fragrance_master')
+        .select('*')
+        .eq('fragrantica_url', fragranticaUrl)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (!data) {
+        return { exists: false };
+      }
+
+      // Analyze missing fields for potential enhancement
+      const missingFields: string[] = [];
+      const fieldsToCheck = [
+        'concentration', 'family', 'longevity_rating', 'sillage_rating',
+        'performance_level', 'image_url', 'description', 'market_tier'
+      ];
+
+      fieldsToCheck.forEach(field => {
+        if (!data[field] || data[field] === null) {
+          missingFields.push(field);
+        }
+      });
+
+      return {
+        exists: true,
+        fragmentData: data,
+        missingFields
+      };
+
+    } catch (error) {
+      console.error('Error checking for duplicates:', error);
+      return { exists: false };
+    }
+  }
 }
 
 export const db = new DatabaseClient();
