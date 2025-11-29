@@ -6,51 +6,34 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 // SSR-safe check - only use typeof window check
 const isWeb = typeof window !== 'undefined';
 
-// Lazy-loaded SecureStore to avoid SSR issues
-let SecureStore: typeof import('expo-secure-store') | null = null;
-const getSecureStore = async () => {
-  if (!SecureStore && !isWeb) {
-    SecureStore = await import('expo-secure-store');
-  }
-  return SecureStore;
-};
-
-// Storage adapter that works on both web and native
+// Simple storage adapter for web - no async SecureStore to avoid SSR issues
 const createStorageAdapter = () => ({
-  getItem: async (key: string): Promise<string | null> => {
-    // Web: use localStorage
+  getItem: (key: string): string | null => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      return localStorage.getItem(key);
-    }
-    // Native: use SecureStore
-    const store = await getSecureStore();
-    if (store) {
-      return store.getItemAsync(key);
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
     }
     return null;
   },
-  setItem: async (key: string, value: string): Promise<void> => {
-    // Web: use localStorage
+  setItem: (key: string, value: string): void => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.setItem(key, value);
-      return;
-    }
-    // Native: use SecureStore
-    const store = await getSecureStore();
-    if (store) {
-      await store.setItemAsync(key, value);
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Ignore storage errors
+      }
     }
   },
-  removeItem: async (key: string): Promise<void> => {
-    // Web: use localStorage
+  removeItem: (key: string): void => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-      localStorage.removeItem(key);
-      return;
-    }
-    // Native: use SecureStore
-    const store = await getSecureStore();
-    if (store) {
-      await store.deleteItemAsync(key);
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Ignore storage errors
+      }
     }
   },
 });
@@ -62,6 +45,11 @@ export const isSupabaseConfigured = (): boolean => {
 let supabaseInstance: SupabaseClient | null = null;
 
 export const getSupabase = (): SupabaseClient | null => {
+  // Don't create client during SSR
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   if (!isSupabaseConfigured()) {
     return null;
   }
@@ -81,5 +69,4 @@ export const getSupabase = (): SupabaseClient | null => {
 };
 
 // Legacy export - use getSupabase() instead
-// This is kept for backwards compatibility but will be null during SSR
 export const supabase = null;
