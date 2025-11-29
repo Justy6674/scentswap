@@ -146,7 +146,7 @@ const SprayEffect = () => {
 
 // Fine Mist Effect (Right - Ultra-fine, top-right corner, sprays leftward)
 const FineMistEffect = ({ mounted }: { mounted: boolean }) => {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   // Use safe default during SSR
   const isDesktop = mounted ? width > 768 : false;
   
@@ -178,7 +178,7 @@ const FineMistEffect = ({ mounted }: { mounted: boolean }) => {
 
 export default function LandingPage() {
   const { isAuthenticated, isLoading: loading } = useSubscription();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   
   // CRITICAL: Prevent hydration mismatch by only rendering responsive content after mount
   const [mounted, setMounted] = useState(false);
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroSection: {
-    minHeight: isWeb ? '100vh' : height,
+    minHeight: isWeb ? '100vh' : 800,
     backgroundColor: COLORS.heroLight,
     position: 'relative',
     justifyContent: 'center',
