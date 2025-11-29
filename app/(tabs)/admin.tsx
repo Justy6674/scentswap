@@ -112,16 +112,20 @@ export default function AdminScreen() {
     }
   }, [user, isAdmin, outsetaUser]);
 
-  // Ensure clipboard handler is defined before render
+  // Ensure clipboard handler is defined before render - and safe for web
   const handlePasteFromClipboard = async () => {
     try {
-      // Client-side check for clipboard support
+      let content = '';
+      
+      // Use Expo Clipboard for native/web consistently
       if (Platform.OS === 'web' && !navigator.clipboard) {
-         Alert.alert('Error', 'Clipboard access not supported in this browser context.');
+         // Fallback for insecure contexts or older browsers if needed
+         Alert.alert('Error', 'Clipboard access requires a secure context (HTTPS) or modern browser.');
          return;
       }
 
-      const content = await Clipboard.getStringAsync();
+      content = await Clipboard.getStringAsync();
+      
       if (!content) {
         Alert.alert('Clipboard Empty', 'No text found in clipboard.');
         return;
@@ -142,7 +146,7 @@ export default function AdminScreen() {
       }
     } catch (err) {
       console.error('Clipboard error:', err);
-      Alert.alert('Error', 'Failed to read from clipboard. Please allow permissions if prompted.');
+      Alert.alert('Error', 'Failed to read from clipboard. Please ensure you grant permission.');
     }
   };
 
