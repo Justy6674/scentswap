@@ -539,8 +539,16 @@ export default function AdminScreen() {
           
           // Prepare batch
           for (const row of batch) {
-              const brandId = brandMap.get(row.brand.toLowerCase());
-              if (!brandId) continue; // Should not happen
+              // Correct logic:
+              // brandMap key is brand NAME (lowercase), value is brand ID.
+              // So we look up the ID using the row's brand name.
+              const brandNameKey = row.brand.toLowerCase();
+              const brandId = brandMap.get(brandNameKey);
+              
+              if (!brandId) {
+                  console.warn(`Skipping row: Brand ID not found for '${row.brand}'`);
+                  continue; 
+              }
 
               const cols = row.cols;
               const url = cols[0] || '';
