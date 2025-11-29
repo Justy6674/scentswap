@@ -1,11 +1,10 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Platform } from 'react-native';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// SSR-safe check for web platform
-const isWeb = typeof window !== 'undefined' || Platform.OS === 'web';
+// SSR-safe check - only use typeof window check
+const isWeb = typeof window !== 'undefined';
 
 // Lazy-loaded SecureStore to avoid SSR issues
 let SecureStore: typeof import('expo-secure-store') | null = null;
@@ -91,6 +90,4 @@ export const supabase = isSupabaseConfigured() && typeof window !== 'undefined'
         detectSessionInUrl: false,
       },
     })
-  : null;
-
   : null;
