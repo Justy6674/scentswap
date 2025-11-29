@@ -1,5 +1,4 @@
-// @ts-ignore
-import OpenAI from 'openai/lite';
+import OpenAI from 'openai';
 
 interface FragranceData {
   id: string;
@@ -32,21 +31,31 @@ interface EnhancedFragranceData {
 }
 
 class AIFragranceEnhancer {
-  private client: OpenAI;
+  private client: OpenAI | null = null;
 
   constructor() {
-    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OpenAI API key is required. Please set EXPO_PUBLIC_OPENAI_API_KEY in your environment.');
-    }
+    try {
+      const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+      if (!apiKey) {
+        console.warn('OpenAI API key not configured. AI enhancement features will be disabled.');
+        return;
+      }
 
-    this.client = new OpenAI({
-      apiKey,
-      dangerouslyAllowBrowser: true // Required for React Native/Expo
-    });
+      this.client = new OpenAI({
+        apiKey,
+        dangerouslyAllowBrowser: true // Required for React Native/Expo/Web
+      });
+    } catch (error) {
+      console.error('Failed to initialize OpenAI client:', error);
+      this.client = null;
+    }
   }
 
   async enhanceFragrance(fragrance: FragranceData): Promise<EnhancedFragranceData> {
+    if (!this.client) {
+      throw new Error('OpenAI client not initialized. Please check your API key configuration.');
+    }
+
     try {
       const prompt = this.createEnhancementPrompt(fragrance);
 
