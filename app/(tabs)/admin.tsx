@@ -107,7 +107,11 @@ export default function AdminScreen() {
   // AI Review Queue State
   const [flaggedListings, setFlaggedListings] = useState<Listing[]>([]);
   
+  // Hydration fix: Ensure component only renders on client
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
+    setIsMounted(true);
     checkAdminAccess();
   }, [user, isAdmin, outsetaUser]);
 
@@ -1062,6 +1066,10 @@ export default function AdminScreen() {
       fontSize: 12,
     },
   });
+
+  if (!isMounted) {
+    return null; // Prevent hydration mismatch by not rendering until mounted
+  }
 
   if (legacyAuthLoading || subscriptionLoading) {
     return (
