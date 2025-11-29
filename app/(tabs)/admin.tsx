@@ -76,7 +76,16 @@ export default function AdminScreen() {
   // Database Tab State
   const [dbSubTab, setDbSubTab] = useState<'search' | 'new' | 'import'>('search');
   const [dbSearch, setDbSearch] = useState('');
-  
+  const [fragranceResults, setFragranceResults] = useState<any[]>([]);
+  const [fragranceStats, setFragranceStats] = useState<{
+    total_count: number;
+    unique_brands: number;
+    avg_rating: number;
+    with_year: number;
+    with_perfumers: number;
+  } | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
   // Manual Entry Form State
   const [newFragrance, setNewFragrance] = useState({
     name: '',
@@ -111,6 +120,44 @@ export default function AdminScreen() {
       checkAdminAccess();
     }
   }, [user, isAdmin, outsetaUser]);
+
+  // Load fragrance stats on mount
+  useEffect(() => {
+    if (isAdmin && isMounted) {
+      loadFragranceStats();
+    }
+  }, [isAdmin, isMounted]);
+
+  // Search fragrances when search term changes
+  useEffect(() => {
+    if (dbSearch.length >= 2) {
+      searchFragrances();
+    } else {
+      setFragranceResults([]);
+    }
+  }, [dbSearch]);
+
+  const loadFragranceStats = async () => {
+    try {
+      const stats = await db.getFragranceMasterStats();
+      setFragranceStats(stats);
+    } catch (error) {
+      console.error('Error loading fragrance stats:', error);
+    }
+  };
+
+  const searchFragrances = async () => {
+    setIsSearching(true);
+    try {
+      const results = await db.searchFragranceMaster(dbSearch, 20);
+      setFragranceResults(results);
+    } catch (error) {
+      console.error('Error searching fragrances:', error);
+      setFragranceResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   // Ensure clipboard handler is defined before render
   const handlePasteFromClipboard = async () => {
@@ -1198,16 +1245,142 @@ export default function AdminScreen() {
 
             {dbSubTab === 'search' && (
               <View>
-                <TextInput 
-                  style={[styles.configInput, {marginBottom: 16, minHeight: 40}]} 
-                  placeholder="Search fragrances..." 
+                {/* Stats Summary */}
+                {fragranceStats && (
+                  <View style={[styles.configCard, {marginBottom: 16}]}>
+                    <Text style={styles.configTitle}>Database Stats</Text>
+                    <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 8}}>
+                      <View style={{alignItems: 'center'}}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
+                          {fragranceStats.total_count.toLocaleString()}
+                        </Text>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>Total Fragrances</Text>
+                      </View>
+                      <View style={{alignItems: 'center'}}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
+                          {fragranceStats.unique_brands.toLocaleString()}
+                        </Text>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>Brands</Text>
+                      </View>
+                      <View style={{alignItems: 'center'}}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
+                          {fragranceStats.avg_rating.toFixed(2)}
+                        </Text>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>Avg Rating</Text>
+                      </View>
+                      <View style={{alignItems: 'center'}}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.primary}}>
+                          {fragranceStats.with_year.toLocaleString()}
+                        </Text>
+                        <Text style={{fontSize: 12, color: colors.textSecondary}}>With Year</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                <TextInput
+                  style={[styles.configInput, {marginBottom: 16, minHeight: 40}]}
+                  placeholder="Search fragrances by name or brand..."
                   value={dbSearch}
                   onChangeText={setDbSearch}
                 />
-                <View style={styles.emptyState}>
-                  <Ionicons name="search" size={48} color={colors.textSecondary} />
-                  <Text style={styles.emptyStateText}>Search to find fragrances</Text>
-                </View>
+
+                {isSearching && (
+                  <View style={{alignItems: 'center', padding: 20}}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{color: colors.textSecondary, marginTop: 8}}>Searching...</Text>
+                  </View>
+                )}
+
+                {!isSearching && dbSearch.length >= 2 && fragranceResults.length === 0 && (
+                  <View style={styles.emptyState}>
+                    <Ionicons name="search-outline" size={48} color={colors.textSecondary} />
+                    <Text style={styles.emptyStateText}>No fragrances found for "{dbSearch}"</Text>
+                  </View>
+                )}
+
+                {!isSearching && fragranceResults.length > 0 && (
+                  <View>
+                    <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 12, color: colors.text}}>
+                      Found {fragranceResults.length} results
+                    </Text>
+                    <FlatList
+                      data={fragranceResults}
+                      keyExtractor={(item) => item.id}
+                      renderItem={({ item }) => (
+                        <View style={[styles.configCard, {marginBottom: 12}]}>
+                          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                            <View style={{flex: 1}}>
+                              <Text style={{fontSize: 16, fontWeight: 'bold', color: colors.text}}>
+                                {item.name}
+                              </Text>
+                              <Text style={{fontSize: 14, color: colors.primary, marginBottom: 4}}>
+                                {item.brand}
+                              </Text>
+                              {item.year_released && (
+                                <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                                  {item.year_released} • {item.gender || 'Unspecified'}
+                                </Text>
+                              )}
+                              {item.rating_value && (
+                                <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                                  ⭐ {item.rating_value}/5.0
+                                </Text>
+                              )}
+                            </View>
+                            {item.rating_value && (
+                              <View style={{
+                                backgroundColor: item.rating_value >= 4 ? '#4ade80' : item.rating_value >= 3 ? '#fbbf24' : '#f87171',
+                                paddingHorizontal: 8,
+                                paddingVertical: 4,
+                                borderRadius: 12
+                              }}>
+                                <Text style={{fontSize: 12, fontWeight: 'bold', color: 'white'}}>
+                                  {item.rating_value}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+
+                          {item.top_notes?.length > 0 && (
+                            <View style={{marginTop: 8}}>
+                              <Text style={{fontSize: 12, color: colors.textSecondary, marginBottom: 2}}>
+                                Top: {item.top_notes.join(', ')}
+                              </Text>
+                            </View>
+                          )}
+
+                          {item.main_accords?.length > 0 && (
+                            <View style={{marginTop: 4}}>
+                              <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                                Accords: {item.main_accords.join(' • ')}
+                              </Text>
+                            </View>
+                          )}
+
+                          {item.perfumers?.length > 0 && (
+                            <View style={{marginTop: 4}}>
+                              <Text style={{fontSize: 12, color: colors.textSecondary}}>
+                                Perfumer: {item.perfumers.join(', ')}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      )}
+                      showsVerticalScrollIndicator={false}
+                      style={{maxHeight: 600}}
+                    />
+                  </View>
+                )}
+
+                {dbSearch.length < 2 && !isSearching && fragranceStats && (
+                  <View style={styles.emptyState}>
+                    <Ionicons name="search" size={48} color={colors.textSecondary} />
+                    <Text style={styles.emptyStateText}>
+                      Enter 2+ characters to search {fragranceStats.total_count.toLocaleString()} fragrances
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
 

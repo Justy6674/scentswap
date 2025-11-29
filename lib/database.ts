@@ -1683,6 +1683,96 @@ class DatabaseClient {
       return { allowed: true, remaining: 0 }; // Fail safe? Or block? Let's fail open for now.
     }
   }
+
+  // =============================================================================
+  // FRAGRANCE MASTER TABLE (New Single Table)
+  // =============================================================================
+
+  async searchFragranceMaster(query: string, limit: number = 20): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('fragrance_master')
+        .select('*')
+        .or(`name.ilike.%${query}%,brand.ilike.%${query}%`)
+        .order('rating_value', { ascending: false, nullsLast: true })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error searching fragrance_master:', error);
+      return [];
+    }
+  }
+
+  async getFragranceMasterStats(): Promise<{
+    total_count: number;
+    unique_brands: number;
+    avg_rating: number;
+    with_year: number;
+    with_perfumers: number;
+  }> {
+    if (!isSupabaseConfigured()) return {
+      total_count: 0, unique_brands: 0, avg_rating: 0, with_year: 0, with_perfumers: 0
+    };
+
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase.rpc('get_fragrance_master_stats');
+
+      if (error) {
+        // Fallback to manual query
+        const { data: manualData, error: manualError } = await supabase
+          .from('fragrance_master')
+          .select('id, brand, rating_value, year_released, perfumers')
+          .limit(1000);
+
+        if (manualError) throw manualError;
+
+        const uniqueBrands = new Set(manualData?.map(f => f.brand)).size;
+        const avgRating = manualData?.reduce((sum, f) => sum + (f.rating_value || 0), 0) / (manualData?.length || 1);
+        const withYear = manualData?.filter(f => f.year_released).length || 0;
+        const withPerfumers = manualData?.filter(f => f.perfumers?.length > 0).length || 0;
+
+        return {
+          total_count: manualData?.length || 0,
+          unique_brands: uniqueBrands,
+          avg_rating: avgRating,
+          with_year: withYear,
+          with_perfumers: withPerfumers
+        };
+      }
+
+      return data || { total_count: 0, unique_brands: 0, avg_rating: 0, with_year: 0, with_perfumers: 0 };
+    } catch (error) {
+      console.error('Error getting fragrance_master stats:', error);
+      return { total_count: 0, unique_brands: 0, avg_rating: 0, with_year: 0, with_perfumers: 0 };
+    }
+  }
+
+  async getRandomFragranceSamples(limit: number = 10): Promise<any[]> {
+    if (!isSupabaseConfigured()) return [];
+    const supabase = getSupabase()!;
+
+    try {
+      const { data, error } = await supabase
+        .from('fragrance_master')
+        .select('name, brand, year_released, rating_value, top_notes, main_accords, perfumers')
+        .not('rating_value', 'is', null)
+        .order('rating_value', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting random fragrance samples:', error);
+      return [];
+    }
+  }
 }
 
 export const db = new DatabaseClient();
