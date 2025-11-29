@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';

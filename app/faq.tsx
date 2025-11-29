@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  Platform,
 } from 'react-native';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,7 +33,7 @@ const SprayParticle = ({ index }: { index: number }) => {
     Animated.timing(animValue, {
       toValue: 1,
       duration: 800 + pseudoRandom(index) * 400,
-      useNativeDriver: Platform.OS !== 'web',
+      useNativeDriver: !isWeb,
       delay: pseudoRandom(index + 100) * 100,
     }).start();
   }, []);

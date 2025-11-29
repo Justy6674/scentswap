@@ -16,10 +16,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Platform,
   Linking,
   ActivityIndicator,
 } from 'react-native';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -65,7 +67,7 @@ export default function LoginScreen() {
    * 4. useEffect above redirects to /(tabs)
    */
   const handleLogin = () => {
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    if (isWeb) {
       const Outseta = (window as any).Outseta;
       
       if (Outseta && Outseta.auth && Outseta.auth.open) {

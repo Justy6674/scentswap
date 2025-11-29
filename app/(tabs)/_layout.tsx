@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -8,6 +7,9 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -28,15 +30,14 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {
-            backgroundColor: colors.card,
-            borderTopColor: colors.border,
-          },
-        }),
+        tabBarStyle: isWeb ? {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        } : {
+          position: 'absolute',
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+        },
       }}>
       <Tabs.Screen
         name="index"

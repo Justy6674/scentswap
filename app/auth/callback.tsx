@@ -19,9 +19,11 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Platform,
   Image,
 } from 'react-native';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 import { router } from 'expo-router';
 
 // Simple colors for callback page
@@ -45,7 +47,7 @@ export default function AuthCallbackScreen() {
   useEffect(() => {
     if (!mounted) return;
     
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    if (isWeb) {
       handleCallback();
     } else {
       // Mobile shouldn't reach this page directly

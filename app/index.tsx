@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Platform,
   Animated,
   useWindowDimensions,
   ActivityIndicator,
@@ -14,6 +13,9 @@ import {
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 
 // New Light Luxe color palette (from logo)
 const COLORS = {
@@ -62,7 +64,7 @@ const SprayParticle = ({
         toValue: 1,
         duration: 3000,
         delay: delay,
-        useNativeDriver: Platform.OS !== 'web',
+        useNativeDriver: !isWeb,
       }).start(() => animate());
     };
     animate();
@@ -197,12 +199,12 @@ export default function LandingPage() {
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: Platform.OS !== 'web',
+          useNativeDriver: !isWeb,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
           duration: 800,
-          useNativeDriver: Platform.OS !== 'web',
+          useNativeDriver: !isWeb,
         }),
       ]).start();
     }
@@ -658,7 +660,7 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroSection: {
-    minHeight: Platform.OS === 'web' ? '100vh' : height,
+    minHeight: isWeb ? '100vh' : height,
     backgroundColor: COLORS.heroLight,
     position: 'relative',
     justifyContent: 'center',

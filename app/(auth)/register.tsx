@@ -15,12 +15,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   ScrollView,
   Linking,
   Animated,
   Dimensions,
 } from 'react-native';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -86,7 +88,7 @@ const CardSprayParticle = ({
         toValue: 1,
         duration: 2500 + pseudoRandom(index) * 1000,
         delay: delay,
-        useNativeDriver: Platform.OS !== 'web',
+        useNativeDriver: !isWeb,
       }).start(() => animate());
     };
     animate();
@@ -278,7 +280,7 @@ function PlanCard({
           {
             borderColor: plan.color,
             borderWidth: isSelected ? 3 : 1,
-            ...(Platform.OS === 'web' ? {
+            ...(isWeb ? {
               boxShadow: isSelected 
                 ? `0 8px 32px ${plan.color}40, 0 4px 16px rgba(0,0,0,0.08)`
                 : `0 4px 16px ${plan.color}10`,
@@ -400,7 +402,7 @@ export default function RegisterScreen() {
   const handleSignUp = (planId: string) => {
     const plan = PLANS.find(p => p.id === planId) || PLANS[0];
     
-    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    if (isWeb) {
       const Outseta = (window as any).Outseta;
       
       if (Outseta && Outseta.auth && Outseta.auth.open) {
