@@ -155,3 +155,50 @@ router.replace('/auth/login');
 ```
 
 This is a React Native app with web deployment capabilities - ensure any code additions are compatible with both platforms.
+
+## Available Anthropic Skills
+
+The following skills are available from the Anthropic Skills repository located at `/Users/jb-downscale/anthropic-skills/`:
+
+### Creative & Design Skills:
+- **algorithmic-art** - Generative art using p5.js with seeded randomness
+- **canvas-design** - Beautiful visual art in .png and .pdf formats
+- **slack-gif-creator** - Animated GIFs optimized for Slack constraints
+
+### Development & Technical Skills:
+- **artifacts-builder** - Complex claude.ai HTML artifacts using React, Tailwind CSS, shadcn/ui
+- **mcp-server** - Creating high-quality MCP servers for external API integration
+- **webapp-testing** - Local web application testing using Playwright
+
+### Enterprise & Communication Skills:
+- **brand-guidelines** - Anthropic's official brand colours and typography
+- **internal-comms** - Status reports, newsletters, and FAQs
+- **theme-factory** - 10 professional themes plus custom theme generation
+
+### Document Skills (Production-Ready):
+- **docx** - Word documents with tracked changes, comments, formatting
+- **pdf** - PDF manipulation, extraction, merging, splitting, forms
+- **pptx** - PowerPoint presentations with layouts, templates, charts
+- **xlsx** - Excel spreadsheets with formulas, formatting, data analysis
+
+### Meta Skills:
+- **skill-creator** - Guide for creating effective custom skills
+- **template-skill** - Basic template for new skills
+
+### Usage Examples:
+```bash
+# Use PDF skill for document generation
+"Use the PDF skill to generate a professional report from this data"
+
+# Use webapp-testing skill for UI verification
+"Use the webapp-testing skill to test the admin dashboard"
+
+# Use document skills for business documents
+"Use the docx skill to create a project proposal document"
+```
+
+### Skill Integration Notes:
+- Skills complement existing MCP servers (Supabase, Context7, etc.)
+- Document skills work alongside FabianGenell PDF MCP for comprehensive workflows
+- Webapp-testing skill enhances Playwright MCP testing capabilities
+- All skills available globally across Claude Code projects

@@ -5,7 +5,6 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 
 // SSR-safe platform check
@@ -15,12 +14,8 @@ export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   
-  // Get admin status from both contexts (AuthContext for Supabase auth, SubscriptionContext for Outseta auth)
-  const { isAdmin: authIsAdmin } = useAuth();
-  const { isAdmin: subscriptionIsAdmin } = useSubscription();
-  
-  // User is admin if either context says so (covers both auth methods)
-  const isAdmin = authIsAdmin || subscriptionIsAdmin;
+  // Use ONLY Outseta auth (SubscriptionContext) - single source of truth
+  const { isAdmin } = useSubscription();
 
   return (
     <Tabs

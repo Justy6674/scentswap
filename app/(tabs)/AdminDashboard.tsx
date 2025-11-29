@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
 
 interface AdminStats {
@@ -35,7 +35,7 @@ interface Fragrance {
 }
 
 export default function AdminDashboard() {
-  const { user, isAdmin } = useAuth();
+  const { outsetaUser, isAdmin } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
