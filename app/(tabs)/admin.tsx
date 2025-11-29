@@ -112,10 +112,43 @@ export default function AdminScreen() {
 
   useEffect(() => {
     setIsMounted(true);
-    checkAdminAccess();
+    if (user || outsetaUser) {
+      checkAdminAccess();
+    }
   }, [user, isAdmin, outsetaUser]);
 
-  // Load AI configs/Review queue when activeTab changes
+  // Ensure clipboard handler is defined before render
+  const handlePasteFromClipboard = async () => {
+    try {
+      if (!Clipboard) {
+        Alert.alert('Error', 'Clipboard module not loaded');
+        return;
+      }
+      
+      const content = await Clipboard.getStringAsync();
+      if (!content) {
+        Alert.alert('Clipboard Empty', 'No text found in clipboard.');
+        return;
+      }
+
+      // Check size
+      const MAX_DISPLAY_LENGTH = 5000;
+      const isLarge = content.length > 100000; // > 100KB
+
+      fullCsvContent.current = content;
+      
+      if (isLarge) {
+        setCsvData(content.slice(0, MAX_DISPLAY_LENGTH) + `\n\n... [Content truncated for performance. Total size: ${(content.length / 1024 / 1024).toFixed(2)} MB. Ready for import.]`);
+        Alert.alert('Large Data Pasted', `Retrieved ${(content.length / 1024 / 1024).toFixed(2)} MB from clipboard. Previewing first 5000 chars.`);
+      } else {
+        setCsvData(content);
+        Alert.alert('Success', 'Data pasted from clipboard.');
+      }
+    } catch (err) {
+      console.error('Clipboard error:', err);
+      Alert.alert('Error', 'Failed to read from clipboard. Please allow permissions if prompted.');
+    }
+  };
   useEffect(() => {
     if (!isAdmin) return;
     
@@ -1068,7 +1101,13 @@ export default function AdminScreen() {
   });
 
   if (!isMounted) {
-    return null; // Prevent hydration mismatch by not rendering until mounted
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   if (legacyAuthLoading || subscriptionLoading) {
