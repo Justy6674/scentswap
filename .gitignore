@@ -52,6 +52,8 @@ secrets/
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
 
 # Temporary
 tmp/
