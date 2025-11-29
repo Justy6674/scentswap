@@ -46,11 +46,16 @@ export default async function (req: VercelRequest, res: VercelResponse) {
 
     // 3. Update/Upsert User in Supabase
     // We use email as the primary key to link existing users
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: fetchError } = await supabase
       .from('users')
       .select('id')
       .eq('email', email)
       .single();
+
+    // Handle no-rows case gracefully instead of throwing
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        throw fetchError;
+    }
 
     if (existingUser) {
       // Update existing
