@@ -120,11 +120,12 @@ export default function AdminScreen() {
   // Ensure clipboard handler is defined before render
   const handlePasteFromClipboard = async () => {
     try {
-      if (!Clipboard) {
-        Alert.alert('Error', 'Clipboard module not loaded');
-        return;
+      // Client-side check for clipboard support
+      if (Platform.OS === 'web' && !navigator.clipboard) {
+         Alert.alert('Error', 'Clipboard access not supported in this browser context.');
+         return;
       }
-      
+
       const content = await Clipboard.getStringAsync();
       if (!content) {
         Alert.alert('Clipboard Empty', 'No text found in clipboard.');
@@ -149,6 +150,7 @@ export default function AdminScreen() {
       Alert.alert('Error', 'Failed to read from clipboard. Please allow permissions if prompted.');
     }
   };
+
   useEffect(() => {
     if (!isAdmin) return;
     
