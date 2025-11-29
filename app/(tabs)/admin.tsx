@@ -10,6 +10,7 @@ import {
   Alert,
   TextInput,
   FlatList,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -152,6 +153,133 @@ export default function AdminScreen() {
     }
   };
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingFragrance, setEditingFragrance] = useState<Fragrance | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    brand: '',
+    concentration: '',
+    year_released: '',
+  });
+
+  const handleCreateFragrance = async () => {
+    if (!supabase || !formData.name || !formData.brand) {
+      Alert.alert('Error', 'Please fill in all required fields (Name and Brand)');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('fragrance_master')
+        .insert([{
+          name: formData.name.trim(),
+          brand: formData.brand.trim(),
+          concentration: formData.concentration.trim() || null,
+          year_released: formData.year_released ? parseInt(formData.year_released) : null,
+          data_quality_score: 75,
+          verified: false
+        }]);
+
+      if (error) {
+        console.error('Create fragrance error:', error);
+        Alert.alert('Error', 'Failed to create fragrance. Please try again.');
+        return;
+      }
+
+      Alert.alert('Success', 'Fragrance created successfully!');
+      setShowCreateModal(false);
+      setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+      loadFragrances();
+    } catch (error) {
+      console.error('Error creating fragrance:', error);
+      Alert.alert('Error', 'Failed to create fragrance. Please try again.');
+    }
+  };
+
+  const handleEditFragrance = async () => {
+    if (!supabase || !editingFragrance || !formData.name || !formData.brand) {
+      Alert.alert('Error', 'Please fill in all required fields (Name and Brand)');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('fragrance_master')
+        .update({
+          name: formData.name.trim(),
+          brand: formData.brand.trim(),
+          concentration: formData.concentration.trim() || null,
+          year_released: formData.year_released ? parseInt(formData.year_released) : null,
+        })
+        .eq('id', editingFragrance.id);
+
+      if (error) {
+        console.error('Update fragrance error:', error);
+        Alert.alert('Error', 'Failed to update fragrance. Please try again.');
+        return;
+      }
+
+      Alert.alert('Success', 'Fragrance updated successfully!');
+      setShowEditModal(false);
+      setEditingFragrance(null);
+      setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+      loadFragrances();
+    } catch (error) {
+      console.error('Error updating fragrance:', error);
+      Alert.alert('Error', 'Failed to update fragrance. Please try again.');
+    }
+  };
+
+  const handleDeleteFragrance = async (fragrance: Fragrance) => {
+    Alert.alert(
+      'Delete Fragrance',
+      `Are you sure you want to delete "${fragrance.name}" by ${fragrance.brand}? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('fragrance_master')
+                .delete()
+                .eq('id', fragrance.id);
+
+              if (error) {
+                console.error('Delete fragrance error:', error);
+                Alert.alert('Error', 'Failed to delete fragrance. Please try again.');
+                return;
+              }
+
+              Alert.alert('Success', 'Fragrance deleted successfully!');
+              loadFragrances();
+            } catch (error) {
+              console.error('Error deleting fragrance:', error);
+              Alert.alert('Error', 'Failed to delete fragrance. Please try again.');
+            }
+          }
+        },
+      ]
+    );
+  };
+
+  const openEditModal = (fragrance: Fragrance) => {
+    setEditingFragrance(fragrance);
+    setFormData({
+      name: fragrance.name,
+      brand: fragrance.brand,
+      concentration: fragrance.concentration || '',
+      year_released: fragrance.year_released ? fragrance.year_released.toString() : '',
+    });
+    setShowEditModal(true);
+  };
+
+  const resetFormData = () => {
+    setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+  };
+
   const handleAIEnhancement = async (fragranceId: string) => {
     Alert.alert(
       'AI Enhancement',
@@ -242,9 +370,29 @@ export default function AdminScreen() {
 
   const renderDatabase = () => (
     <View>
-      <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 20 }}>
-        Fragrance Master Database
-      </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff' }}>
+          Fragrance Master Database
+        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#10B981',
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6
+          }}
+          onPress={() => {
+            resetFormData();
+            setShowCreateModal(true);
+          }}
+        >
+          <Ionicons name="add" size={16} color="#FFFFFF" />
+          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Add Fragrance</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={{ marginBottom: 20 }}>
         <TextInput
@@ -302,21 +450,55 @@ export default function AdminScreen() {
                 )}
               </View>
 
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#8B5CF6',
-                  paddingVertical: 8,
-                  paddingHorizontal: 16,
-                  borderRadius: 6,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6
-                }}
-                onPress={() => handleAIEnhancement(item.id)}
-              >
-                <Ionicons name="sparkles" size={14} color="#FFFFFF" />
-                <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '600' }}>Enhance</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#3B82F6',
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                  onPress={() => openEditModal(item)}
+                >
+                  <Ionicons name="create" size={12} color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Edit</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#EF4444',
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                  onPress={() => handleDeleteFragrance(item)}
+                >
+                  <Ionicons name="trash" size={12} color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Delete</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#8B5CF6',
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                  onPress={() => handleAIEnhancement(item.id)}
+                >
+                  <Ionicons name="sparkles" size={12} color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '600' }}>Enhance</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
@@ -364,6 +546,303 @@ export default function AdminScreen() {
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'database' && renderDatabase()}
       </ScrollView>
+
+      {/* Create Fragrance Modal */}
+      <Modal
+        visible={showCreateModal}
+        animationType="slide"
+        presentationStyle="formSheet"
+        onRequestClose={() => {
+          setShowCreateModal(false);
+          resetFormData();
+        }}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+          <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#ffffff' }}>Add New Fragrance</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowCreateModal(false);
+                  resetFormData();
+                }}
+              >
+                <Ionicons name="close" size={24} color="#999999" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView style={{ flex: 1, padding: 20 }}>
+            <View style={{ gap: 16 }}>
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Fragrance Name *
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="Enter fragrance name"
+                  placeholderTextColor="#666666"
+                  value={formData.name}
+                  onChangeText={(text) => setFormData({ ...formData, name: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Brand *
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="Enter brand name"
+                  placeholderTextColor="#666666"
+                  value={formData.brand}
+                  onChangeText={(text) => setFormData({ ...formData, brand: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Concentration
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="e.g., EDP, EDT, Parfum"
+                  placeholderTextColor="#666666"
+                  value={formData.concentration}
+                  onChangeText={(text) => setFormData({ ...formData, concentration: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Year Released
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="e.g., 2023"
+                  placeholderTextColor="#666666"
+                  value={formData.year_released}
+                  onChangeText={(text) => setFormData({ ...formData, year_released: text })}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={{ padding: 20, gap: 12 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#10B981',
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+              onPress={handleCreateFragrance}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Create Fragrance</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'transparent',
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#3a3a3a'
+              }}
+              onPress={() => {
+                setShowCreateModal(false);
+                resetFormData();
+              }}
+            >
+              <Text style={{ color: '#999999', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Edit Fragrance Modal */}
+      <Modal
+        visible={showEditModal}
+        animationType="slide"
+        presentationStyle="formSheet"
+        onRequestClose={() => {
+          setShowEditModal(false);
+          setEditingFragrance(null);
+          resetFormData();
+        }}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
+          <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#ffffff' }}>Edit Fragrance</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowEditModal(false);
+                  setEditingFragrance(null);
+                  resetFormData();
+                }}
+              >
+                <Ionicons name="close" size={24} color="#999999" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <ScrollView style={{ flex: 1, padding: 20 }}>
+            <View style={{ gap: 16 }}>
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Fragrance Name *
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="Enter fragrance name"
+                  placeholderTextColor="#666666"
+                  value={formData.name}
+                  onChangeText={(text) => setFormData({ ...formData, name: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Brand *
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="Enter brand name"
+                  placeholderTextColor="#666666"
+                  value={formData.brand}
+                  onChangeText={(text) => setFormData({ ...formData, brand: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Concentration
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="e.g., EDP, EDT, Parfum"
+                  placeholderTextColor="#666666"
+                  value={formData.concentration}
+                  onChangeText={(text) => setFormData({ ...formData, concentration: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+                  Year Released
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: '#2a2a2a',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    color: '#ffffff',
+                    borderWidth: 1,
+                    borderColor: '#3a3a3a'
+                  }}
+                  placeholder="e.g., 2023"
+                  placeholderTextColor="#666666"
+                  value={formData.year_released}
+                  onChangeText={(text) => setFormData({ ...formData, year_released: text })}
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={{ padding: 20, gap: 12 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#3B82F6',
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+              onPress={handleEditFragrance}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Update Fragrance</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'transparent',
+                paddingVertical: 16,
+                borderRadius: 8,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#3a3a3a'
+              }}
+              onPress={() => {
+                setShowEditModal(false);
+                setEditingFragrance(null);
+                resetFormData();
+              }}
+            >
+              <Text style={{ color: '#999999', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
