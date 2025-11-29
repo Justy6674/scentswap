@@ -14,8 +14,10 @@
  */
 
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
 import { OUTSETA_CONFIG } from '@/contexts/SubscriptionContext';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 
 declare global {
   interface Window {
@@ -40,7 +42,7 @@ declare global {
 
 export function OutsetaScript() {
   useEffect(() => {
-    if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    if (!isWeb) {
       return;
     }
 
@@ -128,7 +130,7 @@ export function OutsetaScript() {
  * Only use approved methods: getUser(), getJwtPayload(), setAccessToken()
  */
 export function useOutseta() {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+  if (!isWeb) {
     return null;
   }
   return window.Outseta || null;
@@ -138,7 +140,7 @@ export function useOutseta() {
  * Helper to check if Outseta is loaded
  */
 export function isOutsetaLoaded(): boolean {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+  if (!isWeb) {
     return false;
   }
   return typeof window.Outseta !== 'undefined';
