@@ -14,9 +14,11 @@ import {
   ScrollView,
   Animated,
   KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
+
+// SSR-safe platform check
+const isWeb = typeof window !== 'undefined';
 import { Ionicons } from '@expo/vector-icons';
 import { getMediatorResponse, MediatorResponse } from '@/lib/ai-services';
 import { Colors } from '@/constants/Colors';
@@ -157,7 +159,7 @@ export function ScentBot({
   return (
     <KeyboardAvoidingView 
       style={[styles.container, embedded && styles.embeddedContainer]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={isWeb ? 'height' : 'padding'}
     >
       {/* Header */}
       {!embedded && (

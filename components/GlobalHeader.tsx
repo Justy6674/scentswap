@@ -15,7 +15,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
-  Platform,
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
