@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 // Dynamic imports for web compatibility
 let Anthropic: any = null;
 let OpenAI: any = null;
@@ -27,60 +29,22 @@ const initializeSDKs = async () => {
 export interface AIModel {
   id: string;
   name: string;
-  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek';
-  costPer1000Tokens: number;
+  provider: 'anthropic' | 'openai' | 'gemini' | 'deepseek' | 'google';
+  costPer1k: number;
   maxTokens: number;
   capabilities: string[];
   recommended: boolean;
 }
 
-export const AI_MODELS: Record<string, AIModel> = {
-  'claude-3-haiku-20240307': {
-    id: 'claude-3-haiku-20240307',
-    name: 'Claude 3 Haiku',
-    provider: 'anthropic',
-    costPer1000Tokens: 0.001, // $1 per million tokens
-    maxTokens: 200000,
-    capabilities: ['text', 'fast-processing'],
-    recommended: true
-  },
-  'claude-3-opus-20240229': {
-    id: 'claude-3-opus-20240229',
-    name: 'Claude 3 Opus',
-    provider: 'anthropic',
-    costPer1000Tokens: 0.015, // $15 per million tokens
-    maxTokens: 200000,
-    capabilities: ['text', 'vision', 'complex-reasoning'],
-    recommended: false
-  },
-  'gpt-4o': {
-    id: 'gpt-4o',
-    name: 'GPT-4 Omni',
-    provider: 'openai',
-    costPer1000Tokens: 0.005, // $5 per million tokens
-    maxTokens: 128000,
-    capabilities: ['text', 'vision', 'reasoning'],
-    recommended: false
-  },
-  'gpt-4o-mini': {
-    id: 'gpt-4o-mini',
-    name: 'GPT-4 Omni Mini',
-    provider: 'openai',
-    costPer1000Tokens: 0.0002, // $0.2 per million tokens
-    maxTokens: 128000,
-    capabilities: ['text', 'fast-processing'],
-    recommended: false
-  },
-  'gemini-2.0-flash-001': {
-    id: 'gemini-2.0-flash-001',
-    name: 'Gemini 2.0 Flash',
-    provider: 'gemini',
-    costPer1000Tokens: 0.0005, // $0.5 per million tokens (estimated)
-    maxTokens: 1048576,
-    capabilities: ['text', 'vision', 'fast-processing'],
-    recommended: false
-  }
-};
+export const AI_MODELS: AIModel[] = [
+  { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openai', costPer1k: 0.0002, maxTokens: 128000, capabilities: ['text', 'fast-processing'], recommended: true },
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', costPer1k: 0.005, maxTokens: 128000, capabilities: ['text', 'vision', 'reasoning'], recommended: false },
+  { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', provider: 'anthropic', costPer1k: 0.00025, maxTokens: 200000, capabilities: ['text', 'fast-processing'], recommended: true },
+  { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', provider: 'anthropic', costPer1k: 0.003, maxTokens: 200000, capabilities: ['text', 'vision', 'reasoning'], recommended: false },
+  { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', provider: 'anthropic', costPer1k: 0.015, maxTokens: 200000, capabilities: ['text', 'vision', 'complex-reasoning'], recommended: false },
+  { id: 'gemini-pro', name: 'Gemini Pro', provider: 'google', costPer1k: 0.0005, maxTokens: 32768, capabilities: ['text', 'vision'], recommended: false },
+  { id: 'deepseek-chat', name: 'DeepSeek Chat', provider: 'deepseek', costPer1k: 0.0002, maxTokens: 128000, capabilities: ['text', 'fast-processing'], recommended: false }
+];
 
 export interface AIUsageStats {
   totalTokensUsed: number;
@@ -111,7 +75,6 @@ export interface FragranceEnhancementRequest {
     average_price_aud?: number;
     market_tier?: string;
     performance_level?: string;
-
     data_quality_score?: number;
     verified?: boolean;
     url?: string;
@@ -166,18 +129,27 @@ interface AIProviderResult extends Partial<FragranceEnhancementResult> {
   estimatedCost: number;
 }
 
+const supabase = createClient(
+  process.env.EXPO_PUBLIC_SUPABASE_URL!,
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export class AIServiceManager {
   private anthropic: any | null = null;
-  private openai: any | null = null;
-  private currentModel: string;
+  private openai: any | null = null; // Keep for client-side fallback
+  private defaultModel: string;
   private usageStats: AIUsageStats;
+  private availableModels: AIModel[];
 
   constructor() {
-    this.currentModel = process.env.EXPO_PUBLIC_DEFAULT_AI_MODEL || 'claude-3-5-sonnet-20241022';
+    this.defaultModel = process.env.EXPO_PUBLIC_DEFAULT_AI_MODEL || 'gpt-4o-mini';
     this.usageStats = this.loadUsageStats();
+    this.availableModels = [];
+
     // Initialize SDKs and then initialize clients
     initializeSDKs().then(() => {
       this.initializeClients();
+      this.availableModels = this.getAvailableModels();
     });
   }
 
@@ -191,15 +163,7 @@ export class AIServiceManager {
           dangerouslyAllowBrowser: true
         });
       }
-
-      // Initialize OpenAI
-      const openaiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
-      if (openaiKey) {
-        this.openai = new OpenAI({
-          apiKey: openaiKey,
-          dangerouslyAllowBrowser: true
-        });
-      }
+      // OpenAI and DeepSeek clients are initialized dynamically within enhanceWithOpenAI
     } catch (error) {
       console.error('AI Service initialization error:', error);
     }
@@ -207,17 +171,18 @@ export class AIServiceManager {
 
   private loadUsageStats(): AIUsageStats {
     try {
-      const saved = localStorage.getItem('aiUsageStats');
-      if (saved) {
-        const stats = JSON.parse(saved);
-        // Reset if new month
-        const currentMonth = new Date().toISOString().substring(0, 7);
-        const statsMonth = stats.lastResetDate?.substring(0, 7);
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('aiUsageStats');
+        if (saved) {
+          const stats = JSON.parse(saved);
+          const currentMonth = new Date().toISOString().substring(0, 7);
+          const statsMonth = stats.lastResetDate?.substring(0, 7);
 
-        if (currentMonth !== statsMonth) {
-          return this.createNewUsageStats();
+          if (currentMonth !== statsMonth) {
+            return this.createNewUsageStats();
+          }
+          return stats;
         }
-        return stats;
       }
     } catch (error) {
       console.error('Error loading usage stats:', error);
@@ -238,23 +203,23 @@ export class AIServiceManager {
 
   private saveUsageStats() {
     try {
-      localStorage.setItem('aiUsageStats', JSON.stringify(this.usageStats));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aiUsageStats', JSON.stringify(this.usageStats));
+      }
     } catch (error) {
       console.error('Error saving usage stats:', error);
     }
   }
 
   public getAvailableModels(): AIModel[] {
-    const models = Object.values(AI_MODELS);
-
-    // Filter models based on available API keys
-    return models.filter(model => {
+    return AI_MODELS.filter(model => {
       switch (model.provider) {
         case 'anthropic':
           return this.anthropic !== null;
         case 'openai':
-          return this.openai !== null;
+          return !!process.env.EXPO_PUBLIC_OPENAI_API_KEY;
         case 'gemini':
+        case 'google':
           return !!process.env.EXPO_PUBLIC_GEMINI_API_KEY;
         case 'deepseek':
           return !!process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY;
@@ -265,12 +230,12 @@ export class AIServiceManager {
   }
 
   public getCurrentModel(): AIModel {
-    return AI_MODELS[this.currentModel];
+    return this.availableModels.find(m => m.id === this.defaultModel) || AI_MODELS[0];
   }
 
   public setModel(modelId: string): boolean {
-    if (AI_MODELS[modelId]) {
-      this.currentModel = modelId;
+    if (this.availableModels.some(m => m.id === modelId)) {
+      this.defaultModel = modelId;
       return true;
     }
     return false;
@@ -281,8 +246,9 @@ export class AIServiceManager {
   }
 
   public estimateCost(tokensEstimate: number, modelId?: string): number {
-    const model = AI_MODELS[modelId || this.currentModel];
-    return (tokensEstimate / 1000) * model.costPer1000Tokens;
+    const model = this.availableModels.find(m => m.id === (modelId || this.defaultModel));
+    if (!model) return 0;
+    return (tokensEstimate / 1000) * model.costPer1k;
   }
 
   public canAffordEnhancement(tokensEstimate: number = 4000, modelId?: string): boolean {
@@ -301,8 +267,23 @@ export class AIServiceManager {
   public async enhanceFragrance(request: FragranceEnhancementRequest): Promise<FragranceEnhancementResult> {
     const startTime = Date.now();
 
-    const modelId = request.preferredModel || this.currentModel;
-    const model = AI_MODELS[modelId] || AI_MODELS['gpt-4o-mini']; // Fallback to mini if invalid
+    // 1. Try Supabase Edge Function first (Best for CORS/Security)
+    try {
+      const { data, error } = await supabase.functions.invoke('enhance-fragrance', {
+        body: request
+      });
+
+      if (!error && data) {
+        return data as FragranceEnhancementResult;
+      }
+      console.warn('Edge Function failed or not deployed, falling back to client-side:', error);
+    } catch (err) {
+      console.warn('Edge Function invocation error:', err);
+    }
+
+    // 2. Fallback to Client-Side
+    const modelId = request.preferredModel || this.defaultModel;
+    const model = AI_MODELS.find(m => m.id === modelId) || AI_MODELS[0];
 
     if (!this.canAffordEnhancement(4000, model.id)) {
       throw new Error('Monthly AI budget exceeded. Please increase budget or wait for next month.');
@@ -313,7 +294,7 @@ export class AIServiceManager {
 
       if (model.provider === 'anthropic' && this.anthropic) {
         result = await this.enhanceWithAnthropic(request, model);
-      } else if (model.provider === 'openai' && this.openai) {
+      } else if ((model.provider === 'openai' || model.provider === 'deepseek') && process.env.EXPO_PUBLIC_OPENAI_API_KEY) {
         result = await this.enhanceWithOpenAI(request, model);
       } else {
         throw new Error(`Provider ${model.provider} not available or not configured.`);
@@ -335,13 +316,13 @@ export class AIServiceManager {
           communityData: [],
           industryData: []
         },
-        warnings: result.warnings || [],
-        processingTime,
         costBreakdown: {
           tokensUsed: result.tokensUsed,
           estimatedCost: result.estimatedCost,
           model: model.name
-        }
+        },
+        warnings: result.warnings || [],
+        processingTime
       };
 
     } catch (error: any) {
@@ -386,7 +367,19 @@ export class AIServiceManager {
   private async enhanceWithOpenAI(request: FragranceEnhancementRequest, model: AIModel): Promise<AIProviderResult> {
     const prompt = this.buildEnhancementPrompt(request);
 
-    const response = await this.openai!.chat.completions.create({
+    const isDeepSeek = model.provider === 'deepseek';
+    const baseURL = isDeepSeek ? 'https://api.deepseek.com/v1' : 'https://api.openai.com/v1';
+    const apiKey = isDeepSeek ? process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY : process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+
+    if (!apiKey) throw new Error(`${model.provider} API key not found`);
+
+    const openai = new OpenAI({
+      apiKey: apiKey,
+      baseURL: baseURL,
+      dangerouslyAllowBrowser: true
+    });
+
+    const response = await openai.chat.completions.create({
       model: model.id,
       max_tokens: parseInt(process.env.EXPO_PUBLIC_AI_MAX_TOKENS || '4000'),
       temperature: parseFloat(process.env.EXPO_PUBLIC_AI_TEMPERATURE || '0.3'),

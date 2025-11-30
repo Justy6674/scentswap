@@ -2319,39 +2319,36 @@ export default function AdminScreen() {
                 AI Optimization Tools
               </Text>
 
-              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    borderRadius: 8,
-                    backgroundColor: selectedAIModel === 'gpt-4o-mini' ? '#8B5CF6' : '#3a3a3a',
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: selectedAIModel === 'gpt-4o-mini' ? '#8B5CF6' : '#4a4a4a'
-                  }}
-                  onPress={() => setSelectedAIModel('gpt-4o-mini')}
-                >
-                  <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 13 }}>Standard (Fast)</Text>
-                  <Text style={{ color: '#cccccc', fontSize: 10 }}>GPT-4o Mini</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    padding: 10,
-                    borderRadius: 8,
-                    backgroundColor: selectedAIModel === 'gpt-4o' ? '#8B5CF6' : '#3a3a3a',
-                    alignItems: 'center',
-                    borderWidth: 1,
-                    borderColor: selectedAIModel === 'gpt-4o' ? '#8B5CF6' : '#4a4a4a'
-                  }}
-                  onPress={() => setSelectedAIModel('gpt-4o')}
-                >
-                  <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 13 }}>Premium (Best)</Text>
-                  <Text style={{ color: '#cccccc', fontSize: 10 }}>GPT-4o</Text>
-                </TouchableOpacity>
-              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  {[
+                    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', label: 'Standard' },
+                    { id: 'gpt-4o', name: 'GPT-4o', label: 'Premium' },
+                    { id: 'claude-3-haiku-20240307', name: 'Claude Haiku', label: 'Fast' },
+                    { id: 'claude-3-sonnet-20240229', name: 'Claude Sonnet', label: 'Balanced' },
+                    { id: 'gemini-pro', name: 'Gemini Pro', label: 'Google' },
+                    { id: 'deepseek-chat', name: 'DeepSeek', label: 'Value' }
+                  ].map((model) => (
+                    <TouchableOpacity
+                      key={model.id}
+                      style={{
+                        paddingVertical: 10,
+                        paddingHorizontal: 16,
+                        borderRadius: 8,
+                        backgroundColor: selectedAIModel === model.id ? '#8B5CF6' : '#3a3a3a',
+                        alignItems: 'center',
+                        borderWidth: 1,
+                        borderColor: selectedAIModel === model.id ? '#8B5CF6' : '#4a4a4a',
+                        minWidth: 100
+                      }}
+                      onPress={() => setSelectedAIModel(model.id)}
+                    >
+                      <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 13 }}>{model.label}</Text>
+                      <Text style={{ color: '#cccccc', fontSize: 10 }}>{model.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
 
               <TouchableOpacity
                 style={{
