@@ -57,6 +57,8 @@ interface Fragrance {
   verified: boolean;
   perfumer?: string;
   image_url?: string;
+  last_ai_review?: string;
+  ai_changes?: string;
 }
 
 export default function AdminScreen() {
@@ -521,6 +523,7 @@ export default function AdminScreen() {
     main_accords: '',
     image_url: ''
   });
+  const [currentAIChanges, setCurrentAIChanges] = useState<string | null>(null);
 
   const handleCreateFragrance = async () => {
     if (!supabase || !formData.name || !formData.brand) {
@@ -572,23 +575,30 @@ export default function AdminScreen() {
     }
 
     try {
+      const updateData: any = {
+        name: formData.name.trim(),
+        brand: formData.brand.trim(),
+        concentration: formData.concentration.trim() || null,
+        year_released: formData.year_released ? parseInt(formData.year_released) : null,
+        top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+        middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+        base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+        perfumer: formData.perfumer.trim() || null,
+        gender: formData.gender.trim() || null,
+        family: formData.family.trim() || null,
+        main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
+        image_url: formData.image_url.trim() || null,
+        last_updated: new Date().toISOString()
+      };
+
+      if (currentAIChanges) {
+        updateData.last_ai_review = new Date().toISOString();
+        updateData.ai_changes = currentAIChanges;
+      }
+
       const { error } = await supabase
         .from('fragrance_master')
-        .update({
-          name: formData.name.trim(),
-          brand: formData.brand.trim(),
-          concentration: formData.concentration.trim() || null,
-          year_released: formData.year_released ? parseInt(formData.year_released) : null,
-          top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
-          middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
-          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
-          perfumer: formData.perfumer.trim() || null,
-          gender: formData.gender.trim() || null,
-          family: formData.family.trim() || null,
-          main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
-          image_url: formData.image_url.trim() || null,
-          last_updated: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', editingFragrance.id);
 
       if (error) {
@@ -600,6 +610,7 @@ export default function AdminScreen() {
       Alert.alert('Success', 'Fragrance updated successfully!');
       setShowEditModal(false);
       setEditingFragrance(null);
+      setCurrentAIChanges(null);
       setFormData({ name: '', brand: '', concentration: '', year_released: '' }); // Reset only basic fields for now
       loadFragrances();
     } catch (error) {
@@ -658,6 +669,7 @@ export default function AdminScreen() {
       main_accords: fragrance.main_accords ? fragrance.main_accords.join(', ') : '',
       image_url: fragrance.image_url || ''
     });
+    setCurrentAIChanges(null);
     setShowEditModal(true);
   };
 
@@ -731,6 +743,10 @@ export default function AdminScreen() {
           main_accords: changes.main_accords?.suggested ? changes.main_accords.suggested.join(', ') : prev.main_accords,
           // image_url: changes.image_url?.suggested || prev.image_url 
         }));
+
+        const changedFields = Object.keys(changes).filter(key => changes[key as keyof typeof changes]?.suggested).join(', ');
+        setCurrentAIChanges(changedFields);
+
         Alert.alert('AI Fill Complete', `Found data with ${(result.confidence * 100).toFixed(0)}% confidence.`);
       } else {
         Alert.alert('Low Confidence', 'AI could not find reliable data for this fragrance.');
@@ -1225,6 +1241,23 @@ export default function AdminScreen() {
                 </View>
               )}
             </View>
+
+            {/* AI Review Status */}
+            {item.last_ai_review && (
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#3a3a3a' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons name="sparkles" size={12} color="#8B5CF6" />
+                  <Text style={{ fontSize: 12, color: '#8B5CF6', fontWeight: '600' }}>
+                    AI Reviewed: {new Date(item.last_ai_review).toLocaleDateString()}
+                  </Text>
+                </View>
+                {item.ai_changes && (
+                  <Text style={{ fontSize: 11, color: '#999999' }}>
+                    Amended: {item.ai_changes}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
         )}
         showsVerticalScrollIndicator={false}
