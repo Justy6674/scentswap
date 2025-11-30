@@ -815,9 +815,9 @@ export default function AdminScreen() {
       } else {
         Alert.alert('Low Confidence', 'AI could not find reliable data for this fragrance.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Fill Error:', error);
-      Alert.alert('Error', 'Failed to fetch AI data.');
+      Alert.alert('AI Error', `Failed: ${error.message || 'Unknown error'}`);
     }
   };
 
