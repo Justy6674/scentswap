@@ -16,8 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
-// AI Enhancement temporarily disabled due to OpenAI package issues
-// import { aiFragranceEnhancer, FragranceData, EnhancedFragranceData } from '@/lib/aiEnhancement';
+import { aiService, AIModel, AIUsageStats } from '@/lib/aiService';
 
 interface AdminStats {
   total_users: number;
@@ -61,6 +60,10 @@ export default function AdminScreen() {
   const { outsetaUser, isAdmin } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
+  const [usageStats, setUsageStats] = useState<AIUsageStats | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [aiTestResult, setAiTestResult] = useState<string>('');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [fragrances, setFragrances] = useState<Fragrance[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -691,6 +694,25 @@ export default function AdminScreen() {
     }
   }, [brandFilter, sortColumn, sortDirection, supabase, loadFragrances]);
 
+  // Load AI Settings
+  useEffect(() => {
+    const loadAISettings = async () => {
+      try {
+        const models = aiService.getAvailableModels();
+        const stats = aiService.getUsageStats();
+        const currentModel = aiService.getCurrentModel();
+
+        setAvailableModels(models);
+        setUsageStats(stats);
+        setSelectedModel(currentModel?.id || '');
+      } catch (error) {
+        console.error('Error loading AI settings:', error);
+      }
+    };
+
+    loadAISettings();
+  }, []);
+
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
@@ -1145,6 +1167,283 @@ export default function AdminScreen() {
     </View>
   );
 
+  const renderAISettings = () => {
+    const testAIConnection = async () => {
+      try {
+        setAiTestResult('Testing...');
+
+        // Test with a simple fragrance enhancement request
+        const testRequest = {
+          fragmentId: 'test-001',
+          currentData: {
+            name: 'Sauvage',
+            brand: 'Dior',
+            concentration: 'Eau de Toilette'
+          },
+          researchScope: {
+            checkPricing: false,
+            verifyPerfumer: true,
+            enhanceNotes: false,
+            updateClassification: false,
+            verifyYear: false,
+            checkAvailability: false
+          },
+          retailersToCheck: ['Chemist Warehouse']
+        };
+
+        // Just test API connectivity without full enhancement
+        const canAfford = aiService.canAffordEnhancement(500); // Test with 500 tokens
+
+        if (!canAfford) {
+          setAiTestResult('❌ Monthly budget exceeded');
+          return;
+        }
+
+        const estimatedCost = aiService.estimateCost(500);
+        setAiTestResult(`✅ API connection successful! Estimated cost for test: $${estimatedCost.toFixed(4)}`);
+
+      } catch (error) {
+        setAiTestResult(`❌ Error: ${error.message}`);
+      }
+    };
+
+    const handleModelChange = (modelId: string) => {
+      const success = aiService.setModel(modelId);
+      if (success) {
+        setSelectedModel(modelId);
+        // Refresh usage stats
+        const updatedStats = aiService.getUsageStats();
+        setUsageStats(updatedStats);
+        Alert.alert('Success', `Switched to ${availableModels.find(m => m.id === modelId)?.name}`);
+      } else {
+        Alert.alert('Error', 'Failed to change AI model');
+      }
+    };
+
+    return (
+      <View>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 20 }}>
+          AI Enhancement Settings
+        </Text>
+
+        {/* API Status */}
+        <View style={{
+          backgroundColor: '#2a2a2a',
+          padding: 20,
+          borderRadius: 12,
+          marginBottom: 20,
+          borderLeftWidth: 4,
+          borderLeftColor: availableModels.length > 0 ? '#10B981' : '#EF4444'
+        }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
+            API Connection Status
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <View style={{
+              width: 8,
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: availableModels.length > 0 ? '#10B981' : '#EF4444'
+            }} />
+            <Text style={{
+              fontSize: 14,
+              color: availableModels.length > 0 ? '#10B981' : '#EF4444',
+              fontWeight: '500'
+            }}>
+              {availableModels.length > 0 ? 'Connected' : 'Not Connected'}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 12, color: '#999999' }}>
+            {availableModels.length} AI model(s) available
+          </Text>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#8B5CF6',
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+              borderRadius: 8,
+              marginTop: 12,
+              alignSelf: 'flex-start'
+            }}
+            onPress={testAIConnection}
+          >
+            <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
+              Test Connection
+            </Text>
+          </TouchableOpacity>
+
+          {aiTestResult !== '' && (
+            <View style={{
+              marginTop: 12,
+              padding: 12,
+              backgroundColor: '#1a1a1a',
+              borderRadius: 8
+            }}>
+              <Text style={{ fontSize: 12, color: '#ffffff' }}>{aiTestResult}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Model Selection */}
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, marginBottom: 20 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 12 }}>
+            AI Model Selection
+          </Text>
+
+          {availableModels.length === 0 ? (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Ionicons name="warning" size={32} color="#EF4444" />
+              <Text style={{ fontSize: 14, color: '#EF4444', marginTop: 8, textAlign: 'center' }}>
+                No AI models available. Please check your API keys in the .env file:
+              </Text>
+              <Text style={{ fontSize: 12, color: '#666666', marginTop: 8, textAlign: 'center' }}>
+                EXPO_PUBLIC_ANTHROPIC_API_KEY{'\n'}
+                EXPO_PUBLIC_OPENAI_API_KEY{'\n'}
+                EXPO_PUBLIC_GEMINI_API_KEY{'\n'}
+                EXPO_PUBLIC_DEEPSEEK_API_KEY
+              </Text>
+            </View>
+          ) : (
+            availableModels.map((model) => (
+              <TouchableOpacity
+                key={model.id}
+                style={{
+                  padding: 16,
+                  marginBottom: 12,
+                  borderRadius: 8,
+                  borderWidth: 2,
+                  borderColor: selectedModel === model.id ? '#8B5CF6' : '#3a3a3a',
+                  backgroundColor: selectedModel === model.id ? '#8B5CF6/10' : '#1a1a1a'
+                }}
+                onPress={() => handleModelChange(model.id)}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{
+                      fontSize: 14,
+                      fontWeight: '600',
+                      color: selectedModel === model.id ? '#8B5CF6' : '#ffffff',
+                      marginBottom: 4
+                    }}>
+                      {model.name}
+                      {model.recommended && (
+                        <Text style={{ fontSize: 12, color: '#10B981' }}> (Recommended)</Text>
+                      )}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#999999', marginBottom: 8 }}>
+                      Provider: {model.provider.charAt(0).toUpperCase() + model.provider.slice(1)}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#666666' }}>
+                      Cost: ${model.costPer1000Tokens.toFixed(4)} per 1K tokens •
+                      Max: {(model.maxTokens / 1000).toFixed(0)}K tokens
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#666666', marginTop: 4 }}>
+                      Capabilities: {model.capabilities.join(', ')}
+                    </Text>
+                  </View>
+                  {selectedModel === model.id && (
+                    <Ionicons name="checkmark-circle" size={20} color="#8B5CF6" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
+        {/* Usage Statistics */}
+        {usageStats && (
+          <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12, marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+              Usage Statistics (This Month)
+            </Text>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+              <View style={{ backgroundColor: '#1a1a1a', padding: 12, borderRadius: 8, flex: 1, minWidth: 120 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#8B5CF6' }}>
+                  {usageStats.totalTokensUsed.toLocaleString()}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#999999' }}>Tokens Used</Text>
+              </View>
+
+              <View style={{ backgroundColor: '#1a1a1a', padding: 12, borderRadius: 8, flex: 1, minWidth: 120 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#EF4444' }}>
+                  ${usageStats.totalCost.toFixed(2)}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#999999' }}>Total Cost</Text>
+              </View>
+
+              <View style={{ backgroundColor: '#1a1a1a', padding: 12, borderRadius: 8, flex: 1, minWidth: 120 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#10B981' }}>
+                  {usageStats.enhancementsCompleted}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#999999' }}>Enhancements</Text>
+              </View>
+            </View>
+
+            {/* Budget Progress */}
+            <View style={{ marginTop: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, color: '#ffffff' }}>Monthly Budget</Text>
+                <Text style={{ fontSize: 14, color: '#ffffff' }}>
+                  ${usageStats.remainingBudget.toFixed(2)} / ${usageStats.monthlyBudget.toFixed(2)}
+                </Text>
+              </View>
+
+              <View style={{
+                height: 8,
+                backgroundColor: '#3a3a3a',
+                borderRadius: 4,
+                overflow: 'hidden'
+              }}>
+                <View style={{
+                  height: '100%',
+                  width: `${Math.max(0, (usageStats.remainingBudget / usageStats.monthlyBudget) * 100)}%`,
+                  backgroundColor: usageStats.remainingBudget > 0 ? '#10B981' : '#EF4444'
+                }} />
+              </View>
+
+              <Text style={{ fontSize: 12, color: '#666666', marginTop: 4 }}>
+                Last reset: {new Date(usageStats.lastResetDate).toLocaleDateString('en-AU')}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Configuration Help */}
+        <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 12 }}>
+            Configuration Guide
+          </Text>
+
+          <Text style={{ fontSize: 14, color: '#ffffff', marginBottom: 8 }}>
+            To use AI enhancement features, add your API keys to the .env file:
+          </Text>
+
+          <View style={{ backgroundColor: '#1a1a1a', padding: 12, borderRadius: 8 }}>
+            <Text style={{ fontSize: 12, fontFamily: 'monospace', color: '#8B5CF6' }}>
+              {`# Add your API keys to .env file
+EXPO_PUBLIC_ANTHROPIC_API_KEY=your-key-here
+EXPO_PUBLIC_OPENAI_API_KEY=your-key-here
+EXPO_PUBLIC_GEMINI_API_KEY=your-key-here
+EXPO_PUBLIC_DEEPSEEK_API_KEY=your-key-here
+
+# Optional: Customize AI behaviour
+EXPO_PUBLIC_DEFAULT_AI_MODEL=claude-3-5-sonnet-20241022
+EXPO_PUBLIC_AI_MAX_TOKENS=4000
+EXPO_PUBLIC_AI_TEMPERATURE=0.3
+EXPO_PUBLIC_MONTHLY_AI_BUDGET=100`}
+            </Text>
+          </View>
+
+          <Text style={{ fontSize: 12, color: '#666666', marginTop: 12 }}>
+            Restart the app after adding API keys. Each model requires its respective API key to be available.
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
       <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
@@ -1177,6 +1476,7 @@ export default function AdminScreen() {
         {[
           { id: 'overview', label: 'Overview' },
           { id: 'database', label: 'Database' },
+          { id: 'ai-settings', label: 'AI Settings' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -1202,6 +1502,7 @@ export default function AdminScreen() {
       <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'database' && renderDatabase()}
+        {activeTab === 'ai-settings' && renderAISettings()}
       </ScrollView>
 
       {/* Create Fragrance Modal */}

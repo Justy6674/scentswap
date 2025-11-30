@@ -24,6 +24,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.2",
     "@octokit/rest": "^22.0.1",
