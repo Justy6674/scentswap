@@ -133,10 +133,11 @@ export class AIServiceManager {
   private defaultModel: string;
   private usageStats: AIUsageStats;
   private availableModels: AIModel[];
+  private static instance: AIServiceManager;
 
-  constructor() {
+  private constructor() {
     this.defaultModel = process.env.EXPO_PUBLIC_DEFAULT_AI_MODEL || 'gpt-4o-mini';
-    this.usageStats = this.loadUsageStats();
+    this.usageStats = this.createNewUsageStats();
     this.availableModels = [];
 
     // Initialize SDKs and then initialize clients
@@ -144,6 +145,17 @@ export class AIServiceManager {
       this.initializeClients();
       this.availableModels = this.getAvailableModels();
     });
+
+    if (typeof window !== 'undefined') {
+      this.loadUsageStats();
+    }
+  }
+
+  public static getInstance(): AIServiceManager {
+    if (!AIServiceManager.instance) {
+      AIServiceManager.instance = new AIServiceManager();
+    }
+    return AIServiceManager.instance;
   }
 
   private initializeClients() {
@@ -162,25 +174,28 @@ export class AIServiceManager {
     }
   }
 
-  private loadUsageStats(): AIUsageStats {
+  private loadUsageStats(): void {
     try {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('aiUsageStats');
         if (saved) {
           const stats = JSON.parse(saved);
-          const currentMonth = new Date().toISOString().substring(0, 7);
-          const statsMonth = stats.lastResetDate?.substring(0, 7);
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const statsMonth = stats.lastResetDate.slice(0, 7);
 
           if (currentMonth !== statsMonth) {
-            return this.createNewUsageStats();
+            this.usageStats = this.createNewUsageStats();
+          } else {
+            this.usageStats = stats;
           }
-          return stats;
+        } else {
+          this.usageStats = this.createNewUsageStats();
         }
       }
     } catch (error) {
-      console.error('Error loading usage stats:', error);
+      console.error('Failed to load AI stats:', error);
+      this.usageStats = this.createNewUsageStats();
     }
-    return this.createNewUsageStats();
   }
 
   private createNewUsageStats(): AIUsageStats {
@@ -188,8 +203,8 @@ export class AIServiceManager {
       totalTokensUsed: 0,
       totalCost: 0,
       enhancementsCompleted: 0,
-      monthlyBudget: parseFloat(process.env.EXPO_PUBLIC_MONTHLY_AI_BUDGET || '100'),
-      remainingBudget: parseFloat(process.env.EXPO_PUBLIC_MONTHLY_AI_BUDGET || '100'),
+      monthlyBudget: parseFloat(process.env.EXPO_PUBLIC_MONTHLY_AI_BUDGET || '5.00'),
+      remainingBudget: parseFloat(process.env.EXPO_PUBLIC_MONTHLY_AI_BUDGET || '5.00'),
       lastResetDate: new Date().toISOString()
     };
   }
@@ -350,6 +365,14 @@ export class AIServiceManager {
     const baseURL = isDeepSeek ? 'https://api.deepseek.com/v1' : 'https://api.openai.com/v1';
     const apiKey = isDeepSeek ? process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY : process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
+    console.log(`[AI Service] Using provider: ${model.provider}`);
+    console.log(`[AI Service] Key loaded: ${apiKey ? 'YES' : 'NO'}`);
+    if (apiKey) {
+      console.log(`[AI Service] Key start: ${apiKey.substring(0, 7)}...`);
+      console.log(`[AI Service] Key end: ...${apiKey.substring(apiKey.length - 4)}`);
+      console.log(`[AI Service] Key length: ${apiKey.length}`);
+    }
+
     if (!apiKey) throw new Error(`${model.provider} API key not found`);
 
     const openai = new OpenAI({
@@ -471,5 +494,5 @@ Begin your research now:`;
 }
 
 // Export singleton instance
-export const aiService = new AIServiceManager();
+export const aiService = AIServiceManager.getInstance();
 export default aiService;
