@@ -158,9 +158,14 @@ export interface FragranceEnhancementResult {
   processingTime: number;
 }
 
+interface AIProviderResult extends Partial<FragranceEnhancementResult> {
+  tokensUsed: number;
+  estimatedCost: number;
+}
+
 class AIServiceManager {
-  private anthropic: Anthropic | null = null;
-  private openai: OpenAI | null = null;
+  private anthropic: any | null = null;
+  private openai: any | null = null;
   private currentModel: string;
   private usageStats: AIUsageStats;
 
@@ -300,7 +305,7 @@ class AIServiceManager {
     const model = this.getCurrentModel();
 
     try {
-      let result: any;
+      let result: AIProviderResult;
 
       if (model.provider === 'anthropic' && this.anthropic) {
         result = await this.enhanceWithAnthropic(request, model);
@@ -317,6 +322,16 @@ class AIServiceManager {
 
       return {
         ...result,
+        fragmentId: result.fragmentId || request.fragmentId,
+        confidence: result.confidence || 0,
+        suggestedChanges: result.suggestedChanges || {},
+        researchSources: result.researchSources || {
+          officialSources: [],
+          retailerPricing: [],
+          communityData: [],
+          industryData: []
+        },
+        warnings: result.warnings || [],
         processingTime,
         costBreakdown: {
           tokensUsed: result.tokensUsed,
@@ -331,7 +346,7 @@ class AIServiceManager {
     }
   }
 
-  private async enhanceWithAnthropic(request: FragranceEnhancementRequest, model: AIModel): Promise<Partial<FragranceEnhancementResult>> {
+  private async enhanceWithAnthropic(request: FragranceEnhancementRequest, model: AIModel): Promise<AIProviderResult> {
     const prompt = this.buildEnhancementPrompt(request);
 
     const response = await this.anthropic!.messages.create({
@@ -364,7 +379,7 @@ class AIServiceManager {
     };
   }
 
-  private async enhanceWithOpenAI(request: FragranceEnhancementRequest, model: AIModel): Promise<Partial<FragranceEnhancementResult>> {
+  private async enhanceWithOpenAI(request: FragranceEnhancementRequest, model: AIModel): Promise<AIProviderResult> {
     const prompt = this.buildEnhancementPrompt(request);
 
     const response = await this.openai!.chat.completions.create({

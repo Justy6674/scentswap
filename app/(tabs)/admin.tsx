@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
 import FragranceUploadFlow, { FragranceData, UploadIntent } from '@/components/FragranceUpload/FragranceUploadFlow';
-// import { aiService, AIModel, AIUsageStats } from '@/lib/aiService';
+import { aiService, AIModel, AIUsageStats } from '@/lib/aiService';
 
 interface AdminStats {
   total_users: number;
@@ -55,6 +55,8 @@ interface Fragrance {
   main_accords?: string[];
   data_quality_score: number;
   verified: boolean;
+  perfumer?: string;
+  image_url?: string;
 }
 
 export default function AdminScreen() {
@@ -504,12 +506,20 @@ export default function AdminScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingFragrance, setEditingFragrance] = useState<Fragrance | null>(null);
-  const [enhancingIds, setEnhancingIds] = useState<Set<string>>(new Set());
+
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
     concentration: '',
     year_released: '',
+    top_notes: '',
+    middle_notes: '',
+    base_notes: '',
+    perfumer: '',
+    gender: '',
+    family: '',
+    main_accords: '',
+    image_url: ''
   });
 
   const handleCreateFragrance = async () => {
@@ -526,8 +536,17 @@ export default function AdminScreen() {
           brand: formData.brand.trim(),
           concentration: formData.concentration.trim() || null,
           year_released: formData.year_released ? parseInt(formData.year_released) : null,
+          top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          perfumer: formData.perfumer.trim() || null,
+          gender: formData.gender.trim() || null,
+          family: formData.family.trim() || null,
+          main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
+          image_url: formData.image_url.trim() || null,
           data_quality_score: 75,
-          verified: false
+          verified: false,
+          last_updated: new Date().toISOString()
         }]);
 
       if (error) {
@@ -538,7 +557,7 @@ export default function AdminScreen() {
 
       Alert.alert('Success', 'Fragrance created successfully!');
       setShowCreateModal(false);
-      setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+      setFormData({ name: '', brand: '', concentration: '', year_released: '' }); // Reset only basic fields for now
       loadFragrances();
     } catch (error) {
       console.error('Error creating fragrance:', error);
@@ -560,6 +579,15 @@ export default function AdminScreen() {
           brand: formData.brand.trim(),
           concentration: formData.concentration.trim() || null,
           year_released: formData.year_released ? parseInt(formData.year_released) : null,
+          top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()).filter(Boolean) : [],
+          perfumer: formData.perfumer.trim() || null,
+          gender: formData.gender.trim() || null,
+          family: formData.family.trim() || null,
+          main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
+          image_url: formData.image_url.trim() || null,
+          last_updated: new Date().toISOString()
         })
         .eq('id', editingFragrance.id);
 
@@ -572,7 +600,7 @@ export default function AdminScreen() {
       Alert.alert('Success', 'Fragrance updated successfully!');
       setShowEditModal(false);
       setEditingFragrance(null);
-      setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+      setFormData({ name: '', brand: '', concentration: '', year_released: '' }); // Reset only basic fields for now
       loadFragrances();
     } catch (error) {
       console.error('Error updating fragrance:', error);
@@ -621,127 +649,99 @@ export default function AdminScreen() {
       brand: fragrance.brand,
       concentration: fragrance.concentration || '',
       year_released: fragrance.year_released ? fragrance.year_released.toString() : '',
+      top_notes: fragrance.top_notes ? fragrance.top_notes.join(', ') : '',
+      middle_notes: fragrance.middle_notes ? fragrance.middle_notes.join(', ') : '',
+      base_notes: fragrance.base_notes ? fragrance.base_notes.join(', ') : '',
+      perfumer: fragrance.perfumer || '',
+      gender: fragrance.gender || '',
+      family: fragrance.family || '',
+      main_accords: fragrance.main_accords ? fragrance.main_accords.join(', ') : '',
+      image_url: fragrance.image_url || ''
     });
     setShowEditModal(true);
   };
 
   const resetFormData = () => {
-    setFormData({ name: '', brand: '', concentration: '', year_released: '' });
+    setFormData({
+      name: '',
+      brand: '',
+      concentration: '',
+      year_released: '',
+      top_notes: '',
+      middle_notes: '',
+      base_notes: '',
+      perfumer: '',
+      gender: '',
+      family: '',
+      main_accords: '',
+      image_url: ''
+    });
   };
 
-  const handleAIEnhancement = async (fragrance: Fragrance) => {
-    if (enhancingIds.has(fragrance.id)) {
-      Alert.alert('Enhancement in Progress', 'This fragrance is already being enhanced. Please wait.');
+
+
+  const handleAIFill = async () => {
+    if (!formData.name || !formData.brand) {
+      Alert.alert('Missing Information', 'Please enter at least a Name and Brand to use AI Fill.');
       return;
     }
-
-    Alert.alert(
-      'AI Enhancement',
-      `Enhance "${fragrance.name}" by ${fragrance.brand} using AI?\n\nThis will research and update:\n• Description and notes\n• Longevity and performance\n• Occasions and seasons\n• Verify accuracy\n\nThis may take 10-30 seconds.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Enhance Now',
-          onPress: () => performAIEnhancement(fragrance)
-        },
-      ]
-    );
-  };
-
-  const performAIEnhancement = async (fragrance: Fragrance) => {
-    console.log('Starting AI enhancement for:', fragrance.name);
-
-    /*
-    if (!supabase) {
-      Alert.alert('Error', 'Database connection not available.');
-      return;
-    }
-
-    // Add to enhancing set
-    setEnhancingIds(prev => new Set(prev).add(fragrance.id));
 
     try {
-      // Convert to FragranceData format for AI
-      const fragranceData: FragranceData = {
-        id: fragrance.id,
-        name: fragrance.name,
-        brand: fragrance.brand,
-        concentration: fragrance.concentration,
-        year_released: fragrance.year_released,
-        data_quality_score: fragrance.data_quality_score,
-        verified: fragrance.verified
+      Alert.alert('AI Enhancement', 'Analyzing fragrance data... this may take a few seconds.');
+
+      const request = {
+        fragmentId: editingFragrance?.id || 'temp-id',
+        currentData: {
+          name: formData.name,
+          brand: formData.brand,
+          concentration: formData.concentration,
+          year_released: formData.year_released ? parseInt(formData.year_released) : undefined,
+          gender: formData.gender,
+          family: formData.family,
+          top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()) : [],
+          middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()) : [],
+          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()) : []
+        },
+        researchScope: {
+          checkPricing: false,
+          verifyPerfumer: true,
+          enhanceNotes: true,
+          updateClassification: true,
+          verifyYear: true,
+          checkAvailability: false
+        },
+        retailersToCheck: ['Chemist Warehouse', 'Myer', 'David Jones', 'Mecca']
       };
 
-      // Call AI enhancement
-      const enhancedData = await aiFragranceEnhancer.enhanceFragrance(fragranceData);
+      const result = await aiService.enhanceFragrance(request);
 
-      // Prepare update data - only include fields that exist in your schema
-      const updateData: any = {
-        name: enhancedData.name,
-        brand: enhancedData.brand,
-        concentration: enhancedData.concentration,
-        year_released: enhancedData.year_released,
-        data_quality_score: enhancedData.data_quality_score,
-        verified: enhancedData.verified
-      };
+      if (result.confidence > 0.6) {
+        const changes = result.suggestedChanges;
 
-      // Add enhanced data to a JSON column if it exists, or skip if schema doesn't support
-      if (enhancedData.description || enhancedData.notes) {
-        updateData.enhanced_data = {
-          description: enhancedData.description,
-          notes: enhancedData.notes,
-          longevity: enhancedData.longevity,
-          sillage: enhancedData.sillage,
-          occasions: enhancedData.occasions,
-          seasons: enhancedData.seasons,
-          gender: enhancedData.gender
-        };
+        setFormData(prev => ({
+          ...prev,
+          concentration: changes.concentration?.suggested || prev.concentration,
+          year_released: changes.year_released?.suggested ? changes.year_released.suggested.toString() : prev.year_released,
+          top_notes: changes.top_notes?.suggested ? changes.top_notes.suggested.join(', ') : prev.top_notes,
+          middle_notes: changes.middle_notes?.suggested ? changes.middle_notes.suggested.join(', ') : prev.middle_notes,
+          base_notes: changes.base_notes?.suggested ? changes.base_notes.suggested.join(', ') : prev.base_notes,
+          perfumer: changes.perfumer?.suggested || prev.perfumer,
+          gender: changes.gender?.suggested || prev.gender,
+          family: changes.family?.suggested || prev.family,
+          main_accords: changes.main_accords?.suggested ? changes.main_accords.suggested.join(', ') : prev.main_accords,
+          // image_url: changes.image_url?.suggested || prev.image_url 
+        }));
+        Alert.alert('AI Fill Complete', `Found data with ${(result.confidence * 100).toFixed(0)}% confidence.`);
+      } else {
+        Alert.alert('Low Confidence', 'AI could not find reliable data for this fragrance.');
       }
-
-      // Update database
-      const { error } = await supabase
-        .from('fragrance_master')
-        .update(updateData)
-        .eq('id', fragrance.id);
-
-      if (error) {
-        console.error('Database update error:', error);
-        Alert.alert('Error', 'Failed to save enhanced data. Please try again.');
-        return;
-      }
-
-      // Success feedback
-      Alert.alert(
-        'Enhancement Complete!',
-        `"${enhancedData.name}" has been enhanced with:\n\n• Quality Score: ${enhancedData.data_quality_score}%\n• ${enhancedData.verified ? 'Verified data' : 'Research-based data'}\n• ${enhancedData.description ? 'Added description' : ''}\n• ${enhancedData.notes ? 'Added fragrance notes' : ''}\n\nThe enhanced data is now available in your database.`
-      );
-
-      // Reload fragrances to show updated data
-      loadFragrances();
-
-    } catch (error: any) {
-      console.error('AI Enhancement error:', error);
-
-      let errorMessage = 'Failed to enhance fragrance data.';
-      if (error.message?.includes('API key')) {
-        errorMessage = 'OpenAI API key not configured. Please set EXPO_PUBLIC_OPENAI_API_KEY in your environment.';
-      } else if (error.message?.includes('rate limit')) {
-        errorMessage = 'API rate limit reached. Please try again in a few minutes.';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      Alert.alert('Enhancement Failed', errorMessage);
-    } finally {
-      // Remove from enhancing set
-      setEnhancingIds(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(fragrance.id);
-        return newSet;
-      });
+    } catch (error) {
+      console.error('AI Fill Error:', error);
+      Alert.alert('Error', 'Failed to fetch AI data.');
     }
-    */
   };
+
+
 
   useEffect(() => {
     if (supabase && (searchQuery.length > 0 || searchQuery === '')) {
@@ -1061,6 +1061,7 @@ export default function AdminScreen() {
                 </View>
               </View>
               <View style={{ flexDirection: 'row', gap: 8 }}>
+
                 <TouchableOpacity
                   style={{
                     backgroundColor: '#3B82F6',
@@ -1168,7 +1169,7 @@ export default function AdminScreen() {
                   fontSize: 14,
                   fontWeight: '600',
                   color: item.data_quality_score >= 80 ? '#10B981' :
-                         item.data_quality_score >= 60 ? '#F59E0B' : '#EF4444'
+                    item.data_quality_score >= 60 ? '#F59E0B' : '#EF4444'
                 }}>
                   Quality: {item.data_quality_score}%
                 </Text>
@@ -1753,7 +1754,7 @@ export default function AdminScreen() {
 
           <Text style={{ fontSize: 12, color: '#999999', marginBottom: 16 }}>
             Current Status: {process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY?.startsWith('sk-ant-') ?
-            'Ready for AI Enhancement' : 'Please configure API keys'}
+              'Ready for AI Enhancement' : 'Please configure API keys'}
           </Text>
 
           {process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY?.startsWith('sk-ant-') && (
