@@ -1080,6 +1080,22 @@ export default function AdminScreen() {
 
                 <TouchableOpacity
                   style={{
+                    backgroundColor: '#8B5CF6',
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4
+                  }}
+                  onPress={() => openEditModal(item)}
+                >
+                  <Ionicons name="sparkles" size={12} color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>AI Review</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
                     backgroundColor: '#3B82F6',
                     paddingVertical: 6,
                     paddingHorizontal: 10,
@@ -1243,7 +1259,7 @@ export default function AdminScreen() {
             </View>
 
             {/* AI Review Status */}
-            {item.last_ai_review && (
+            {item.last_ai_review ? (
               <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#3a3a3a' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <Ionicons name="sparkles" size={12} color="#8B5CF6" />
@@ -1256,6 +1272,15 @@ export default function AdminScreen() {
                     Amended: {item.ai_changes}
                   </Text>
                 )}
+              </View>
+            ) : (
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#3a3a3a' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Ionicons name="alert-circle-outline" size={12} color="#6B7280" />
+                  <Text style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>
+                    Pending AI Review
+                  </Text>
+                </View>
               </View>
             )}
           </View>
