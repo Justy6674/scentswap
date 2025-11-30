@@ -1091,7 +1091,7 @@ export default function AdminScreen() {
                   onPress={() => openEditModal(item)}
                 >
                   <Ionicons name="sparkles" size={12} color="#FFFFFF" />
-                  <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>AI Review</Text>
+                  <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '600' }}>AI Optimise</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
