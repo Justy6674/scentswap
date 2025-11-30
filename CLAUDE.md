@@ -29,10 +29,13 @@ npm run android      # Start Android emulator
 # Testing
 npm test             # Run Jest tests with watch mode
 npm run lint         # Run ESLint
-npx playwright test  # Run Playwright e2e tests
+npx playwright test  # Run Playwright e2e tests (tests run against localhost:5000)
 
 # Building
 npm run build:web    # Build for web deployment
+
+# Project Reset (if needed)
+npm run reset-project # Reset project to clean state
 ```
 
 ## Project Structure
@@ -44,19 +47,33 @@ app/                 # Expo Router screens (file-based routing)
 │   ├── index.tsx   # Home/Discover
 │   ├── cabinet.tsx # My Cabinet
 │   ├── swaps.tsx   # Active Swaps
-│   └── profile.tsx # User Profile
+│   ├── profile.tsx # User Profile
+│   ├── search.tsx  # Search & filters (tab)
+│   ├── assistant.tsx # AI Assistant
+│   ├── analytics.tsx # Analytics dashboard
+│   └── admin.tsx   # Admin dashboard
 ├── listing/        # Listing details & creation
 ├── swap/           # Swap details & creation
-└── search.tsx      # Search & filters
+├── profile/        # Other user profiles
+├── search.tsx      # Global search page
+├── browse.tsx      # Browse fragrances
+└── faq.tsx         # FAQ page
 
 components/         # Reusable UI components
+├── search/         # Search-specific components
 contexts/          # React Context providers
 lib/               # Core utilities
 ├── supabase.ts    # Supabase client (SSR-safe)
 ├── database.ts    # Database operations
 ├── ai.ts          # Claude API integration
 ├── admin.ts       # Admin authentication
-└── valuation.ts   # AI valuation services
+├── valuation.ts   # AI valuation services
+├── ai-services.ts # Additional AI services
+├── searchAI.ts    # AI-powered search
+├── aiAssistant.ts # AI assistant functionality
+├── marketIntelligence.ts # Market analysis
+├── advancedAnalytics.ts # Analytics processing
+└── vectorDatabase.ts # Vector database for AI
 
 supabase/          # Database schema & migrations
 types/             # TypeScript type definitions
@@ -84,9 +101,13 @@ The `lib/supabase.ts` file has specific SSR handling:
 - Singleton pattern with `getSupabase()` function
 
 ### AI Integration
-- Claude API for fairness scoring and mediation
-- AI enhancement engine for fragrance data enrichment
-- Valuation services for trade matching
+- **Claude API** for fairness scoring and mediation
+- **AI Enhancement Engine** for fragrance data enrichment
+- **Valuation Services** for trade matching
+- **Vector Database** for similarity search and recommendations
+- **Market Intelligence** for pricing and trend analysis
+- **AI Assistant** for user guidance and support
+- **Advanced Analytics** for platform insights
 
 ## Environment Configuration
 
@@ -121,11 +142,25 @@ Admin access controlled by hardcoded email whitelist:
 
 ## Outseta Integration Rules
 
+**CRITICAL: Outseta is the ONLY authentication provider. DO NOT use Supabase Auth.**
+
 - Use direct URL redirects for auth, not widget APIs
 - Post Login URL: redirects to main app
 - Post Sign Up URL: leave empty (Outseta handles confirmation)
 - Token storage: localStorage for session persistence
 - Admin whitelist in `lib/admin.ts` for role-based access
+
+**Important URLs:**
+- Login: `https://scentswap.outseta.com/auth?widgetMode=login#o-anonymous`
+- Register: `https://scentswap.outseta.com/auth?widgetMode=register#o-anonymous`
+- Profile: `https://scentswap.outseta.com/profile#o-authenticated`
+
+**Plan UIDs:**
+- Free: `z9MP7yQ4`
+- Premium: `vW5RoJm4` ($9.99/month AUD)
+- Elite: `aWxr2rQV` ($19.99/month AUD)
+
+See `.cursor/rules/outseta.mdc` for detailed integration rules.
 
 ## Common Patterns
 
@@ -155,6 +190,38 @@ router.replace('/auth/login');
 ```
 
 This is a React Native app with web deployment capabilities - ensure any code additions are compatible with both platforms.
+
+## Core Business Asset: Fragrance Master Database
+
+**24,000+ verified fragrances** - This is ScentSwap's competitive advantage:
+- Multi-source data enhancement (Fragrantica, brand websites, user uploads)
+- Smart upsert system prevents duplicates using URL-based identification
+- Rich metadata: notes, ratings, perfumers, families, performance metrics
+- Full-text search with tsvector indexing
+- JSONB fields for flexible metadata storage
+
+**Key files:**
+- Database schema: `supabase/schema.sql`
+- Enhancement engine: `lib/ai-enhancement-engine.ts`
+- Search functionality: `lib/searchAI.ts`
+
+## AI Services Architecture
+
+Multiple AI services power the platform:
+- **Fairness Engine**: Ensures balanced trades
+- **Valuation Service**: Estimates fragrance values
+- **Enhancement Engine**: Enriches fragrance data
+- **Search AI**: Intelligent search and recommendations
+- **Market Intelligence**: Pricing and trend analysis
+- **Assistant**: User guidance and support
+
+## Expo Configuration Notes
+
+- **New Architecture**: Enabled (`"newArchEnabled": true`)
+- **Typed Routes**: Enabled for type-safe navigation
+- **Permissions**: Camera and photo library access configured
+- **Bundle ID**: `com.scentswap.app`
+- **Splash Screen**: Custom logo with teal background (`#6AABA3`)
 
 ## Available Anthropic Skills
 
