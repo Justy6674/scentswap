@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
 // Dynamic imports for web compatibility
 let Anthropic: any = null;
 let OpenAI: any = null;
@@ -128,11 +126,6 @@ interface AIProviderResult extends Partial<FragranceEnhancementResult> {
   tokensUsed: number;
   estimatedCost: number;
 }
-
-const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL!,
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export class AIServiceManager {
   private anthropic: any | null = null;
@@ -267,21 +260,7 @@ export class AIServiceManager {
   public async enhanceFragrance(request: FragranceEnhancementRequest): Promise<FragranceEnhancementResult> {
     const startTime = Date.now();
 
-    // 1. Try Supabase Edge Function first (Best for CORS/Security)
-    try {
-      const { data, error } = await supabase.functions.invoke('enhance-fragrance', {
-        body: request
-      });
-
-      if (!error && data) {
-        return data as FragranceEnhancementResult;
-      }
-      console.warn('Edge Function failed or not deployed, falling back to client-side:', error);
-    } catch (err) {
-      console.warn('Edge Function invocation error:', err);
-    }
-
-    // 2. Fallback to Client-Side
+    // Use Client-Side Enhancement (Edge Function not deployed)
     const modelId = request.preferredModel || this.defaultModel;
     const model = AI_MODELS.find(m => m.id === modelId) || AI_MODELS[0];
 

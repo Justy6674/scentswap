@@ -296,8 +296,11 @@ export default function AdminScreen() {
 
   const updateLiveUserCount = () => {
     // Simulate live user count (in production, this would be real-time)
-    const randomCount = Math.floor(Math.random() * 10) + 2;
-    setLiveUsers(randomCount);
+    // Use a stable value to avoid hydration mismatches
+    if (typeof window !== 'undefined') {
+      const randomCount = Math.floor(Math.random() * 10) + 2;
+      setLiveUsers(randomCount);
+    }
   };
 
   const loadPendingReviews = async () => {
@@ -625,7 +628,8 @@ export default function AdminScreen() {
 
       if (currentAIChanges) {
         updateData.last_ai_review = new Date().toISOString();
-        updateData.ai_changes = currentAIChanges;
+        // Note: ai_changes column doesn't exist in fragrance_master table
+        // Enhancement changes should be stored in fragrance_enhancement_changes table instead
         updateData.last_optimized_by = 'AI';
         updateData.last_optimized_at = new Date().toISOString();
       } else {
