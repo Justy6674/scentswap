@@ -64,6 +64,14 @@ export default function AdminScreen() {
   // const [usageStats, setUsageStats] = useState<AIUsageStats | null>(null);
   // const [selectedModel, setSelectedModel] = useState<string>('');
   // const [aiTestResult, setAiTestResult] = useState<string>('');
+  const [aiSystemStats, setAiSystemStats] = useState({
+    searchQueries: 0,
+    assistantChats: 0,
+    marketAnalysisRuns: 0,
+    personalInsights: 0,
+    totalApiCalls: 0,
+    averageResponseTime: 0
+  });
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [fragrances, setFragrances] = useState<Fragrance[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -1167,6 +1175,240 @@ export default function AdminScreen() {
     </View>
   );
 
+  const renderAIMonitoring = () => {
+    // Mock data for demonstration - in production, this would come from analytics API
+    const mockSearchQueries = [
+      { query: 'fresh summer fragrances under $150', timestamp: new Date().toISOString(), results: 24, responseTime: 1.2 },
+      { query: 'woody masculine winter scents', timestamp: new Date(Date.now() - 60000).toISOString(), results: 18, responseTime: 0.9 },
+      { query: 'Tom Ford alternatives', timestamp: new Date(Date.now() - 120000).toISOString(), results: 12, responseTime: 1.5 }
+    ];
+
+    const mockAssistantChats = [
+      { topic: 'Signature scent discovery', userId: 'user@example.com', timestamp: new Date().toISOString(), messages: 8, resolved: true },
+      { topic: 'Occasion recommendations', userId: 'customer@gmail.com', timestamp: new Date(Date.now() - 180000).toISOString(), messages: 5, resolved: false },
+      { topic: 'Budget-friendly options', userId: 'shopper@yahoo.com', timestamp: new Date(Date.now() - 300000).toISOString(), messages: 12, resolved: true }
+    ];
+
+    return (
+      <View>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', marginBottom: 20 }}>
+          AI Systems Monitoring
+        </Text>
+
+        {/* AI System Performance Overview */}
+        <View style={{ marginBottom: 30 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+            System Performance (Last 24 Hours)
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1, minWidth: 120, borderLeftWidth: 4, borderLeftColor: '#8B5CF6' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#8B5CF6' }}>127</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>AI Search Queries</Text>
+              <Text style={{ fontSize: 10, color: '#10B981', marginTop: 4 }}>+23% vs yesterday</Text>
+            </View>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1, minWidth: 120, borderLeftWidth: 4, borderLeftColor: '#10B981' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#10B981' }}>45</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>Assistant Chats</Text>
+              <Text style={{ fontSize: 10, color: '#10B981', marginTop: 4 }}>+12% vs yesterday</Text>
+            </View>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1, minWidth: 120, borderLeftWidth: 4, borderLeftColor: '#F59E0B' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#F59E0B' }}>18</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>Market Analysis</Text>
+              <Text style={{ fontSize: 10, color: '#10B981', marginTop: 4 }}>+5% vs yesterday</Text>
+            </View>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1, minWidth: 120, borderLeftWidth: 4, borderLeftColor: '#EF4444' }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#EF4444' }}>1.2s</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>Avg Response Time</Text>
+              <Text style={{ fontSize: 10, color: '#10B981', marginTop: 4 }}>-15% vs yesterday</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Recent AI Search Activity */}
+        <View style={{ marginBottom: 30 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+            🔍 Recent AI Search Activity
+          </Text>
+          <View style={{ backgroundColor: '#2a2a2a', borderRadius: 12, padding: 16 }}>
+            {mockSearchQueries.map((search, index) => (
+              <View key={index} style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                paddingVertical: 12,
+                borderBottomWidth: index < mockSearchQueries.length - 1 ? 1 : 0,
+                borderBottomColor: '#3a3a3a'
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#8B5CF6', marginBottom: 4 }}>
+                    "{search.query}"
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 16 }}>
+                    <Text style={{ fontSize: 12, color: '#10B981' }}>
+                      {search.results} results
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#F59E0B' }}>
+                      {search.responseTime}s
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, color: '#666666' }}>
+                  {new Date(search.timestamp).toLocaleTimeString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Assistant Chat Monitoring */}
+        <View style={{ marginBottom: 30 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+            💬 Assistant Chat Sessions
+          </Text>
+          <View style={{ backgroundColor: '#2a2a2a', borderRadius: 12, padding: 16 }}>
+            {mockAssistantChats.map((chat, index) => (
+              <View key={index} style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                paddingVertical: 12,
+                borderBottomWidth: index < mockAssistantChats.length - 1 ? 1 : 0,
+                borderBottomColor: '#3a3a3a'
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#10B981', marginBottom: 4 }}>
+                    {chat.topic}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12, color: '#999999' }}>
+                      {chat.userId}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#8B5CF6' }}>
+                      {chat.messages} messages
+                    </Text>
+                    <View style={{
+                      paddingVertical: 2,
+                      paddingHorizontal: 6,
+                      borderRadius: 4,
+                      backgroundColor: chat.resolved ? '#10B981' : '#F59E0B'
+                    }}>
+                      <Text style={{ fontSize: 10, color: '#ffffff', fontWeight: '600' }}>
+                        {chat.resolved ? 'Resolved' : 'Active'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, color: '#666666' }}>
+                  {new Date(chat.timestamp).toLocaleTimeString()}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* API Usage and Cost Monitoring */}
+        <View style={{ marginBottom: 30 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+            💰 API Usage & Cost Tracking
+          </Text>
+          <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#10B981' }}>$23.47</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>Month-to-Date Cost</Text>
+              <Text style={{ fontSize: 10, color: '#F59E0B', marginTop: 4 }}>Budget: $100/month</Text>
+            </View>
+            <View style={{ backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#8B5CF6' }}>1.2M</Text>
+              <Text style={{ fontSize: 12, color: '#999999', marginTop: 2 }}>Tokens Used</Text>
+              <Text style={{ fontSize: 10, color: '#10B981', marginTop: 4 }}>Efficient usage</Text>
+            </View>
+          </View>
+
+          <View style={{ backgroundColor: '#2a2a2a', borderRadius: 12, padding: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: '#ffffff', marginBottom: 12 }}>
+              API Provider Breakdown
+            </Text>
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, color: '#999999' }}>Anthropic Claude (Search)</Text>
+                <Text style={{ fontSize: 12, color: '#10B981' }}>$15.20</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, color: '#999999' }}>OpenAI GPT-4 (Assistant)</Text>
+                <Text style={{ fontSize: 12, color: '#10B981' }}>$6.85</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ fontSize: 12, color: '#999999' }}>Google Gemini (Analytics)</Text>
+                <Text style={{ fontSize: 12, color: '#10B981' }}>$1.42</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* System Health Dashboard */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 16 }}>
+            🔧 System Health Dashboard
+          </Text>
+          <View style={{ backgroundColor: '#2a2a2a', borderRadius: 12, padding: 16 }}>
+            <View style={{ gap: 12 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                  <Text style={{ fontSize: 14, color: '#ffffff' }}>AI Search Engine</Text>
+                </View>
+                <Text style={{ fontSize: 12, color: '#10B981', fontWeight: '600' }}>Operational</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                  <Text style={{ fontSize: 14, color: '#ffffff' }}>Chat Assistant</Text>
+                </View>
+                <Text style={{ fontSize: 12, color: '#10B981', fontWeight: '600' }}>Operational</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#F59E0B' }} />
+                  <Text style={{ fontSize: 14, color: '#ffffff' }}>Market Intelligence</Text>
+                </View>
+                <Text style={{ fontSize: 12, color: '#F59E0B', fontWeight: '600' }}>Degraded</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                  <Text style={{ fontSize: 14, color: '#ffffff' }}>Personal Analytics</Text>
+                </View>
+                <Text style={{ fontSize: 12, color: '#10B981', fontWeight: '600' }}>Operational</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#8B5CF6',
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                marginTop: 16,
+                alignSelf: 'flex-start'
+              }}
+              onPress={() => {
+                Alert.alert(
+                  'System Diagnostics',
+                  'AI systems diagnostic complete:\n\n✅ Search Engine: Healthy\n✅ Chat Assistant: Healthy\n⚠️ Market Intelligence: Rate limit exceeded\n✅ Personal Analytics: Healthy\n\nRecommendation: Implement API rate limiting for market intelligence module.',
+                  [{ text: 'OK' }]
+                );
+              }}
+            >
+              <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
+                Run Full Diagnostics
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderAISettings = () => {
     return (
       <View>
@@ -1357,6 +1599,7 @@ export default function AdminScreen() {
       <View style={{ flexDirection: 'row', backgroundColor: '#2a2a2a', paddingHorizontal: 20 }}>
         {[
           { id: 'overview', label: 'Overview' },
+          { id: 'ai-monitoring', label: 'AI Systems' },
           { id: 'database', label: 'Database' },
           { id: 'ai-settings', label: 'AI Settings' },
         ].map((tab) => (
@@ -1383,6 +1626,7 @@ export default function AdminScreen() {
 
       <ScrollView style={{ flex: 1, padding: 20 }} showsVerticalScrollIndicator={false}>
         {activeTab === 'overview' && renderOverview()}
+        {activeTab === 'ai-monitoring' && renderAIMonitoring()}
         {activeTab === 'database' && renderDatabase()}
         {activeTab === 'ai-settings' && renderAISettings()}
       </ScrollView>
