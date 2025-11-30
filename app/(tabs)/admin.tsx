@@ -59,12 +59,19 @@ interface Fragrance {
   image_url?: string;
   last_ai_review?: string;
   ai_changes?: string;
+  description?: string;
+  season_tags?: string[];
+  occasion_tags?: string[];
+  url?: string;
+  last_optimized_by?: string;
+  last_optimized_at?: string;
 }
 
 export default function AdminScreen() {
   const { outsetaUser, isAdmin } = useSubscription();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ai-monitoring' | 'ai-reviews' | 'database' | 'ai-settings' | 'bulk'>('overview');
+  const [bulkQueueStats, setBulkQueueStats] = useState({ pending: 0, processing: 0, completed: 0, failed: 0 });
   // const [availableModels, setAvailableModels] = useState<AIModel[]>([]);
   // const [usageStats, setUsageStats] = useState<AIUsageStats | null>(null);
   // const [selectedModel, setSelectedModel] = useState<string>('');
@@ -326,7 +333,7 @@ export default function AdminScreen() {
 
     Alert.alert(
       'AI Review Complete!',
-      `Fragrance identified and processed:\n\n${data.details?.name || 'Unknown'}\n${data.details?.brand || ''}\n\nIntent: ${intent}\nCondition: ${data.condition?.fillLevel || 'Unknown'}%\nValue: $${data.valuation?.estimatedValue || 'Unknown'} AUD`,
+      `Fragrance identified and processed:\n\n${data.details?.name || 'Unknown'}\n${data.details?.brand || ''}\n\nIntent: ${intent}\nCondition: ${data.condition?.fillPercentage || 'Unknown'}%\nValue: $${data.valuation?.estimatedMin || 'Unknown'} - $${data.valuation?.estimatedMax || 'Unknown'} AUD`,
       [
         {
           text: 'Approve & Add to Database',
@@ -521,9 +528,16 @@ export default function AdminScreen() {
     gender: '',
     family: '',
     main_accords: '',
-    image_url: ''
+    image_url: '',
+    description: '',
+    market_tier: '',
+    performance_level: '',
+    season_tags: '',
+    occasion_tags: '',
+    url: ''
   });
   const [currentAIChanges, setCurrentAIChanges] = useState<string | null>(null);
+  const [selectedAIModel, setSelectedAIModel] = useState<string>('gpt-4o-mini');
 
   const handleCreateFragrance = async () => {
     if (!supabase || !formData.name || !formData.brand) {
@@ -547,6 +561,12 @@ export default function AdminScreen() {
           family: formData.family.trim() || null,
           main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
           image_url: formData.image_url.trim() || null,
+          description: formData.description.trim() || null,
+          market_tier: formData.market_tier.trim() || null,
+          performance_level: formData.performance_level.trim() || null,
+          season_tags: formData.season_tags ? formData.season_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+          occasion_tags: formData.occasion_tags ? formData.occasion_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+          url: formData.url.trim() || null,
           data_quality_score: 75,
           verified: false,
           last_updated: new Date().toISOString()
@@ -560,7 +580,13 @@ export default function AdminScreen() {
 
       Alert.alert('Success', 'Fragrance created successfully!');
       setShowCreateModal(false);
-      setFormData({ name: '', brand: '', concentration: '', year_released: '' }); // Reset only basic fields for now
+      setFormData({
+        name: '', brand: '', concentration: '', year_released: '',
+        top_notes: '', middle_notes: '', base_notes: '', perfumer: '',
+        gender: '', family: '', main_accords: '', image_url: '',
+        description: '', market_tier: '', performance_level: '',
+        season_tags: '', occasion_tags: '', url: ''
+      });
       loadFragrances();
     } catch (error) {
       console.error('Error creating fragrance:', error);
@@ -588,12 +614,23 @@ export default function AdminScreen() {
         family: formData.family.trim() || null,
         main_accords: formData.main_accords ? formData.main_accords.split(',').map(s => s.trim()).filter(Boolean) : [],
         image_url: formData.image_url.trim() || null,
+        description: formData.description.trim() || null,
+        market_tier: formData.market_tier.trim() || null,
+        performance_level: formData.performance_level.trim() || null,
+        season_tags: formData.season_tags ? formData.season_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+        occasion_tags: formData.occasion_tags ? formData.occasion_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+        url: formData.url.trim() || null,
         last_updated: new Date().toISOString()
       };
 
       if (currentAIChanges) {
         updateData.last_ai_review = new Date().toISOString();
         updateData.ai_changes = currentAIChanges;
+        updateData.last_optimized_by = 'AI';
+        updateData.last_optimized_at = new Date().toISOString();
+      } else {
+        updateData.last_optimized_by = 'User';
+        updateData.last_optimized_at = new Date().toISOString();
       }
 
       const { error } = await supabase
@@ -611,7 +648,13 @@ export default function AdminScreen() {
       setShowEditModal(false);
       setEditingFragrance(null);
       setCurrentAIChanges(null);
-      setFormData({ name: '', brand: '', concentration: '', year_released: '' }); // Reset only basic fields for now
+      setFormData({
+        name: '', brand: '', concentration: '', year_released: '',
+        top_notes: '', middle_notes: '', base_notes: '', perfumer: '',
+        gender: '', family: '', main_accords: '', image_url: '',
+        description: '', market_tier: '', performance_level: '',
+        season_tags: '', occasion_tags: '', url: ''
+      });
       loadFragrances();
     } catch (error) {
       console.error('Error updating fragrance:', error);
@@ -630,6 +673,7 @@ export default function AdminScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              if (!supabase) throw new Error('Supabase client not initialized');
               const { error } = await supabase
                 .from('fragrance_master')
                 .delete()
@@ -667,7 +711,13 @@ export default function AdminScreen() {
       gender: fragrance.gender || '',
       family: fragrance.family || '',
       main_accords: fragrance.main_accords ? fragrance.main_accords.join(', ') : '',
-      image_url: fragrance.image_url || ''
+      image_url: fragrance.image_url || '',
+      description: fragrance.description || '',
+      market_tier: (fragrance as any).market_tier || '',
+      performance_level: (fragrance as any).performance_level || '',
+      season_tags: (fragrance as any).season_tags ? (fragrance as any).season_tags.join(', ') : '',
+      occasion_tags: (fragrance as any).occasion_tags ? (fragrance as any).occasion_tags.join(', ') : '',
+      url: (fragrance as any).url || ''
     });
     setCurrentAIChanges(null);
     setShowEditModal(true);
@@ -686,7 +736,13 @@ export default function AdminScreen() {
       gender: '',
       family: '',
       main_accords: '',
-      image_url: ''
+      image_url: '',
+      description: '',
+      market_tier: '',
+      performance_level: '',
+      season_tags: '',
+      occasion_tags: '',
+      url: ''
     });
   };
 
@@ -712,7 +768,8 @@ export default function AdminScreen() {
           family: formData.family,
           top_notes: formData.top_notes ? formData.top_notes.split(',').map(s => s.trim()) : [],
           middle_notes: formData.middle_notes ? formData.middle_notes.split(',').map(s => s.trim()) : [],
-          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()) : []
+          base_notes: formData.base_notes ? formData.base_notes.split(',').map(s => s.trim()) : [],
+          url: formData.url
         },
         researchScope: {
           checkPricing: false,
@@ -722,7 +779,8 @@ export default function AdminScreen() {
           verifyYear: true,
           checkAvailability: false
         },
-        retailersToCheck: ['Chemist Warehouse', 'Myer', 'David Jones', 'Mecca']
+        retailersToCheck: ['Chemist Warehouse', 'Myer', 'David Jones', 'Mecca'],
+        preferredModel: selectedAIModel
       };
 
       const result = await aiService.enhanceFragrance(request);
@@ -741,6 +799,12 @@ export default function AdminScreen() {
           gender: changes.gender?.suggested || prev.gender,
           family: changes.family?.suggested || prev.family,
           main_accords: changes.main_accords?.suggested ? changes.main_accords.suggested.join(', ') : prev.main_accords,
+          description: changes.description?.suggested || prev.description,
+          market_tier: changes.market_tier?.suggested || prev.market_tier,
+          performance_level: changes.performance_level?.suggested || prev.performance_level,
+          season_tags: changes.season_tags?.suggested ? changes.season_tags.suggested.join(', ') : prev.season_tags,
+          occasion_tags: changes.occasion_tags?.suggested ? changes.occasion_tags.suggested.join(', ') : prev.occasion_tags,
+          url: changes.url?.suggested || prev.url
           // image_url: changes.image_url?.suggested || prev.image_url 
         }));
 
@@ -1258,8 +1322,30 @@ export default function AdminScreen() {
               )}
             </View>
 
-            {/* AI Review Status */}
-            {item.last_ai_review ? (
+            {/* Optimization Status */}
+            {item.last_optimized_by ? (
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#3a3a3a' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <Ionicons
+                    name={item.last_optimized_by === 'AI' ? "sparkles" : "person-circle"}
+                    size={14}
+                    color={item.last_optimized_by === 'AI' ? "#8B5CF6" : "#10B981"}
+                  />
+                  <Text style={{
+                    fontSize: 12,
+                    color: item.last_optimized_by === 'AI' ? '#8B5CF6' : '#10B981',
+                    fontWeight: '600'
+                  }}>
+                    {item.last_optimized_by === 'AI' ? 'AI Optimised' : 'User Optimised'}: {item.last_optimized_at ? new Date(item.last_optimized_at).toLocaleDateString() : 'Unknown Date'}
+                  </Text>
+                </View>
+                {item.last_optimized_by === 'AI' && item.ai_changes && (
+                  <Text style={{ fontSize: 11, color: '#999999' }}>
+                    Amended: {item.ai_changes}
+                  </Text>
+                )}
+              </View>
+            ) : item.last_ai_review ? (
               <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#3a3a3a' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   <Ionicons name="sparkles" size={12} color="#8B5CF6" />
@@ -1278,7 +1364,7 @@ export default function AdminScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Ionicons name="alert-circle-outline" size={12} color="#6B7280" />
                   <Text style={{ fontSize: 12, color: '#6B7280', fontStyle: 'italic' }}>
-                    Pending AI Review
+                    Pending Optimization
                   </Text>
                 </View>
               </View>
@@ -1934,6 +2020,57 @@ export default function AdminScreen() {
     );
   };
 
+  const renderBulkOperations = () => (
+    <View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#ffffff' }}>Bulk AI Optimization</Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#10B981',
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8
+          }}
+          onPress={() => Alert.alert('Start Bulk Job', 'This would trigger the server-side script.')}
+        >
+          <Ionicons name="play" size={16} color="#ffffff" />
+          <Text style={{ color: '#ffffff', fontWeight: '600' }}>Start Job</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+        <View style={{ flex: 1, backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, alignItems: 'center' }}>
+          <Text style={{ color: '#999999', fontSize: 12, marginBottom: 4 }}>Pending</Text>
+          <Text style={{ color: '#F59E0B', fontSize: 24, fontWeight: 'bold' }}>{bulkQueueStats.pending}</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, alignItems: 'center' }}>
+          <Text style={{ color: '#999999', fontSize: 12, marginBottom: 4 }}>Processing</Text>
+          <Text style={{ color: '#3B82F6', fontSize: 24, fontWeight: 'bold' }}>{bulkQueueStats.processing}</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, alignItems: 'center' }}>
+          <Text style={{ color: '#999999', fontSize: 12, marginBottom: 4 }}>Completed</Text>
+          <Text style={{ color: '#10B981', fontSize: 24, fontWeight: 'bold' }}>{bulkQueueStats.completed}</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: '#2a2a2a', padding: 16, borderRadius: 12, alignItems: 'center' }}>
+          <Text style={{ color: '#999999', fontSize: 12, marginBottom: 4 }}>Failed</Text>
+          <Text style={{ color: '#EF4444', fontSize: 24, fontWeight: 'bold' }}>{bulkQueueStats.failed}</Text>
+        </View>
+      </View>
+
+      <View style={{ backgroundColor: '#2a2a2a', padding: 20, borderRadius: 12 }}>
+        <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600', marginBottom: 12 }}>Instructions</Text>
+        <Text style={{ color: '#cccccc', lineHeight: 24 }}>
+          1. Ensure the server-side script is running.<br />
+          2. Use the "Start Job" button to initiate processing.<br />
+          3. Monitor progress here. The queue is processed in batches of 5 items every 2 seconds.
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a1a' }}>
       <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#3a3a3a' }}>
@@ -1969,6 +2106,7 @@ export default function AdminScreen() {
           { id: 'ai-reviews', label: `AI Reviews (${pendingReviews.length})` },
           { id: 'database', label: 'Database' },
           { id: 'ai-settings', label: 'AI Settings' },
+          { id: 'bulk', label: 'Bulk Ops' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -1978,7 +2116,7 @@ export default function AdminScreen() {
               borderBottomWidth: 2,
               borderBottomColor: activeTab === tab.id ? '#8B5CF6' : 'transparent'
             }}
-            onPress={() => setActiveTab(tab.id)}
+            onPress={() => setActiveTab(tab.id as any)}
           >
             <Text style={{
               fontSize: 14,
@@ -1997,6 +2135,7 @@ export default function AdminScreen() {
         {activeTab === 'ai-reviews' && renderAIReviews()}
         {activeTab === 'database' && renderDatabase()}
         {activeTab === 'ai-settings' && renderAISettings()}
+        {activeTab === 'bulk' && renderBulkOperations()}
       </ScrollView>
 
       {/* Create Fragrance Modal */}
@@ -2174,6 +2313,65 @@ export default function AdminScreen() {
           </View>
 
           <ScrollView style={{ flex: 1, padding: 20 }}>
+            {/* AI Tools Section */}
+            <View style={{ marginBottom: 24, padding: 16, backgroundColor: '#2a2a2a', borderRadius: 12, borderWidth: 1, borderColor: '#3a3a3a' }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#8B5CF6', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+                AI Optimization Tools
+              </Text>
+
+              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    borderRadius: 8,
+                    backgroundColor: selectedAIModel === 'gpt-4o-mini' ? '#8B5CF6' : '#3a3a3a',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: selectedAIModel === 'gpt-4o-mini' ? '#8B5CF6' : '#4a4a4a'
+                  }}
+                  onPress={() => setSelectedAIModel('gpt-4o-mini')}
+                >
+                  <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 13 }}>Standard (Fast)</Text>
+                  <Text style={{ color: '#cccccc', fontSize: 10 }}>GPT-4o Mini</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    padding: 10,
+                    borderRadius: 8,
+                    backgroundColor: selectedAIModel === 'gpt-4o' ? '#8B5CF6' : '#3a3a3a',
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: selectedAIModel === 'gpt-4o' ? '#8B5CF6' : '#4a4a4a'
+                  }}
+                  onPress={() => setSelectedAIModel('gpt-4o')}
+                >
+                  <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 13 }}>Premium (Best)</Text>
+                  <Text style={{ color: '#cccccc', fontSize: 10 }}>GPT-4o</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#8B5CF6',
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8
+                }}
+                onPress={handleAIFill}
+              >
+                <Ionicons name="sparkles" size={16} color="#ffffff" />
+                <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: '600' }}>
+                  Auto-Fill with AI
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={{ gap: 16 }}>
               <View>
                 <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>
@@ -2259,6 +2457,164 @@ export default function AdminScreen() {
                   keyboardType="numeric"
                 />
               </View>
+
+
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Gender</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                    placeholder="e.g., Unisex"
+                    placeholderTextColor="#666666"
+                    value={formData.gender}
+                    onChangeText={(text) => setFormData({ ...formData, gender: text })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Family</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                    placeholder="e.g., Floral"
+                    placeholderTextColor="#666666"
+                    value={formData.family}
+                    onChangeText={(text) => setFormData({ ...formData, family: text })}
+                  />
+                </View>
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Perfumer</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="e.g., Francis Kurkdjian"
+                  placeholderTextColor="#666666"
+                  value={formData.perfumer}
+                  onChangeText={(text) => setFormData({ ...formData, perfumer: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Description</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a', height: 100 }}
+                  placeholder="Enter description..."
+                  placeholderTextColor="#666666"
+                  multiline
+                  textAlignVertical="top"
+                  value={formData.description}
+                  onChangeText={(text) => setFormData({ ...formData, description: text })}
+                />
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 16 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Market Tier</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                    placeholder="e.g., Niche"
+                    placeholderTextColor="#666666"
+                    value={formData.market_tier}
+                    onChangeText={(text) => setFormData({ ...formData, market_tier: text })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Performance</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                    placeholder="e.g., Long Lasting"
+                    placeholderTextColor="#666666"
+                    value={formData.performance_level}
+                    onChangeText={(text) => setFormData({ ...formData, performance_level: text })}
+                  />
+                </View>
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Top Notes</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="Comma separated"
+                  placeholderTextColor="#666666"
+                  value={formData.top_notes}
+                  onChangeText={(text) => setFormData({ ...formData, top_notes: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Middle Notes</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="Comma separated"
+                  placeholderTextColor="#666666"
+                  value={formData.middle_notes}
+                  onChangeText={(text) => setFormData({ ...formData, middle_notes: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Base Notes</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="Comma separated"
+                  placeholderTextColor="#666666"
+                  value={formData.base_notes}
+                  onChangeText={(text) => setFormData({ ...formData, base_notes: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Main Accords</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="Comma separated"
+                  placeholderTextColor="#666666"
+                  value={formData.main_accords}
+                  onChangeText={(text) => setFormData({ ...formData, main_accords: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Seasons</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="e.g., Winter, Fall"
+                  placeholderTextColor="#666666"
+                  value={formData.season_tags}
+                  onChangeText={(text) => setFormData({ ...formData, season_tags: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Occasions</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="e.g., Date Night, Office"
+                  placeholderTextColor="#666666"
+                  value={formData.occasion_tags}
+                  onChangeText={(text) => setFormData({ ...formData, occasion_tags: text })}
+                />
+              </View>
+
+              <View>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Image URL</Text>
+                <TextInput
+                  style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                  placeholder="https://..."
+                  placeholderTextColor="#666666"
+                  value={formData.image_url}
+                  onChangeText={(text) => setFormData({ ...formData, image_url: text })}
+                />
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#ffffff', marginBottom: 8 }}>Source URL</Text>
+                  <TextInput
+                    style={{ backgroundColor: '#2a2a2a', borderRadius: 8, padding: 12, fontSize: 16, color: '#ffffff', borderWidth: 1, borderColor: '#3a3a3a' }}
+                    placeholder="e.g., https://www.fragrantica.com/..."
+                    placeholderTextColor="#666666"
+                    value={formData.url}
+                    onChangeText={(text) => setFormData({ ...formData, url: text })}
+                  />
+                </View>
+              </View>
             </View>
           </ScrollView>
 
@@ -2294,7 +2650,7 @@ export default function AdminScreen() {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      </Modal>
-    </SafeAreaView>
+      </Modal >
+    </SafeAreaView >
   );
 }

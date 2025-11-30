@@ -111,8 +111,10 @@ export interface FragranceEnhancementRequest {
     average_price_aud?: number;
     market_tier?: string;
     performance_level?: string;
+
     data_quality_score?: number;
     verified?: boolean;
+    url?: string;
   };
   researchScope: {
     checkPricing: boolean;
@@ -123,6 +125,7 @@ export interface FragranceEnhancementRequest {
     checkAvailability: boolean;
   };
   retailersToCheck: string[];
+  preferredModel?: string;
 }
 
 export interface FragranceEnhancementResult {
@@ -163,7 +166,7 @@ interface AIProviderResult extends Partial<FragranceEnhancementResult> {
   estimatedCost: number;
 }
 
-class AIServiceManager {
+export class AIServiceManager {
   private anthropic: any | null = null;
   private openai: any | null = null;
   private currentModel: string;
@@ -282,8 +285,8 @@ class AIServiceManager {
     return (tokensEstimate / 1000) * model.costPer1000Tokens;
   }
 
-  public canAffordEnhancement(tokensEstimate: number = 4000): boolean {
-    const estimatedCost = this.estimateCost(tokensEstimate);
+  public canAffordEnhancement(tokensEstimate: number = 4000, modelId?: string): boolean {
+    const estimatedCost = this.estimateCost(tokensEstimate, modelId);
     return this.usageStats.remainingBudget >= estimatedCost;
   }
 
@@ -298,11 +301,12 @@ class AIServiceManager {
   public async enhanceFragrance(request: FragranceEnhancementRequest): Promise<FragranceEnhancementResult> {
     const startTime = Date.now();
 
-    if (!this.canAffordEnhancement()) {
+    const modelId = request.preferredModel || this.currentModel;
+    const model = AI_MODELS[modelId] || AI_MODELS['gpt-4o-mini']; // Fallback to mini if invalid
+
+    if (!this.canAffordEnhancement(4000, model.id)) {
       throw new Error('Monthly AI budget exceeded. Please increase budget or wait for next month.');
     }
-
-    const model = this.getCurrentModel();
 
     try {
       let result: AIProviderResult;
@@ -340,7 +344,7 @@ class AIServiceManager {
         }
       };
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI Enhancement error:', error);
       throw new Error(`AI enhancement failed: ${error.message}`);
     }
@@ -487,7 +491,7 @@ Begin your research now:`;
       }
 
       throw new Error('No valid JSON found in response');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error parsing AI response:', error);
       throw new Error(`Failed to parse AI response: ${error.message}`);
     }
