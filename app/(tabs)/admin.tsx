@@ -2855,7 +2855,7 @@ export default function AdminScreen() {
                 Delete Fragrance?
               </Text>
               <Text style={{ fontSize: 14, color: '#999999', textAlign: 'center', marginTop: 8 }}>
-                Are you sure you want to delete &quot;{deletingFragrance?.name}&quot; by {deletingFragrance?.brand}?
+                Are you sure you want to delete "{deletingFragrance?.name}" by {deletingFragrance?.brand}?
               </Text>
               <Text style={{ fontSize: 12, color: '#EF4444', textAlign: 'center', marginTop: 8 }}>
                 This action cannot be undone.
