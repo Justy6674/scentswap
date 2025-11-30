@@ -7,17 +7,47 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  Alert, // Keep for backwards compatibility with realtime handlers
   TextInput,
   FlatList,
   Modal,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { getSupabase } from '@/lib/supabase';
-import FragranceUploadFlow, { FragranceData, UploadIntent } from '@/components/FragranceUpload/FragranceUploadFlow';
-import { aiService, AIModel, AIUsageStats } from '@/lib/aiService';
+import { aiService } from '@/lib/aiService';
+import AISuggestionsModal, { AIChange } from '@/components/ui/AISuggestionsModal';
+
+// Web-compatible toast notification system
+interface ToastMessage {
+  id: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  title: string;
+  message?: string;
+}
+
+// Custom hook for web-compatible notifications
+const useNotification = () => {
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const showNotification = useCallback((type: ToastMessage['type'], title: string, message?: string) => {
+    const id = `toast-${Date.now()}`;
+    setToasts(prev => [...prev, { id, type, title, message }]);
+    
+    // Auto-remove after duration
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, type === 'error' ? 6000 : 4000);
+  }, []);
+
+  const hideNotification = useCallback((id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  return { toasts, showNotification, hideNotification };
+};
 
 interface AdminStats {
   total_users: number;
@@ -95,6 +125,16 @@ export default function AdminScreen() {
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [showAIReviewFlow, setShowAIReviewFlow] = useState(false);
   const [pendingReviews, setPendingReviews] = useState<any[]>([]);
+  
+  // AI Suggestions Modal state
+  const [showAISuggestionsModal, setShowAISuggestionsModal] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<AIChange[]>([]);
+  const [aiOverallConfidence, setAiOverallConfidence] = useState(0);
+  const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Web-compatible notification system
+  const { toasts, showNotification, hideNotification } = useNotification();
 
   const supabase = getSupabase();
 
@@ -328,7 +368,8 @@ export default function AdminScreen() {
     setPendingReviews(mockReviews);
   };
 
-  const handleAIReviewComplete = async (data: FragranceData, intent: UploadIntent) => {
+  // Handler for AI Review completion - uses generic types since component is not used
+  const handleAIReviewComplete = async (data: Record<string, unknown>, intent: string) => {
     console.log('Admin AI Review Complete:', data);
     console.log('Intent:', intent);
 
@@ -336,7 +377,7 @@ export default function AdminScreen() {
 
     Alert.alert(
       'AI Review Complete!',
-      `Fragrance identified and processed:\n\n${data.details?.name || 'Unknown'}\n${data.details?.brand || ''}\n\nIntent: ${intent}\nCondition: ${data.condition?.fillPercentage || 'Unknown'}%\nValue: $${data.valuation?.estimatedMin || 'Unknown'} - $${data.valuation?.estimatedMax || 'Unknown'} AUD`,
+      `Fragrance identified and processed:\n\n${(data as any).details?.name || 'Unknown'}\n${(data as any).details?.brand || ''}\n\nIntent: ${intent}\nCondition: ${(data as any).condition?.fillPercentage || 'Unknown'}%\nValue: $${(data as any).valuation?.estimatedMin || 'Unknown'} - $${(data as any).valuation?.estimatedMax || 'Unknown'} AUD`,
       [
         {
           text: 'Approve & Add to Database',
@@ -518,6 +559,8 @@ export default function AdminScreen() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingFragrance, setEditingFragrance] = useState<Fragrance | null>(null);
+  const [deletingFragrance, setDeletingFragrance] = useState<Fragrance | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -544,12 +587,14 @@ export default function AdminScreen() {
 
   const handleCreateFragrance = async () => {
     if (!supabase || !formData.name || !formData.brand) {
-      Alert.alert('Error', 'Please fill in all required fields (Name and Brand)');
+      showNotification('error', 'Missing Fields', 'Please fill in all required fields (Name and Brand)');
       return;
     }
 
+    setIsUpdating(true);
     try {
-      const { data, error } = await supabase
+      // Note: Do NOT include last_updated - the table uses updated_at which is handled by database trigger
+      const { error } = await supabase
         .from('fragrance_master')
         .insert([{
           name: formData.name.trim(),
@@ -571,17 +616,16 @@ export default function AdminScreen() {
           occasion_tags: formData.occasion_tags ? formData.occasion_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
           url: formData.url.trim() || null,
           data_quality_score: 75,
-          verified: false,
-          last_updated: new Date().toISOString()
+          verified: false
         }]);
 
       if (error) {
         console.error('Create fragrance error:', error);
-        Alert.alert('Error', 'Failed to create fragrance. Please try again.');
+        showNotification('error', 'Create Failed', `Error: ${error.message}`);
         return;
       }
 
-      Alert.alert('Success', 'Fragrance created successfully!');
+      showNotification('success', 'Fragrance Created', `"${formData.name}" by ${formData.brand} added successfully!`);
       setShowCreateModal(false);
       setFormData({
         name: '', brand: '', concentration: '', year_released: '',
@@ -591,20 +635,25 @@ export default function AdminScreen() {
         season_tags: '', occasion_tags: '', url: ''
       });
       loadFragrances();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating fragrance:', error);
-      Alert.alert('Error', 'Failed to create fragrance. Please try again.');
+      showNotification('error', 'Create Failed', error?.message || 'An unexpected error occurred');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
   const handleEditFragrance = async () => {
     if (!supabase || !editingFragrance || !formData.name || !formData.brand) {
-      Alert.alert('Error', 'Please fill in all required fields (Name and Brand)');
+      showNotification('error', 'Missing Fields', 'Please fill in all required fields (Name and Brand)');
       return;
     }
 
+    setIsUpdating(true);
     try {
-      const updateData: any = {
+      // Note: Do NOT include last_updated - the table uses updated_at which is handled by database trigger
+      // Also do NOT include last_ai_review or ai_changes - these columns don't exist in fragrance_master
+      const updateData: Record<string, unknown> = {
         name: formData.name.trim(),
         brand: formData.brand.trim(),
         concentration: formData.concentration.trim() || null,
@@ -623,19 +672,10 @@ export default function AdminScreen() {
         season_tags: formData.season_tags ? formData.season_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
         occasion_tags: formData.occasion_tags ? formData.occasion_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
         url: formData.url.trim() || null,
-        last_updated: new Date().toISOString()
+        // Use the columns that actually exist in the migration
+        last_optimized_by: currentAIChanges ? 'AI' : 'User',
+        last_optimized_at: new Date().toISOString()
       };
-
-      if (currentAIChanges) {
-        updateData.last_ai_review = new Date().toISOString();
-        // Note: ai_changes column doesn't exist in fragrance_master table
-        // Enhancement changes should be stored in fragrance_enhancement_changes table instead
-        updateData.last_optimized_by = 'AI';
-        updateData.last_optimized_at = new Date().toISOString();
-      } else {
-        updateData.last_optimized_by = 'User';
-        updateData.last_optimized_at = new Date().toISOString();
-      }
 
       const { error } = await supabase
         .from('fragrance_master')
@@ -644,11 +684,11 @@ export default function AdminScreen() {
 
       if (error) {
         console.error('Update fragrance error:', error);
-        Alert.alert('Error', 'Failed to update fragrance. Please try again.');
+        showNotification('error', 'Update Failed', `Error: ${error.message}`);
         return;
       }
 
-      Alert.alert('Success', 'Fragrance updated successfully!');
+      showNotification('success', 'Fragrance Updated', `"${formData.name}" updated successfully!`);
       setShowEditModal(false);
       setEditingFragrance(null);
       setCurrentAIChanges(null);
@@ -660,45 +700,47 @@ export default function AdminScreen() {
         season_tags: '', occasion_tags: '', url: ''
       });
       loadFragrances();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating fragrance:', error);
-      Alert.alert('Error', 'Failed to update fragrance. Please try again.');
+      showNotification('error', 'Update Failed', error?.message || 'An unexpected error occurred');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleDeleteFragrance = async (fragrance: Fragrance) => {
-    Alert.alert(
-      'Delete Fragrance',
-      `Are you sure you want to delete "${fragrance.name}" by ${fragrance.brand}? This action cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              if (!supabase) throw new Error('Supabase client not initialized');
-              const { error } = await supabase
-                .from('fragrance_master')
-                .delete()
-                .eq('id', fragrance.id);
+  // Open delete confirmation modal instead of using Alert
+  const handleDeleteFragrance = (fragrance: Fragrance) => {
+    setDeletingFragrance(fragrance);
+    setShowDeleteConfirm(true);
+  };
 
-              if (error) {
-                console.error('Delete fragrance error:', error);
-                Alert.alert('Error', 'Failed to delete fragrance. Please try again.');
-                return;
-              }
+  // Actual delete operation
+  const confirmDeleteFragrance = async () => {
+    if (!supabase || !deletingFragrance) return;
+    
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('fragrance_master')
+        .delete()
+        .eq('id', deletingFragrance.id);
 
-              Alert.alert('Success', 'Fragrance deleted successfully!');
-              loadFragrances();
-            } catch (error) {
-              console.error('Error deleting fragrance:', error);
-              Alert.alert('Error', 'Failed to delete fragrance. Please try again.');
-            }
-          }
-        },
-      ]
-    );
+      if (error) {
+        console.error('Delete fragrance error:', error);
+        showNotification('error', 'Delete Failed', `Error: ${error.message}`);
+        return;
+      }
+
+      showNotification('success', 'Fragrance Deleted', `"${deletingFragrance.name}" removed successfully`);
+      loadFragrances();
+    } catch (error: any) {
+      console.error('Error deleting fragrance:', error);
+      showNotification('error', 'Delete Failed', error?.message || 'An unexpected error occurred');
+    } finally {
+      setIsUpdating(false);
+      setShowDeleteConfirm(false);
+      setDeletingFragrance(null);
+    }
   };
 
   const openEditModal = (fragrance: Fragrance) => {
@@ -752,15 +794,38 @@ export default function AdminScreen() {
 
 
 
+  // Field label mapping for better display
+  const FIELD_LABELS: Record<string, string> = {
+    concentration: 'Concentration',
+    year_released: 'Year Released',
+    top_notes: 'Top Notes',
+    middle_notes: 'Middle Notes',
+    base_notes: 'Base Notes',
+    perfumer: 'Perfumer',
+    gender: 'Gender',
+    family: 'Family',
+    main_accords: 'Main Accords',
+    description: 'Description',
+    market_tier: 'Market Tier',
+    performance_level: 'Performance Level',
+    season_tags: 'Season Tags',
+    occasion_tags: 'Occasion Tags',
+    url: 'Source URL',
+  };
+
   const handleAIFill = async () => {
     if (!formData.name || !formData.brand) {
-      Alert.alert('Missing Information', 'Please enter at least a Name and Brand to use AI Fill.');
+      showNotification('warning', 'Missing Information', 'Please enter at least a Name and Brand to use AI Fill.');
       return;
     }
 
-    try {
-      Alert.alert('AI Enhancement', 'Analyzing fragrance data... this may take a few seconds.');
+    // Show the modal in loading state
+    setIsAIAnalyzing(true);
+    setShowAISuggestionsModal(true);
+    setAiSuggestions([]);
+    setAiOverallConfidence(0);
 
+    try {
       const request = {
         fragmentId: editingFragrance?.id || 'temp-id',
         currentData: {
@@ -789,40 +854,74 @@ export default function AdminScreen() {
 
       const result = await aiService.enhanceFragrance(request);
 
-      if (result.confidence > 0.6) {
-        const changes = result.suggestedChanges;
+      // Convert the result to AIChange format for the modal
+      const aiChanges: AIChange[] = [];
+      const changes = result.suggestedChanges;
+      
+      for (const [field, change] of Object.entries(changes)) {
+        if (change?.suggested !== undefined && change.suggested !== null) {
+          // Get current value from form
+          let currentValue: any = (formData as any)[field];
+          if (field.includes('notes') || field === 'main_accords' || field.includes('tags')) {
+            currentValue = currentValue ? currentValue.split(',').map((s: string) => s.trim()) : [];
+          }
+          
+          aiChanges.push({
+            field,
+            fieldLabel: FIELD_LABELS[field] || field,
+            current: currentValue,
+            suggested: change.suggested,
+            confidence: change.confidence || result.confidence * 100,
+            sources: change.sources,
+            reasoning: change.reasoning,
+          });
+        }
+      }
 
-        setFormData(prev => ({
-          ...prev,
-          concentration: changes.concentration?.suggested || prev.concentration,
-          year_released: changes.year_released?.suggested ? changes.year_released.suggested.toString() : prev.year_released,
-          top_notes: changes.top_notes?.suggested ? changes.top_notes.suggested.join(', ') : prev.top_notes,
-          middle_notes: changes.middle_notes?.suggested ? changes.middle_notes.suggested.join(', ') : prev.middle_notes,
-          base_notes: changes.base_notes?.suggested ? changes.base_notes.suggested.join(', ') : prev.base_notes,
-          perfumer: changes.perfumer?.suggested || prev.perfumer,
-          gender: changes.gender?.suggested || prev.gender,
-          family: changes.family?.suggested || prev.family,
-          main_accords: changes.main_accords?.suggested ? changes.main_accords.suggested.join(', ') : prev.main_accords,
-          description: changes.description?.suggested || prev.description,
-          market_tier: changes.market_tier?.suggested || prev.market_tier,
-          performance_level: changes.performance_level?.suggested || prev.performance_level,
-          season_tags: changes.season_tags?.suggested ? changes.season_tags.suggested.join(', ') : prev.season_tags,
-          occasion_tags: changes.occasion_tags?.suggested ? changes.occasion_tags.suggested.join(', ') : prev.occasion_tags,
-          url: changes.url?.suggested || prev.url
-          // image_url: changes.image_url?.suggested || prev.image_url 
-        }));
+      setAiSuggestions(aiChanges);
+      setAiOverallConfidence(Math.round(result.confidence * 100));
+      setIsAIAnalyzing(false);
 
-        const changedFields = Object.keys(changes).filter(key => changes[key as keyof typeof changes]?.suggested).join(', ');
-        setCurrentAIChanges(changedFields);
-
-        Alert.alert('AI Fill Complete', `Found data with ${(result.confidence * 100).toFixed(0)}% confidence.`);
-      } else {
-        Alert.alert('Low Confidence', 'AI could not find reliable data for this fragrance.');
+      if (aiChanges.length === 0) {
+        showNotification('info', 'No Changes Found', 'AI analysis complete but no updates were suggested.');
+        setShowAISuggestionsModal(false);
       }
     } catch (error: any) {
       console.error('AI Fill Error:', error);
-      Alert.alert('AI Error', `Failed: ${error.message || 'Unknown error'}`);
+      setIsAIAnalyzing(false);
+      setShowAISuggestionsModal(false);
+      showNotification('error', 'AI Analysis Failed', error.message || 'An error occurred during AI analysis');
     }
+  };
+
+  // Apply selected AI changes to the form
+  const handleApplyAIChanges = (selectedChanges: AIChange[]) => {
+    setFormData(prev => {
+      const updated = { ...prev };
+      for (const change of selectedChanges) {
+        if (Array.isArray(change.suggested)) {
+          (updated as any)[change.field] = change.suggested.join(', ');
+        } else if (typeof change.suggested === 'number') {
+          (updated as any)[change.field] = change.suggested.toString();
+        } else {
+          (updated as any)[change.field] = change.suggested;
+        }
+      }
+      return updated;
+    });
+
+    const changedFields = selectedChanges.map(c => c.fieldLabel).join(', ');
+    setCurrentAIChanges(changedFields);
+    setShowAISuggestionsModal(false);
+    showNotification('success', 'Changes Applied', `Updated fields: ${changedFields}`);
+  };
+
+  // Retry AI analysis with additional context
+  const handleRetryAIWithInfo = (additionalInfo: string) => {
+    setShowAISuggestionsModal(false);
+    showNotification('info', 'Retry', 'Starting new AI analysis...');
+    // Could be enhanced to pass additional info to the AI
+    handleAIFill();
   };
 
 
@@ -1125,8 +1224,33 @@ export default function AdminScreen() {
             marginBottom: 12,
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: '#3a3a3a'
+            borderColor: item.last_optimized_by ? '#10B981' : '#3a3a3a'
           }}>
+            {/* Optimization Status Badge */}
+            {item.last_optimized_by && (
+              <View style={{
+                position: 'absolute',
+                top: -8,
+                right: 12,
+                backgroundColor: item.last_optimized_by === 'AI' ? '#8B5CF6' : '#10B981',
+                paddingVertical: 2,
+                paddingHorizontal: 8,
+                borderRadius: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                zIndex: 1,
+              }}>
+                <Ionicons 
+                  name={item.last_optimized_by === 'AI' ? 'sparkles' : 'checkmark-circle'} 
+                  size={10} 
+                  color="#FFFFFF" 
+                />
+                <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '600' }}>
+                  {item.last_optimized_by === 'AI' ? 'AI Optimized' : 'User Updated'}
+                </Text>
+              </View>
+            )}
             {/* Header Row */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <View style={{ flex: 1 }}>
@@ -2638,11 +2762,23 @@ export default function AdminScreen() {
                 backgroundColor: '#3B82F6',
                 paddingVertical: 16,
                 borderRadius: 8,
-                alignItems: 'center'
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 8,
+                opacity: isUpdating ? 0.7 : 1
               }}
               onPress={handleEditFragrance}
+              disabled={isUpdating}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Update Fragrance</Text>
+              {isUpdating ? (
+                <>
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Updating...</Text>
+                </>
+              ) : (
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Update Fragrance</Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -2664,7 +2800,177 @@ export default function AdminScreen() {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      </Modal >
-    </SafeAreaView >
+      </Modal>
+
+      {/* AI Suggestions Modal */}
+      <AISuggestionsModal
+        visible={showAISuggestionsModal}
+        onClose={() => {
+          setShowAISuggestionsModal(false);
+          setIsAIAnalyzing(false);
+        }}
+        fragranceName={formData.name}
+        fragranceBrand={formData.brand}
+        changes={aiSuggestions}
+        overallConfidence={aiOverallConfidence}
+        isLoading={isAIAnalyzing}
+        onApplyChanges={handleApplyAIChanges}
+        onRetryWithInfo={handleRetryAIWithInfo}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteConfirm}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowDeleteConfirm(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: '#2a2a2a',
+            borderRadius: 16,
+            padding: 24,
+            width: '100%',
+            maxWidth: 400
+          }}>
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View style={{
+                width: 60,
+                height: 60,
+                borderRadius: 30,
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: 16
+              }}>
+                <Ionicons name="warning" size={32} color="#EF4444" />
+              </View>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#ffffff', textAlign: 'center' }}>
+                Delete Fragrance?
+              </Text>
+              <Text style={{ fontSize: 14, color: '#999999', textAlign: 'center', marginTop: 8 }}>
+                Are you sure you want to delete "{deletingFragrance?.name}" by {deletingFragrance?.brand}?
+              </Text>
+              <Text style={{ fontSize: 12, color: '#EF4444', textAlign: 'center', marginTop: 8 }}>
+                This action cannot be undone.
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#3a3a3a'
+                }}
+                onPress={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletingFragrance(null);
+                }}
+              >
+                <Text style={{ color: '#999999', fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  backgroundColor: '#EF4444',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 8,
+                  opacity: isUpdating ? 0.7 : 1
+                }}
+                onPress={confirmDeleteFragrance}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="trash" size={16} color="#FFFFFF" />
+                    <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>Delete</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Toast Notifications */}
+      {toasts.length > 0 && (
+        <View style={{
+          position: 'absolute',
+          top: Platform.OS === 'web' ? 20 : 60,
+          left: 0,
+          right: 0,
+          alignItems: 'center',
+          zIndex: 9999,
+          pointerEvents: 'box-none',
+        }}>
+          {toasts.map((toast) => {
+            const colors = {
+              success: { bg: '#10B981', icon: 'checkmark-circle' as const },
+              error: { bg: '#EF4444', icon: 'close-circle' as const },
+              warning: { bg: '#F59E0B', icon: 'warning' as const },
+              info: { bg: '#3B82F6', icon: 'information-circle' as const },
+            };
+            const { bg, icon } = colors[toast.type];
+            
+            return (
+              <View
+                key={toast.id}
+                style={{
+                  backgroundColor: bg,
+                  borderRadius: 12,
+                  marginBottom: 10,
+                  maxWidth: 400,
+                  minWidth: 300,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+              >
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  padding: 16,
+                  gap: 12,
+                }}>
+                  <Ionicons name={icon} size={24} color="#FFFFFF" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: '#FFFFFF' }}>
+                      {toast.title}
+                    </Text>
+                    {toast.message && (
+                      <Text style={{ fontSize: 14, color: 'rgba(255, 255, 255, 0.9)', marginTop: 2 }}>
+                        {toast.message}
+                      </Text>
+                    )}
+                  </View>
+                  <TouchableOpacity onPress={() => hideNotification(toast.id)} style={{ padding: 4 }}>
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
