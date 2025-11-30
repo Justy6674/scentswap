@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import SmartSearchBar from '../../components/SmartSearchBar';
 import SmartSearchResults from '../../components/SmartSearchResults';
 import { SmartSearchResponse, EnhancedFragranceResult } from '../../lib/searchAI';

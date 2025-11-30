@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native';
-import { useAuth } from '../app/contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { AIAssistant, AIMessage, AIConversation } from '../lib/aiAssistant';
 import { Ionicons } from '@expo/vector-icons';
 
