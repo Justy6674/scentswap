@@ -2315,9 +2315,22 @@ export default function AdminScreen() {
           <ScrollView style={{ flex: 1, padding: 20 }}>
             {/* AI Tools Section */}
             <View style={{ marginBottom: 24, padding: 16, backgroundColor: '#2a2a2a', borderRadius: 12, borderWidth: 1, borderColor: '#3a3a3a' }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#8B5CF6', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
-                AI Optimization Tools
-              </Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  AI Optimization Tools
+                </Text>
+                <TouchableOpacity onPress={() => {
+                  const keys = {
+                    OpenAI: process.env.EXPO_PUBLIC_OPENAI_API_KEY?.slice(-4) || 'None',
+                    Anthropic: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY?.slice(-4) || 'None',
+                    Gemini: process.env.EXPO_PUBLIC_GEMINI_API_KEY?.slice(-4) || 'None',
+                    DeepSeek: process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY?.slice(-4) || 'None'
+                  };
+                  Alert.alert('Debug Keys', JSON.stringify(keys, null, 2));
+                }}>
+                  <Ionicons name="bug-outline" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
 
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
                 <View style={{ flexDirection: 'row', gap: 12 }}>
