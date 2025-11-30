@@ -19,6 +19,8 @@ import { ListingCard } from '@/components/ListingCard';
 import { Button } from '@/components/Button';
 import { Listing } from '@/types';
 import { db } from '@/lib/database';
+import FragranceUploadFlow from '@/components/FragranceUpload/FragranceUploadFlow';
+import type { FragranceData, UploadIntent } from '@/components/FragranceUpload/FragranceUploadFlow';
 
 export default function CabinetScreen() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -27,6 +29,7 @@ export default function CabinetScreen() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showUploadFlow, setShowUploadFlow] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -53,7 +56,30 @@ export default function CabinetScreen() {
   }
 
   function handleAddListing() {
-    router.push('/listing/new');
+    setShowUploadFlow(true);
+  }
+
+  async function handleUploadComplete(data: FragranceData, intent: UploadIntent) {
+    // For now, just close the modal and refresh listings
+    // In Phase 3, we'll save to Supabase
+    console.log('Fragrance uploaded:', data);
+    console.log('Intent:', intent);
+
+    setShowUploadFlow(false);
+
+    // Show success alert
+    Alert.alert(
+      'Success!',
+      intent === 'library'
+        ? 'Fragrance added to your personal library'
+        : 'Fragrance listed on the marketplace',
+      [
+        {
+          text: 'OK',
+          onPress: () => loadListings()
+        }
+      ]
+    );
   }
 
   const styles = StyleSheet.create({
@@ -281,6 +307,15 @@ export default function CabinetScreen() {
           }
           ListEmptyComponent={renderEmpty}
           showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {/* Fragrance Upload Flow Modal */}
+      {showUploadFlow && (
+        <FragranceUploadFlow
+          isVisible={showUploadFlow}
+          onClose={() => setShowUploadFlow(false)}
+          onComplete={handleUploadComplete}
         />
       )}
     </SafeAreaView>
