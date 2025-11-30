@@ -1,5 +1,27 @@
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
+// Dynamic imports for web compatibility
+let Anthropic: any = null;
+let OpenAI: any = null;
+
+// Initialize SDK clients only when needed
+const initializeSDKs = async () => {
+  if (!Anthropic && typeof window !== 'undefined') {
+    try {
+      const anthropicModule = await import('@anthropic-ai/sdk');
+      Anthropic = anthropicModule.default;
+    } catch (error) {
+      console.warn('Anthropic SDK not available:', error);
+    }
+  }
+
+  if (!OpenAI && typeof window !== 'undefined') {
+    try {
+      const openaiModule = await import('openai');
+      OpenAI = openaiModule.default;
+    } catch (error) {
+      console.warn('OpenAI SDK not available:', error);
+    }
+  }
+};
 
 // AI Model Types and Configurations
 export interface AIModel {
@@ -13,23 +35,14 @@ export interface AIModel {
 }
 
 export const AI_MODELS: Record<string, AIModel> = {
-  'claude-3-5-sonnet-20241022': {
-    id: 'claude-3-5-sonnet-20241022',
-    name: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-    costPer1000Tokens: 0.003, // $3 per million tokens
-    maxTokens: 200000,
-    capabilities: ['text', 'vision', 'reasoning', 'web-research'],
-    recommended: true
-  },
-  'claude-3-5-haiku-20241022': {
-    id: 'claude-3-5-haiku-20241022',
-    name: 'Claude 3.5 Haiku',
+  'claude-3-haiku-20240307': {
+    id: 'claude-3-haiku-20240307',
+    name: 'Claude 3 Haiku',
     provider: 'anthropic',
     costPer1000Tokens: 0.001, // $1 per million tokens
     maxTokens: 200000,
     capabilities: ['text', 'fast-processing'],
-    recommended: false
+    recommended: true
   },
   'claude-3-opus-20240229': {
     id: 'claude-3-opus-20240229',
@@ -56,6 +69,15 @@ export const AI_MODELS: Record<string, AIModel> = {
     costPer1000Tokens: 0.0002, // $0.2 per million tokens
     maxTokens: 128000,
     capabilities: ['text', 'fast-processing'],
+    recommended: false
+  },
+  'gemini-2.0-flash-001': {
+    id: 'gemini-2.0-flash-001',
+    name: 'Gemini 2.0 Flash',
+    provider: 'gemini',
+    costPer1000Tokens: 0.0005, // $0.5 per million tokens (estimated)
+    maxTokens: 1048576,
+    capabilities: ['text', 'vision', 'fast-processing'],
     recommended: false
   }
 };
@@ -145,7 +167,10 @@ class AIServiceManager {
   constructor() {
     this.currentModel = process.env.EXPO_PUBLIC_DEFAULT_AI_MODEL || 'claude-3-5-sonnet-20241022';
     this.usageStats = this.loadUsageStats();
-    this.initializeClients();
+    // Initialize SDKs and then initialize clients
+    initializeSDKs().then(() => {
+      this.initializeClients();
+    });
   }
 
   private initializeClients() {

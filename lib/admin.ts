@@ -8,6 +8,8 @@
 
 const ADMIN_EMAILS = [
   'downscale@icloud.com',
+  'test@scentswap.com.au',  // Temporary for AI testing
+  'admin@test.com',  // Development testing access
 ];
 
 /**
